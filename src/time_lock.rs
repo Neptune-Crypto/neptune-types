@@ -55,9 +55,12 @@ impl TimeLock {
             .unwrap_or_else(Timestamp::zero)
     }
 
-    pub const fn hash(&self) -> Digest {
-        // todo: obtain from neptune-core.
-        todo!()
+    pub fn hash(&self) -> Digest {
+        // note: obtained from neptune-core at commit: fd2c0b1aad55707833708abd4995b65054279f20
+        Digest::try_from_hex(
+            "4b4d251947a07f9f2c016c1c271c04ce41013ff50031bd42854919be6e0e4849ebf931e856b542ad",
+        )
+        .unwrap()
     }
 }
 

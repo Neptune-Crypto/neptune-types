@@ -77,10 +77,9 @@ impl NativeCurrency {
     //     BFieldElement::new(12484740501891840491),
     // ]);
 
-    pub const fn hash(&self) -> Digest {
-        // note: this is a hash of self.program() which never changes
-        //       so the hash can be retrieved from neptune-core and hard-coded.
-        todo!()
+    pub fn hash(&self) -> Digest {
+        // note: obtained from neptune-core at commit: fd2c0b1aad55707833708abd4995b65054279f20
+        Digest::try_from_hex("f1d74e829aa26ab4ca51bd237e3da0e7f459c2a2eed8b3f7fe0e35e21a4f12a7a2e193fff80dc524").unwrap()
     }
 }
 
