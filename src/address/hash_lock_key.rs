@@ -14,7 +14,7 @@ use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
 use crate::triton_vm::nondeterminism::NonDeterminism;
 
-// pub(crate) const RAW_HASH_LOCK_KEY_FLAG_U8: u8 = 0u8;
+pub(crate) const RAW_HASH_LOCK_KEY_FLAG_U8: u8 = 0u8;
 // pub(crate) const RAW_HASH_LOCK_KEY_FLAG: BFieldElement =
 //     BFieldElement::new(RAW_HASH_LOCK_KEY_FLAG_U8 as u64);
 

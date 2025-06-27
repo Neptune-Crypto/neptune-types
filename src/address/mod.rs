@@ -11,8 +11,9 @@ pub mod hash_lock_key;
 pub mod symmetric_key;
 pub mod encrypted_utxo_notification;
 pub mod generation_address;
-// mod receiving_address;
-/*
+pub mod receiving_address;
+mod addressable_key;
+mod base_key;
 
 pub use addressable_key::AddressableKey;
 pub use addressable_key::AddressableKeyType;
@@ -27,6 +28,8 @@ pub type KeyType = AddressableKeyType;
 pub type SpendingKey = AddressableKey;
 
 pub use receiving_address::ReceivingAddress;
+
+/*
 
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]

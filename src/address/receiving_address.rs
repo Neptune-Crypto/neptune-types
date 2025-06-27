@@ -2,20 +2,17 @@
 
 use anyhow::bail;
 use anyhow::Result;
-#[cfg(any(test, feature = "arbitrary-impls"))]
-use arbitrary::Arbitrary;
 use serde::Deserialize;
 use serde::Serialize;
-use tasm_lib::triton_vm::prelude::Digest;
+use twenty_first::prelude::*;
 
 use super::generation_address;
 use super::symmetric_key;
 use super::KeyType;
-use crate::config_models::network::Network;
-use crate::models::blockchain::transaction::lock_script::LockScript;
-use crate::models::blockchain::transaction::PublicAnnouncement;
-use crate::models::state::wallet::utxo_notification::UtxoNotificationPayload;
-use crate::BFieldElement;
+use crate::lock_script::LockScript;
+use crate::network::Network;
+use crate::public_announcement::PublicAnnouncement;
+use crate::utxo_notification_payload::UtxoNotificationPayload;
 
 // note: assigning the flags to `KeyType` variants as discriminants has bonus
 // that we get a compiler verification that values do not conflict.  which is
@@ -30,7 +27,7 @@ use crate::BFieldElement;
 /// a method or struct may simply accept a `ReceivingAddress` and be
 /// forward-compatible with new types of Address as they are implemented.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(Arbitrary))]
+#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
 pub enum ReceivingAddress {
     /// a [generation_address]
     Generation(Box<generation_address::GenerationReceivingAddress>),
@@ -93,7 +90,7 @@ impl ReceivingAddress {
     ///
     /// Fields |0,1| enable the receiver to determine the ciphertext
     /// is intended for them and decryption should be attempted.
-    pub(crate) fn generate_public_announcement(
+    pub fn generate_public_announcement(
         &self,
         utxo_notification_payload: UtxoNotificationPayload,
     ) -> PublicAnnouncement {
@@ -108,7 +105,7 @@ impl ReceivingAddress {
         }
     }
 
-    pub(crate) fn private_notification(
+    pub fn private_notification(
         &self,
         utxo_notification_payload: UtxoNotificationPayload,
         network: Network,

@@ -11,6 +11,7 @@ pub mod native_currency;
 pub mod lock_script;
 pub mod time_lock;
 pub mod utxo;
+pub mod incoming_utxo;
 pub mod utxo_notification_payload;
 pub mod public_announcement;
 pub mod address;

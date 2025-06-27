@@ -4,21 +4,20 @@ use anyhow::bail;
 use anyhow::Result;
 use serde::Deserialize;
 use serde::Serialize;
-use tasm_lib::triton_vm::prelude::Digest;
-use tracing::warn;
+use twenty_first::prelude::*;
+// use tracing::warn;
 
 use super::common;
 use super::generation_address;
 use super::hash_lock_key;
 use super::symmetric_key;
 use super::ReceivingAddress;
-use crate::models::blockchain::transaction::lock_script::LockScript;
-use crate::models::blockchain::transaction::lock_script::LockScriptAndWitness;
-use crate::models::blockchain::transaction::transaction_kernel::TransactionKernel;
-use crate::models::blockchain::transaction::utxo::Utxo;
-use crate::models::blockchain::transaction::PublicAnnouncement;
-use crate::models::state::wallet::incoming_utxo::IncomingUtxo;
-use crate::BFieldElement;
+use crate::incoming_utxo::IncomingUtxo;
+use crate::lock_script::LockScript;
+use crate::lock_script::LockScriptAndWitness;
+use crate::public_announcement::PublicAnnouncement;
+use crate::utxo::Utxo;
+// use crate::BFieldElement;
 
 // note: assigning the flags to `BaseKeyType` variants as discriminants has bonus
 // that we get a compiler verification that values do not conflict.  which is
@@ -147,7 +146,7 @@ impl From<symmetric_key::SymmetricKey> for BaseSpendingKey {
 // (and the key types it wraps) should not have any methods with
 // outside types as parameters.  for example:
 //
-// pub(crate) fn scan_for_announced_utxos(
+// pub fn scan_for_announced_utxos(
 //     &self,
 //     tx_kernel: &TransactionKernel,
 // ) -> Vec<IncomingUtxo> {
@@ -165,7 +164,7 @@ impl BaseSpendingKey {
     }
 
     /// Return the lock script and its witness
-    pub(crate) fn lock_script_and_witness(&self) -> LockScriptAndWitness {
+    pub fn lock_script_and_witness(&self) -> LockScriptAndWitness {
         match self {
             BaseSpendingKey::Generation(generation_spending_key) => {
                 generation_spending_key.lock_script_and_witness()
@@ -175,13 +174,13 @@ impl BaseSpendingKey {
         }
     }
 
-    pub(crate) fn lock_script(&self) -> LockScript {
+    pub fn lock_script(&self) -> LockScript {
         LockScript {
             program: self.lock_script_and_witness().program,
         }
     }
 
-    pub(crate) fn lock_script_hash(&self) -> Digest {
+    pub fn lock_script_hash(&self) -> Digest {
         self.lock_script().hash()
     }
 
@@ -248,9 +247,9 @@ impl BaseSpendingKey {
     ///
     ///  - Logs a warning for any announcement targeted at this key that cannot
     ///    be decrypted.
-    pub(crate) fn scan_for_announced_utxos(
+    pub fn scan_for_announced_utxos<'a>(
         &self,
-        tx_kernel: &TransactionKernel,
+        public_announcements: impl Iterator<Item = &'a PublicAnnouncement>,
     ) -> Vec<IncomingUtxo> {
         // pre-compute some fields, and early-abort if key cannot receive.
         let Some(receiver_identifier) = self.receiver_identifier() else {
@@ -261,9 +260,7 @@ impl BaseSpendingKey {
         };
 
         // for all public announcements
-        tx_kernel
-            .public_announcements
-            .iter()
+        public_announcements
 
             // ... that are marked as encrypted to our key type
             .filter(|pa| self.matches_public_announcement_key_type(pa))
@@ -293,13 +290,14 @@ impl BaseSpendingKey {
 
     /// converts a result into an Option and logs a warning on any error
     fn ok_warn<T>(&self, result: Result<T>) -> Option<T> {
-        let Some(receiver_identifier) = self.receiver_identifier() else {
+        let Some(_receiver_identifier) = self.receiver_identifier() else {
             panic!("Cannot call `ok_warn` unless the spending key has an associated address.");
         };
         match result {
             Ok(v) => Some(v),
-            Err(e) => {
-                warn!("possible loss of funds! skipping public announcement for {:?} key with receiver_identifier: {}.  error: {}", BaseKeyType::from(self), receiver_identifier, e.to_string());
+            Err(_e) => {
+                // todo!
+                // warn!("possible loss of funds! skipping public announcement for {:?} key with receiver_identifier: {}.  error: {}", BaseKeyType::from(self), receiver_identifier, e.to_string());
                 None
             }
         }

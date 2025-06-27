@@ -20,9 +20,9 @@ use super::common;
 use super::common::deterministically_derive_seed_and_nonce;
 use super::encrypted_utxo_notification::EncryptedUtxoNotification;
 use super::hash_lock_key::HashLockKey;
-use crate::network::Network;
 use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
+use crate::network::Network;
 use crate::public_announcement::PublicAnnouncement;
 use crate::utxo::Utxo;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
@@ -216,19 +216,19 @@ impl SymmetricKey {
         encrypted_utxo_notification.into_public_announcement()
     }
 
-    // pub(crate) fn private_utxo_notification(
-    //     &self,
-    //     utxo_notification_payload: &UtxoNotificationPayload,
-    //     network: Network,
-    // ) -> String {
-    //     let encrypted_utxo_notification = EncryptedUtxoNotification {
-    //         flag: SYMMETRIC_KEY_FLAG_U8.into(),
-    //         receiver_identifier: self.receiver_identifier(),
-    //         ciphertext: self.encrypt(utxo_notification_payload),
-    //     };
+    pub(crate) fn private_utxo_notification(
+        &self,
+        utxo_notification_payload: &UtxoNotificationPayload,
+        network: Network,
+    ) -> String {
+        let encrypted_utxo_notification = EncryptedUtxoNotification {
+            flag: SYMMETRIC_KEY_FLAG_U8.into(),
+            receiver_identifier: self.receiver_identifier(),
+            ciphertext: self.encrypt(utxo_notification_payload),
+        };
 
-    //     encrypted_utxo_notification.into_bech32m(network)
-    // }
+        encrypted_utxo_notification.into_bech32m(network)
+    }
 
     /// encodes the key as bech32m with network-specific prefix
     ///

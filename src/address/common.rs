@@ -1,4 +1,4 @@
-// use anyhow::bail;
+use anyhow::bail;
 use anyhow::ensure;
 use anyhow::Result;
 use sha3::digest::ExtendableOutput;
@@ -12,7 +12,7 @@ use twenty_first::prelude::*;
 
 use crate::network::Network;
 // use crate::hash::Hash;
-// use crate::models::blockchain::transaction::PublicAnnouncement;
+use crate::public_announcement::PublicAnnouncement;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
 // use crate::prelude::twenty_first;
 
@@ -52,40 +52,40 @@ pub fn deterministically_derive_seed_and_nonce(
 /// retrieves key-type field from a [PublicAnnouncement]
 ///
 /// returns an error if the field is not present
-// pub fn key_type_from_public_announcement(
-//     announcement: &PublicAnnouncement,
-// ) -> Result<BFieldElement> {
-//     match announcement.message.first() {
-//         Some(key_type) => Ok(*key_type),
-//         None => bail!("Public announcement does not contain key type."),
-//     }
-// }
+pub fn key_type_from_public_announcement(
+    announcement: &PublicAnnouncement,
+) -> Result<BFieldElement> {
+    match announcement.message.first() {
+        Some(key_type) => Ok(*key_type),
+        None => bail!("Public announcement does not contain key type."),
+    }
+}
 
 /// retrieves ciphertext field from a [PublicAnnouncement]
 ///
 /// returns an error if the input is too short
-// pub fn ciphertext_from_public_announcement(
-//     announcement: &PublicAnnouncement,
-// ) -> Result<Vec<BFieldElement>> {
-//     ensure!(
-//         announcement.message.len() > 2,
-//         "Public announcement does not contain ciphertext.",
-//     );
+pub fn ciphertext_from_public_announcement(
+    announcement: &PublicAnnouncement,
+) -> Result<Vec<BFieldElement>> {
+    ensure!(
+        announcement.message.len() > 2,
+        "Public announcement does not contain ciphertext.",
+    );
 
-//     Ok(announcement.message[2..].to_vec())
-// }
+    Ok(announcement.message[2..].to_vec())
+}
 
 /// retrieves receiver identifier field from a [PublicAnnouncement]
 ///
 /// returns an error if the input is too short
-// pub fn receiver_identifier_from_public_announcement(
-//     announcement: &PublicAnnouncement,
-// ) -> Result<BFieldElement> {
-//     match announcement.message.get(1) {
-//         Some(id) => Ok(*id),
-//         None => bail!("Public announcement does not contain receiver ID"),
-//     }
-// }
+pub fn receiver_identifier_from_public_announcement(
+    announcement: &PublicAnnouncement,
+) -> Result<BFieldElement> {
+    match announcement.message.get(1) {
+        Some(id) => Ok(*id),
+        None => bail!("Public announcement does not contain receiver ID"),
+    }
+}
 
 /// Encodes a slice of bytes to a vec of BFieldElements. This
 /// encoding is injective but not uniform-to-uniform.

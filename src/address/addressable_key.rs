@@ -11,8 +11,9 @@ use anyhow::bail;
 use anyhow::Result;
 use serde::Deserialize;
 use serde::Serialize;
-use tasm_lib::triton_vm::prelude::Digest;
-use tracing::warn;
+use twenty_first::prelude::*;
+
+// use tracing::warn;
 
 use super::base_key::BaseKeyType;
 use super::base_key::BaseSpendingKey;
@@ -20,13 +21,13 @@ use super::common;
 use super::generation_address;
 use super::receiving_address::ReceivingAddress;
 use super::symmetric_key;
-use crate::models::blockchain::transaction::lock_script::LockScript;
-use crate::models::blockchain::transaction::lock_script::LockScriptAndWitness;
-use crate::models::blockchain::transaction::transaction_kernel::TransactionKernel;
-use crate::models::blockchain::transaction::utxo::Utxo;
-use crate::models::blockchain::transaction::PublicAnnouncement;
-use crate::models::state::wallet::incoming_utxo::IncomingUtxo;
-use crate::BFieldElement;
+use crate::lock_script::LockScript;
+use crate::lock_script::LockScriptAndWitness;
+// use crate::models::blockchain::transaction::transaction_kernel::TransactionKernel;
+use crate::incoming_utxo::IncomingUtxo;
+use crate::public_announcement::PublicAnnouncement;
+use crate::utxo::Utxo;
+// use crate::BFieldElement;
 
 // note: assigning the flags to `AddressableKeyType` variants as discriminants has bonus
 // that we get a compiler verification that values do not conflict.  which is
@@ -161,7 +162,7 @@ impl From<symmetric_key::SymmetricKey> for AddressableKey {
 // (and the key types it wraps) should not have any methods with
 // outside types as parameters.  for example:
 //
-// pub(crate) fn scan_for_announced_utxos(
+// pub fn scan_for_announced_utxos(
 //     &self,
 //     tx_kernel: &TransactionKernel,
 // ) -> Vec<IncomingUtxo> {
@@ -178,7 +179,7 @@ impl AddressableKey {
     }
 
     /// Return the lock script and its witness
-    pub(crate) fn lock_script_and_witness(&self) -> LockScriptAndWitness {
+    pub fn lock_script_and_witness(&self) -> LockScriptAndWitness {
         match self {
             AddressableKey::Generation(generation_spending_key) => {
                 generation_spending_key.lock_script_and_witness()
@@ -187,13 +188,13 @@ impl AddressableKey {
         }
     }
 
-    pub(crate) fn lock_script(&self) -> LockScript {
+    pub fn lock_script(&self) -> LockScript {
         LockScript {
             program: self.lock_script_and_witness().program,
         }
     }
 
-    pub(crate) fn lock_script_hash(&self) -> Digest {
+    pub fn lock_script_hash(&self) -> Digest {
         self.lock_script().hash()
     }
 
@@ -254,18 +255,16 @@ impl AddressableKey {
     ///
     ///  - Logs a warning for any announcement targeted at this key that cannot
     ///    be decrypted.
-    pub(crate) fn scan_for_announced_utxos(
+    pub fn scan_for_announced_utxos<'a>(
         &self,
-        tx_kernel: &TransactionKernel,
+        public_announcements: impl Iterator<Item = &'a PublicAnnouncement>,
     ) -> Vec<IncomingUtxo> {
         // pre-compute some fields, and early-abort if key cannot receive.
         let receiver_identifier = self.receiver_identifier();
         let receiver_preimage = self.privacy_preimage();
 
         // for all public announcements
-        tx_kernel
-            .public_announcements
-            .iter()
+        public_announcements
 
             // ... that are marked as encrypted to our key type
             .filter(|pa| self.matches_public_announcement_key_type(pa))
@@ -297,8 +296,9 @@ impl AddressableKey {
     fn ok_warn<T>(&self, result: Result<T>) -> Option<T> {
         match result {
             Ok(v) => Some(v),
-            Err(e) => {
-                warn!("possible loss of funds! skipping public announcement for {:?} key with receiver_identifier: {}.  error: {}", AddressableKeyType::from(self), self.receiver_identifier(), e.to_string());
+            Err(_e) => {
+                // todo!  warn.
+                // warn!("possible loss of funds! skipping public announcement for {:?} key with receiver_identifier: {}.  error: {}", AddressableKeyType::from(self), self.receiver_identifier(), e.to_string());
                 None
             }
         }
