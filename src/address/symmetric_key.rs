@@ -15,21 +15,20 @@ use bech32::FromBase32;
 use bech32::ToBase32;
 use serde::Deserialize;
 use serde::Serialize;
-use twenty_first::math::b_field_element::BFieldElement;
-use twenty_first::math::tip5::Digest;
-use twenty_first::math::tip5::Tip5 as Hash;
+use twenty_first::prelude::*;
+use twenty_first::tip5::Tip5 as Hash;
 
 use super::common;
 use super::common::deterministically_derive_seed_and_nonce;
-use super::encrypted_utxo_notification::EncryptedUtxoNotification;
-// use super::hash_lock_key::HashLockKey;
+// use super::encrypted_utxo_notification::EncryptedUtxoNotification;
+use super::hash_lock_key::HashLockKey;
 use crate::network::Network;
 // use crate::models::blockchain::shared::Hash;
-// use crate::models::blockchain::transaction::lock_script::LockScript;
-// use crate::models::blockchain::transaction::lock_script::LockScriptAndWitness;
-// use crate::models::blockchain::transaction::utxo::Utxo;
+// use crate::lock_script::LockScript;
+use crate::lock_script::LockScriptAndWitness;
+use crate::utxo::Utxo;
 // use crate::models::blockchain::transaction::PublicAnnouncement;
-// use crate::models::state::wallet::utxo_notification::UtxoNotificationPayload;
+use crate::utxo_notification_payload::UtxoNotificationPayload;
 // use relude::twenty_first;
 
 /// represents a symmetric key decryption error
@@ -164,7 +163,7 @@ impl SymmetricKey {
     /// encrypts utxo secrets (utxo, sender_randomness) into ciphertext
     ///
     /// The output of `encrypt()` should be used as the input to `decrypt()`.
-    pub(crate) fn encrypt(&self, payload: &UtxoNotificationPayload) -> Vec<BFieldElement> {
+    pub fn encrypt(&self, payload: &UtxoNotificationPayload) -> Vec<BFieldElement> {
         // 1. init randomness
         let (_randomness, nonce_bfe) = deterministically_derive_seed_and_nonce(payload);
 
@@ -204,9 +203,9 @@ impl SymmetricKey {
     //     HashLockKey::lock_script_from_after_image(self.lock_after_image())
     // }
 
-    // pub(crate) fn lock_script_and_witness(&self) -> LockScriptAndWitness {
-    //     HashLockKey::from_preimage(self.unlock_key()).lock_script_and_witness()
-    // }
+    pub fn lock_script_and_witness(&self) -> LockScriptAndWitness {
+        HashLockKey::from_preimage(self.unlock_key()).lock_script_and_witness()
+    }
 
     // pub(crate) fn generate_public_announcement(
     //     &self,

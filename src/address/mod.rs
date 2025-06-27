@@ -8,7 +8,7 @@
 // mod base_key;
 mod common;
 pub mod hash_lock_key;
-//pub mod symmetric_key;
+pub mod symmetric_key;
 // mod receiving_address;
 /*
 pub mod encrypted_utxo_notification;

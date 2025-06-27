@@ -1,9 +1,9 @@
 use serde::Deserialize;
 use serde::Serialize;
-use tasm_lib::prelude::Digest;
+use twenty_first::prelude::*;
 
-use crate::models::blockchain::transaction::utxo::Utxo;
-use crate::models::state::wallet::address::ReceivingAddress;
+use crate::utxo::Utxo;
+// use crate::models::state::wallet::address::ReceivingAddress;
 
 /// Enumerates the medium of exchange for UTXO-notifications.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default, clap::ValueEnum)]
@@ -40,27 +40,6 @@ impl UtxoNotifyMethod {
     }
 }
 
-/// The payload of a UTXO notification, containing all information necessary
-/// to claim it, provided access to the associated spending key.
-///
-/// future work:
-/// we should consider adding functionality that would facilitate passing
-/// these payloads from sender to receiver off-chain for lower-fee transfers
-/// between trusted parties or eg wallets owned by the same person/org.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct UtxoNotificationPayload {
-    pub(crate) utxo: Utxo,
-    pub(crate) sender_randomness: Digest,
-}
-
-impl UtxoNotificationPayload {
-    pub(crate) fn new(utxo: Utxo, sender_randomness: Digest) -> Self {
-        Self {
-            utxo,
-            sender_randomness,
-        }
-    }
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct PrivateNotificationData {
