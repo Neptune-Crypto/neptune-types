@@ -9,8 +9,6 @@ use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::ensure;
 use anyhow::Result;
-#[cfg(any(test, feature = "arbitrary-impls"))]
-use arbitrary::Arbitrary;
 use bech32::FromBase32;
 use bech32::ToBase32;
 use serde::Deserialize;
@@ -23,13 +21,11 @@ use super::common::deterministically_derive_seed_and_nonce;
 use super::encrypted_utxo_notification::EncryptedUtxoNotification;
 use super::hash_lock_key::HashLockKey;
 use crate::network::Network;
-// use crate::models::blockchain::shared::Hash;
 use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
 use crate::public_announcement::PublicAnnouncement;
 use crate::utxo::Utxo;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
-// use relude::twenty_first;
 
 /// represents a symmetric key decryption error
 #[derive(Debug, thiserror::Error)]
@@ -84,7 +80,7 @@ pub const SYMMETRIC_KEY_FLAG: BFieldElement = BFieldElement::new(SYMMETRIC_KEY_F
 /// The implementation can be easily changed later if needed as the type is
 /// opaque.
 #[derive(Clone, Debug, Copy, Serialize, Deserialize, PartialEq, Eq)]
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(Arbitrary))]
+#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
 pub struct SymmetricKey {
     seed: Digest,
 }

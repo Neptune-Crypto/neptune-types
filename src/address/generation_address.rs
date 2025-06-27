@@ -20,31 +20,26 @@ use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::ensure;
 use anyhow::Result;
-#[cfg(any(test, feature = "arbitrary-impls"))]
-use arbitrary::Arbitrary;
 use bech32::FromBase32;
 use bech32::ToBase32;
 use bech32::Variant;
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
-use twenty_first::math::b_field_element::BFieldElement;
+use serde::Deserialize;
+use serde::Serialize;
 use twenty_first::math::lattice;
 use twenty_first::math::lattice::kem::CIPHERTEXT_SIZE_IN_BFES;
-use twenty_first::math::tip5::Digest;
+use twenty_first::prelude::*;
 
 use super::common;
 use super::common::deterministically_derive_seed_and_nonce;
 use super::common::network_hrp_char;
 use super::encrypted_utxo_notification::EncryptedUtxoNotification;
 use super::hash_lock_key::HashLockKey;
-use crate::config_models::network::Network;
-use crate::models::blockchain::shared::Hash;
-use crate::models::blockchain::transaction::lock_script::LockScript;
-use crate::models::blockchain::transaction::lock_script::LockScriptAndWitness;
-use crate::models::blockchain::transaction::utxo::Utxo;
-use crate::models::blockchain::transaction::PublicAnnouncement;
-use crate::models::state::wallet::utxo_notification::UtxoNotificationPayload;
-use crate::prelude::twenty_first;
+use crate::lock_script::LockScript;
+use crate::lock_script::LockScriptAndWitness;
+use crate::network::Network;
+use crate::public_announcement::PublicAnnouncement;
+use crate::utxo::Utxo;
+use crate::utxo_notification_payload::UtxoNotificationPayload;
 
 pub(super) const GENERATION_FLAG_U8: u8 = 79;
 pub const GENERATION_FLAG: BFieldElement = BFieldElement::new(GENERATION_FLAG_U8 as u64);
@@ -162,15 +157,15 @@ impl GenerationSpendingKey {
         }
     }
 
-    pub(crate) fn lock_script_and_witness(&self) -> LockScriptAndWitness {
+    pub fn lock_script_and_witness(&self) -> LockScriptAndWitness {
         HashLockKey::from_preimage(self.unlock_key_preimage).lock_script_and_witness()
     }
 
     pub fn derive_from_seed(seed: Digest) -> Self {
         let privacy_preimage =
-            Hash::hash_varlen(&[seed.values().to_vec(), vec![BFieldElement::new(0)]].concat());
+            Tip5::hash_varlen(&[seed.values().to_vec(), vec![BFieldElement::new(0)]].concat());
         let unlock_key =
-            Hash::hash_varlen(&[seed.values().to_vec(), vec![BFieldElement::new(1)]].concat());
+            Tip5::hash_varlen(&[seed.values().to_vec(), vec![BFieldElement::new(1)]].concat());
         let randomness: [u8; 32] = common::shake256::<32>(&bincode::serialize(&seed).unwrap());
         let (sk, _pk) = lattice::kem::keygen(randomness);
         let receiver_identifier = common::derive_receiver_id(seed);
@@ -198,7 +193,7 @@ impl GenerationSpendingKey {
     }
 
     /// Decrypt a Generation Address ciphertext
-    pub(super) fn decrypt(&self, ciphertext: &[BFieldElement]) -> Result<(Utxo, Digest)> {
+    pub fn decrypt(&self, ciphertext: &[BFieldElement]) -> Result<(Utxo, Digest)> {
         // parse ciphertext
         ensure!(
             ciphertext.len() > CIPHERTEXT_SIZE_IN_BFES,
@@ -286,7 +281,7 @@ impl GenerationReceivingAddress {
         }
     }
 
-    pub(crate) fn encrypt(&self, payload: &UtxoNotificationPayload) -> Vec<BFieldElement> {
+    pub fn encrypt(&self, payload: &UtxoNotificationPayload) -> Vec<BFieldElement> {
         let (randomness, nonce_bfe) = deterministically_derive_seed_and_nonce(payload);
         let (shared_key, kem_ctxt) = lattice::kem::enc(self.encryption_key, randomness);
 
@@ -380,7 +375,7 @@ impl GenerationReceivingAddress {
         HashLockKey::lock_script_from_after_image(self.lock_after_image)
     }
 
-    pub(crate) fn generate_public_announcement(
+    pub fn generate_public_announcement(
         &self,
         utxo_notification_payload: &UtxoNotificationPayload,
     ) -> PublicAnnouncement {
@@ -393,7 +388,7 @@ impl GenerationReceivingAddress {
         encrypted_utxo_notification.into_public_announcement()
     }
 
-    pub(crate) fn private_utxo_notification(
+    pub fn private_utxo_notification(
         &self,
         utxo_notification_payload: &UtxoNotificationPayload,
         network: Network,

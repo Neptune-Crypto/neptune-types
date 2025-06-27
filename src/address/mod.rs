@@ -10,7 +10,7 @@ mod common;
 pub mod hash_lock_key;
 pub mod symmetric_key;
 pub mod encrypted_utxo_notification;
-//pub mod generation_address;
+pub mod generation_address;
 // mod receiving_address;
 /*
 
