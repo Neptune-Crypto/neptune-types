@@ -20,14 +20,14 @@ use twenty_first::tip5::Tip5 as Hash;
 
 use super::common;
 use super::common::deterministically_derive_seed_and_nonce;
-// use super::encrypted_utxo_notification::EncryptedUtxoNotification;
+use super::encrypted_utxo_notification::EncryptedUtxoNotification;
 use super::hash_lock_key::HashLockKey;
 use crate::network::Network;
 // use crate::models::blockchain::shared::Hash;
-// use crate::lock_script::LockScript;
+use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
+use crate::public_announcement::PublicAnnouncement;
 use crate::utxo::Utxo;
-// use crate::models::blockchain::transaction::PublicAnnouncement;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
 // use relude::twenty_first;
 
@@ -199,26 +199,26 @@ impl SymmetricKey {
     ///
     /// Satisfaction of this lock script establishes the UTXO owner's assent to
     /// the transaction.
-    // pub fn lock_script(&self) -> LockScript {
-    //     HashLockKey::lock_script_from_after_image(self.lock_after_image())
-    // }
+    pub fn lock_script(&self) -> LockScript {
+        HashLockKey::lock_script_from_after_image(self.lock_after_image())
+    }
 
     pub fn lock_script_and_witness(&self) -> LockScriptAndWitness {
         HashLockKey::from_preimage(self.unlock_key()).lock_script_and_witness()
     }
 
-    // pub(crate) fn generate_public_announcement(
-    //     &self,
-    //     utxo_notification_payload: &UtxoNotificationPayload,
-    // ) -> PublicAnnouncement {
-    //     let encrypted_utxo_notification = EncryptedUtxoNotification {
-    //         flag: SYMMETRIC_KEY_FLAG_U8.into(),
-    //         receiver_identifier: self.receiver_identifier(),
-    //         ciphertext: self.encrypt(utxo_notification_payload),
-    //     };
+    pub fn generate_public_announcement(
+        &self,
+        utxo_notification_payload: &UtxoNotificationPayload,
+    ) -> PublicAnnouncement {
+        let encrypted_utxo_notification = EncryptedUtxoNotification {
+            flag: SYMMETRIC_KEY_FLAG_U8.into(),
+            receiver_identifier: self.receiver_identifier(),
+            ciphertext: self.encrypt(utxo_notification_payload),
+        };
 
-    //     encrypted_utxo_notification.into_public_announcement()
-    // }
+        encrypted_utxo_notification.into_public_announcement()
+    }
 
     // pub(crate) fn private_utxo_notification(
     //     &self,

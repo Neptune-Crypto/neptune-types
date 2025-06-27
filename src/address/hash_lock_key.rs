@@ -7,16 +7,16 @@ use twenty_first::prelude::*;
 // use tasm_lib::triton_vm::isa::triton_instr;
 // use tasm_lib::triton_vm::prelude::BFieldElement;
 // use tasm_lib::triton_vm::vm::NonDeterminism;
-use triton_isa::triton_instr;
 use triton_isa::triton_asm;
+use triton_isa::triton_instr;
 
 use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
 use crate::triton_vm::nondeterminism::NonDeterminism;
 
-pub(crate) const RAW_HASH_LOCK_KEY_FLAG_U8: u8 = 0u8;
-pub(crate) const RAW_HASH_LOCK_KEY_FLAG: BFieldElement =
-    BFieldElement::new(RAW_HASH_LOCK_KEY_FLAG_U8 as u64);
+// pub(crate) const RAW_HASH_LOCK_KEY_FLAG_U8: u8 = 0u8;
+// pub(crate) const RAW_HASH_LOCK_KEY_FLAG: BFieldElement =
+//     BFieldElement::new(RAW_HASH_LOCK_KEY_FLAG_U8 as u64);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct HashLockKey {

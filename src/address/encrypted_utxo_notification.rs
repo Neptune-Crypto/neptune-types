@@ -6,14 +6,13 @@ use bech32::ToBase32;
 use get_size2::GetSize;
 use serde::Deserialize;
 use serde::Serialize;
-use tasm_lib::triton_vm::prelude::BFieldCodec;
-use tasm_lib::triton_vm::prelude::BFieldElement;
+use twenty_first::prelude::*;
 
-use super::SpendingKey;
-use crate::config_models::network::Network;
-use crate::models::blockchain::transaction::PublicAnnouncement;
-use crate::models::state::wallet::address::common::network_hrp_char;
-use crate::models::state::wallet::utxo_notification::UtxoNotificationPayload;
+// use super::SpendingKey;
+use super::common::network_hrp_char;
+use crate::network::Network;
+use crate::public_announcement::PublicAnnouncement;
+// use crate::utxo_notification_payload::UtxoNotificationPayload;
 
 /// an encrypted wrapper for UTXO notifications.
 ///
@@ -26,7 +25,7 @@ use crate::models::state::wallet::utxo_notification::UtxoNotificationPayload;
 /// the receiver_identifier enables the receiver to find the matching
 /// `SpendingKey` in their wallet.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, GetSize, Serialize, Deserialize, BFieldCodec)]
-pub(crate) struct EncryptedUtxoNotification {
+pub struct EncryptedUtxoNotification {
     /// Describes the type of encoding used here
     pub(crate) flag: BFieldElement,
 
@@ -63,7 +62,7 @@ impl EncryptedUtxoNotification {
     /// Convert an encrypted UTXO notification to a public announcement. Leaks
     /// privacy in the form of `receiver_identifier` is addresses are reused.
     /// Never leaks actual UTXO info such as amount transferred.
-    pub(crate) fn into_public_announcement(self) -> PublicAnnouncement {
+    pub fn into_public_announcement(self) -> PublicAnnouncement {
         // We could use `BfieldCodec` encode here. But it might be a bit faster
         // to filter out irrelevant public announcement if we don't have to
         // attempt a decoding to a specific data type first but can instead just
@@ -71,7 +70,7 @@ impl EncryptedUtxoNotification {
         PublicAnnouncement::new(self.into_message())
     }
 
-    pub(crate) fn into_bech32m(self, network: Network) -> String {
+    pub fn into_bech32m(self, network: Network) -> String {
         let hrp = Self::get_hrp(network);
         let message = self.into_message();
         let payload = bincode::serialize(&message).unwrap_or_else(|e| {
@@ -85,7 +84,7 @@ impl EncryptedUtxoNotification {
     }
 
     /// decodes from a bech32m string and verifies it matches `network`
-    pub(crate) fn from_bech32m(encoded: &str, network: Network) -> Result<Self> {
+    pub fn from_bech32m(encoded: &str, network: Network) -> Result<Self> {
         let (hrp, data, variant) = bech32::decode(encoded)?;
 
         ensure!(
@@ -107,18 +106,18 @@ impl EncryptedUtxoNotification {
     }
 
     /// returns human readable prefix (hrp) of a utxo-transfer-encrypted, specific to `network`
-    pub(crate) fn get_hrp(network: Network) -> String {
+    pub fn get_hrp(network: Network) -> String {
         format!("utxo{}", network_hrp_char(network))
     }
 
-    pub fn decrypt_with_spending_key(
-        &self,
-        spending_key: &SpendingKey,
-    ) -> Result<UtxoNotificationPayload> {
-        spending_key
-            .decrypt(&self.ciphertext)
-            .map(|(utxo, sender_randomness)| UtxoNotificationPayload::new(utxo, sender_randomness))
-    }
+    // pub fn decrypt_with_spending_key(
+    //     &self,
+    //     spending_key: &SpendingKey,
+    // ) -> Result<UtxoNotificationPayload> {
+    //     spending_key
+    //         .decrypt(&self.ciphertext)
+    //         .map(|(utxo, sender_randomness)| UtxoNotificationPayload::new(utxo, sender_randomness))
+    // }
 }
 
 #[cfg(test)]

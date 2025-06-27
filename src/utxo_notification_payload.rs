@@ -17,7 +17,7 @@ pub struct UtxoNotificationPayload {
 }
 
 impl UtxoNotificationPayload {
-    pub(crate) fn new(utxo: Utxo, sender_randomness: Digest) -> Self {
+    pub fn new(utxo: Utxo, sender_randomness: Digest) -> Self {
         Self {
             utxo,
             sender_randomness,
