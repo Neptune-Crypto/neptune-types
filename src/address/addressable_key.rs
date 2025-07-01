@@ -27,6 +27,8 @@ use crate::lock_script::LockScriptAndWitness;
 use crate::incoming_utxo::IncomingUtxo;
 use crate::public_announcement::PublicAnnouncement;
 use crate::utxo::Utxo;
+use crate::network::Network;
+
 // use crate::BFieldElement;
 
 // note: assigning the flags to `AddressableKeyType` variants as discriminants has bonus
@@ -110,6 +112,14 @@ impl AddressableKeyType {
     /// returns all available `AddressableKeyType`
     pub fn all_types() -> Vec<AddressableKeyType> {
         vec![Self::Generation, Self::Symmetric]
+    }
+
+    /// returns human readable prefix of an address
+    pub fn get_hrp(&self, network: Network) -> String {
+        match self {
+            Self::Generation => generation_address::GenerationReceivingAddress::get_hrp(network),
+            Self::Symmetric => symmetric_key::SymmetricKey::get_hrp(network),
+        }
     }
 }
 
