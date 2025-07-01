@@ -25,9 +25,9 @@ use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
 // use crate::models::blockchain::transaction::transaction_kernel::TransactionKernel;
 use crate::incoming_utxo::IncomingUtxo;
+use crate::network::Network;
 use crate::public_announcement::PublicAnnouncement;
 use crate::utxo::Utxo;
-use crate::network::Network;
 
 // use crate::BFieldElement;
 
@@ -42,7 +42,7 @@ use crate::network::Network;
 ///
 /// `AddressableKey` enumerates the sub-set of [BaseKeyType]
 /// variants that are represented in [ReceivingAddress].
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash, strum::EnumIs)]
 #[repr(u8)]
 pub enum AddressableKeyType {
     /// [generation_address] built on [crate::prelude::twenty_first::math::lattice::kem]
