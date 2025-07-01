@@ -1,5 +1,5 @@
-use twenty_first::prelude::*;
 use std::ops::Deref;
+use twenty_first::prelude::*;
 
 #[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
 #[derive(Debug, Default, Clone, Eq, PartialEq, BFieldCodec)]

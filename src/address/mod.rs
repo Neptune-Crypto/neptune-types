@@ -6,14 +6,14 @@
 //! (especially since we now have a key type with no corresponding address)
 // mod addressable_key;
 // mod base_key;
-mod common;
-pub mod hash_lock_key;
-pub mod symmetric_key;
-pub mod encrypted_utxo_notification;
-pub mod generation_address;
-pub mod receiving_address;
 mod addressable_key;
 mod base_key;
+mod common;
+pub mod encrypted_utxo_notification;
+pub mod generation_address;
+pub mod hash_lock_key;
+pub mod receiving_address;
+pub mod symmetric_key;
 
 pub use addressable_key::AddressableKey;
 pub use addressable_key::AddressableKeyType;

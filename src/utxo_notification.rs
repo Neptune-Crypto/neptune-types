@@ -1,12 +1,12 @@
 use serde::Deserialize;
 use serde::Serialize;
-use twenty_first::prelude::*;
 
-use crate::utxo::Utxo;
-// use crate::models::state::wallet::address::ReceivingAddress;
+use crate::address::ReceivingAddress;
+use crate::utxo_notification_payload::UtxoNotificationPayload;
 
 /// Enumerates the medium of exchange for UTXO-notifications.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default, clap::ValueEnum)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum UtxoNotificationMedium {
     /// The UTXO notification should be sent on-chain
     #[default]
@@ -20,7 +20,7 @@ pub enum UtxoNotificationMedium {
 /// to encrypt this information.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[cfg_attr(test, derive(arbitrary::Arbitrary))]
-pub(crate) enum UtxoNotifyMethod {
+pub enum UtxoNotifyMethod {
     /// the utxo notification should be transferred to recipient encrypted on the blockchain
     OnChain(ReceivingAddress),
 
@@ -32,14 +32,13 @@ pub(crate) enum UtxoNotifyMethod {
 }
 
 impl UtxoNotifyMethod {
-    pub(crate) fn new(medium: UtxoNotificationMedium, address: ReceivingAddress) -> Self {
+    pub fn new(medium: UtxoNotificationMedium, address: ReceivingAddress) -> Self {
         match medium {
             UtxoNotificationMedium::OnChain => Self::OnChain(address),
             UtxoNotificationMedium::OffChain => Self::OffChain(address),
         }
     }
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct PrivateNotificationData {

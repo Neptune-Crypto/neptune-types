@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use serde::Deserialize;
 use serde::Serialize;
+use std::collections::HashMap;
 use twenty_first::prelude::*;
 
 /// All sources of non-determinism for a program. This includes elements that
