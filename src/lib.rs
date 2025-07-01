@@ -18,3 +18,4 @@ pub mod public_announcement;
 pub mod address;
 pub mod tx_output;
 pub mod output_format;
+pub mod change_policy;
