@@ -19,3 +19,7 @@ pub mod address;
 pub mod tx_output;
 pub mod output_format;
 pub mod change_policy;
+pub mod tx_input;
+pub mod unlocked_utxo;
+pub mod mutator_set;
+pub mod transaction_details;
