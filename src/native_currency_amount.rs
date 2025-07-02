@@ -48,7 +48,7 @@ use crate::native_currency::NativeCurrency;
 /// the latter operation does not care about overflow. Not testing for overflow can cause
 /// inflation bugs.
 #[derive(Clone, Debug, Copy, Serialize, Deserialize, Eq, Default, BFieldCodec)]
-pub struct NativeCurrencyAmount(i128);
+pub struct NativeCurrencyAmount(#[serde(with = "crate::serde::i128")] i128);
 
 // impl TasmObject for NativeCurrencyAmount {
 //     fn label_friendly_name() -> String {
