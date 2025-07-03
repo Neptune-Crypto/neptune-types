@@ -22,7 +22,7 @@ pub fn test_bincode_serialization_for_type<
         "Re-serialized decoded type should match original serialized bytes"
     );
 
-    is nc_instance.is_some() {
+    if nc_instance.is_some() {
         let exported_decoded: NC = bincode::deserialize(&encoded).expect(&format!(
             "Failed to deserialize {} into {}",
             type_name, nc_type_name
@@ -59,7 +59,7 @@ pub fn test_serde_json_serialization_for_type<
         "Re-serialized decoded type should match original serialized bytes"
     );
 
-    is nc_instance.is_some() {
+    if nc_instance.is_some() {
         let exported_decoded: NC = serde_json::from_str(&encoded).expect(&format!(
             "Failed to deserialize {} into {}",
             type_name, nc_type_name
@@ -97,7 +97,7 @@ pub fn test_serde_json_wasm_serialization_for_type<
         "Re-serialized decoded type should match original serialized bytes"
     );
 
-    is nc_instance.is_some() {
+    if nc_instance.is_some() {
         let exported_decoded: NC = serde_json_wasm::from_str(&encoded).expect(&format!(
             "Failed to deserialize {} into {}",
             type_name, nc_type_name
