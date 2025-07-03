@@ -49,9 +49,25 @@ use crate::native_currency::NativeCurrency;
 /// inflation bugs.
 #[derive(Clone, Debug, Copy, Serialize, Deserialize, Eq, Default, BFieldCodec)]
 pub struct NativeCurrencyAmount(
-    #[cfg_attr(target_arch = "wasm32", serde(with = "crate::serde::i128"))]
     i128
 );
+
+#[derive(Clone, Debug, Copy, Serialize, Deserialize, PartialEq, Eq, Default, BFieldCodec)]
+pub struct NativeCurrencyAmountWasm(
+    #[serde(with = "crate::serde::i128")]
+    i128
+);
+impl From<NativeCurrencyAmount> for NativeCurrencyAmountWasm {
+    fn from(value: NativeCurrencyAmount) -> Self {
+        Self(value.0)
+    }
+}
+impl From<NativeCurrencyAmountWasm> for NativeCurrencyAmount {
+    fn from(value: NativeCurrencyAmountWasm) -> Self {
+        Self(value.0)
+    }
+}
+
 
 // impl TasmObject for NativeCurrencyAmount {
 //     fn label_friendly_name() -> String {
