@@ -28,6 +28,36 @@ impl<'de> serde::de::Visitor<'de> for I128Visitor {
         v.parse::<i128>().map_err(E::custom)
     }
 
+    // Handle the u64 case (for smaller numbers from JSON)
+    fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
+    where
+        E: Error,
+    {
+        Ok(v as i128)
+    }
+    
+    // Handle the i64 case (for smaller negative numbers from JSON)
+    fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E>
+    where
+        E: Error,
+    {
+        Ok(v as i128)
+    }
+
+    // Handle the f64 case (for floating point numbers like 2.56e32)
+    fn visit_f64<E>(self, v: f64) -> Result<Self::Value, E>
+    where
+        E: Error,
+    {
+        // This is not ideal as it can lose precision, but it prevents a crash.
+        // It's better to fix the server to send a string.
+        if v.is_finite() {
+            Ok(v as i128)
+        } else {
+            Err(E::custom("invalid float value for i128"))
+        }
+    }    
+
     // Handle the native i128 case
     fn visit_i128<E>(self, v: i128) -> Result<Self::Value, E>
     where
