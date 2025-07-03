@@ -1,5 +1,4 @@
 pub(crate) use twenty_first;
-
 pub mod native_currency_amount;
 pub mod timestamp;
 pub mod difficulty_control;
@@ -24,3 +23,5 @@ pub mod unlocked_utxo;
 pub mod mutator_set;
 pub mod transaction_details;
 pub mod serde;
+#[cfg(test)]
+pub mod test_shared;
