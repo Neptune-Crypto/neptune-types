@@ -5,13 +5,8 @@ pub fn serialize<S>(value: &i128, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
-    if serializer.is_human_readable() {
-        // For JSON, serialize as a string
-        serializer.collect_str(value)
-    } else {
-        // For Bincode, serialize as a native i128
-        serializer.serialize_i128(*value)
-    }
+    // For JSON, serialize as a string
+    serializer.collect_str(value)
 }
 
 // --- DESERIALIZE ---
@@ -46,9 +41,5 @@ pub fn deserialize<'de, D>(deserializer: D) -> Result<i128, D::Error>
 where
     D: Deserializer<'de>,
 {
-    if deserializer.is_human_readable() {
-        deserializer.deserialize_str(I128Visitor)
-    } else {
-        deserializer.deserialize_i128(I128Visitor)
-    }
+    deserializer.deserialize_str(I128Visitor)
 }
