@@ -5,7 +5,7 @@ pub fn test_bincode_serialization_for_type<
     NC: Serialize + DeserializeOwned,
 >(
     original_instance: T,
-    _nc_instance: NC,
+    nc_instance: Option<NC>,
 ) {
     let type_name = stringify!(T);
     let nc_type_name = stringify!(NC);
@@ -22,18 +22,20 @@ pub fn test_bincode_serialization_for_type<
         "Re-serialized decoded type should match original serialized bytes"
     );
 
-    let exported_decoded: NC = bincode::deserialize(&encoded).expect(&format!(
-        "Failed to deserialize {} into {}",
-        type_name, nc_type_name
-    ));
-    let exported_encoded: Vec<u8> = bincode::serialize(&exported_decoded)
-        .expect(&format!("Failed to serialize {}", nc_type_name));
+    is nc_instance.is_some() {
+        let exported_decoded: NC = bincode::deserialize(&encoded).expect(&format!(
+            "Failed to deserialize {} into {}",
+            type_name, nc_type_name
+        ));
+        let exported_encoded: Vec<u8> = bincode::serialize(&exported_decoded)
+            .expect(&format!("Failed to serialize {}", nc_type_name));
 
-    assert_eq!(
-        encoded, exported_encoded,
-        "Serialized {} should match original serialized {}",
-        nc_type_name, type_name
-    );
+        assert_eq!(
+            encoded, exported_encoded,
+            "Serialized {} should match original serialized {}",
+            nc_type_name, type_name
+        );
+    }
 }
 
 pub fn test_serde_json_serialization_for_type<
@@ -41,7 +43,7 @@ pub fn test_serde_json_serialization_for_type<
     NC: Serialize + DeserializeOwned,
 >(
     original_instance: T,
-    _nc_instance: NC,
+    nc_instance: Option<NC>,
 ) {
     let type_name = stringify!(T);
     let nc_type_name = stringify!(NC);
@@ -57,18 +59,20 @@ pub fn test_serde_json_serialization_for_type<
         "Re-serialized decoded type should match original serialized bytes"
     );
 
-    let exported_decoded: NC = serde_json::from_str(&encoded).expect(&format!(
-        "Failed to deserialize {} into {}",
-        type_name, nc_type_name
-    ));
-    let exported_encoded = serde_json::to_string(&exported_decoded)
-        .expect(&format!("Failed to serialize {}", nc_type_name));
+    is nc_instance.is_some() {
+        let exported_decoded: NC = serde_json::from_str(&encoded).expect(&format!(
+            "Failed to deserialize {} into {}",
+            type_name, nc_type_name
+        ));
+        let exported_encoded = serde_json::to_string(&exported_decoded)
+            .expect(&format!("Failed to serialize {}", nc_type_name));
 
-    assert_eq!(
-        encoded, exported_encoded,
-        "Serialized {} should match original serialized {}",
-        nc_type_name, type_name
-    );
+        assert_eq!(
+            encoded, exported_encoded,
+            "Serialized {} should match original serialized {}",
+            nc_type_name, type_name
+        );
+    }
 }
 
 pub fn test_serde_json_wasm_serialization_for_type<
@@ -76,7 +80,7 @@ pub fn test_serde_json_wasm_serialization_for_type<
     NC: Serialize + DeserializeOwned,
 >(
     original_instance: T,
-    _nc_instance: NC,
+    nc_instance: Option<NC>,
 ) {
     let type_name = stringify!(T);
     let nc_type_name = stringify!(NC);
@@ -93,16 +97,18 @@ pub fn test_serde_json_wasm_serialization_for_type<
         "Re-serialized decoded type should match original serialized bytes"
     );
 
-    let exported_decoded: NC = serde_json_wasm::from_str(&encoded).expect(&format!(
-        "Failed to deserialize {} into {}",
-        type_name, nc_type_name
-    ));
-    let exported_encoded = serde_json_wasm::to_string(&exported_decoded)
-        .expect(&format!("Failed to serialize {}", nc_type_name));
+    is nc_instance.is_some() {
+        let exported_decoded: NC = serde_json_wasm::from_str(&encoded).expect(&format!(
+            "Failed to deserialize {} into {}",
+            type_name, nc_type_name
+        ));
+        let exported_encoded = serde_json_wasm::to_string(&exported_decoded)
+            .expect(&format!("Failed to serialize {}", nc_type_name));
 
-    assert_eq!(
-        encoded, exported_encoded,
-        "Serialized {} should match original serialized {}",
-        nc_type_name, type_name
-    );
+        assert_eq!(
+            encoded, exported_encoded,
+            "Serialized {} should match original serialized {}",
+            nc_type_name, type_name
+        );
+    }
 }
