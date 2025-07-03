@@ -29,7 +29,7 @@ use super::active_window::ActiveWindow;
 // use crate::prelude::twenty_first;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, GetSize, BFieldCodec)]
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(Arbitrary))]
+#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
 #[cfg_attr(feature = "tasm-lib", derive(tasm_lib::prelude::TasmObject))]
 pub struct MutatorSetAccumulator {
     pub aocl: MmrAccumulator,

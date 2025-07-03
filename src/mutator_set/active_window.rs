@@ -12,7 +12,7 @@ use super::shared::WINDOW_SIZE;
 
 #[derive(Clone, Debug, Eq, Serialize, Deserialize, GetSize, BFieldCodec)]
 #[cfg_attr(feature = "tasm-lib", derive(tasm_lib::prelude::TasmObject))]
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(Arbitrary))]
+#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
 pub struct ActiveWindow {
     // It's OK to store this in memory, since it's on the size of kilobytes, not gigabytes.
     pub sbf: Vec<u32>,

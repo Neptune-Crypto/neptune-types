@@ -23,7 +23,7 @@ type ChunkIndex = u64;
     Clone, Debug, Serialize, Deserialize, GetSize, PartialEq, Eq, Default, BFieldCodec,
 )]
 #[cfg_attr(feature = "tasm-lib", derive(tasm_lib::prelude::TasmObject))]
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(Arbitrary))]
+#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
 pub struct ChunkDictionary {
     // {chunk index => (MMR membership proof for the whole chunk to which index belongs, chunk value)}
     // This list is always sorted. It has max. NUM_TRIALS=45 elements, so we

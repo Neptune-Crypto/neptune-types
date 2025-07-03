@@ -7,8 +7,6 @@ use std::time::Duration;
 use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 
-#[cfg(any(test, feature = "arbitrary-impls"))]
-use arbitrary::Arbitrary;
 use chrono::DateTime;
 use chrono::Local;
 use chrono::NaiveDateTime;
@@ -45,7 +43,7 @@ use twenty_first::prelude::*;
     Default,
     // TasmObject,
 )]
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(Arbitrary))]
+#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
 pub struct Timestamp(pub BFieldElement);
 
 impl From<Timestamp> for Duration {

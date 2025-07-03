@@ -2,8 +2,6 @@ use std::fmt::Display;
 use std::hash::Hash as StdHash;
 use std::hash::Hasher as StdHasher;
 
-#[cfg(any(test, feature = "arbitrary-impls"))]
-use arbitrary::Arbitrary;
 use get_size2::GetSize;
 use itertools::Itertools;
 use num_traits::Zero;
@@ -31,7 +29,7 @@ use crate::timestamp::Timestamp;
 
 // #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, BFieldCodec, TasmObject)]
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, BFieldCodec)]
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(Arbitrary))]
+#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
 pub struct Coin {
     pub type_script_hash: Digest,
     pub state: Vec<BFieldElement>,

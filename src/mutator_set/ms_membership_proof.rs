@@ -48,7 +48,7 @@ pub enum MembershipProofError {
 // In order to store this structure in the database, it needs to be serializable.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, GetSize, BFieldCodec)]
 #[cfg_attr(feature = "tasm-lib", derive(tasm_lib::prelude::TasmObject))]
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(Arbitrary))]
+#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
 pub struct MsMembershipProof {
     pub sender_randomness: Digest,
     pub receiver_preimage: Digest,

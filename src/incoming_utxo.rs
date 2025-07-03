@@ -18,7 +18,7 @@ use crate::utxo_notification_payload::UtxoNotificationPayload;
 ///
 /// See [UtxoNotificationPayload], [ExpectedUtxo]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(Arbitrary))]
+#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
 pub struct IncomingUtxo {
     pub(crate) utxo: Utxo,
     pub(crate) sender_randomness: Digest,
