@@ -41,5 +41,5 @@ pub fn deserialize<'de, D>(deserializer: D) -> Result<i128, D::Error>
 where
     D: Deserializer<'de>,
 {
-    deserializer.deserialize_str(I128Visitor)
+    deserializer.deserialize_any(I128Visitor)
 }
