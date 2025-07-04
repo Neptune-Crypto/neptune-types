@@ -1,9 +1,4 @@
 //! provides an abstraction over all spending key types.
-use anyhow::bail;
-use anyhow::Result;
-use serde::Deserialize;
-use serde::Serialize;
-use twenty_first::prelude::*;
 use super::common;
 use super::generation_address;
 use super::hash_lock_key;
@@ -14,6 +9,11 @@ use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
 use crate::public_announcement::PublicAnnouncement;
 use crate::utxo::Utxo;
+use anyhow::bail;
+use anyhow::Result;
+use serde::Deserialize;
+use serde::Serialize;
+use twenty_first::prelude::*;
 /// Enumerates available cryptographic key implementations for sending funds.
 ///
 /// In most (but not all) cases there is a matching address.
@@ -139,12 +139,8 @@ impl BaseSpendingKey {
             BaseSpendingKey::Generation(generation_spending_key) => {
                 generation_spending_key.lock_script_and_witness()
             }
-            BaseSpendingKey::Symmetric(symmetric_key) => {
-                symmetric_key.lock_script_and_witness()
-            }
-            BaseSpendingKey::RawHashLock(raw_hash_lock) => {
-                raw_hash_lock.lock_script_and_witness()
-            }
+            BaseSpendingKey::Symmetric(symmetric_key) => symmetric_key.lock_script_and_witness(),
+            BaseSpendingKey::RawHashLock(raw_hash_lock) => raw_hash_lock.lock_script_and_witness(),
         }
     }
     pub fn lock_script(&self) -> LockScript {
@@ -196,10 +192,7 @@ impl BaseSpendingKey {
     ///  - `None` if this spending key has no associated receiving address.
     ///  - `Some(Err(..))` if decryption failed.
     ///  - `Some(Ok(..))` if decryption succeeds.
-    pub fn decrypt(
-        &self,
-        ciphertext_bfes: &[BFieldElement],
-    ) -> Option<Result<(Utxo, Digest)>> {
+    pub fn decrypt(&self, ciphertext_bfes: &[BFieldElement]) -> Option<Result<(Utxo, Digest)>> {
         let result = match self {
             Self::Generation(k) => k.decrypt(ciphertext_bfes),
             Self::Symmetric(k) => k.decrypt(ciphertext_bfes).map_err(anyhow::Error::new),
@@ -236,32 +229,24 @@ impl BaseSpendingKey {
                     == receiver_identifier
                 )
             })
-            .filter_map(|pa| {
-                self.ok_warn(common::ciphertext_from_public_announcement(pa))
-            })
+            .filter_map(|pa| self.ok_warn(common::ciphertext_from_public_announcement(pa)))
             .filter_map(|c| {
-                self
-                    .ok_warn(
-                        self
-                            .decrypt(&c)
-                            .expect("non-hash-lock key should have decryption option"),
-                    )
+                self.ok_warn(
+                    self.decrypt(&c)
+                        .expect("non-hash-lock key should have decryption option"),
+                )
             })
-            .map(move |(utxo, sender_randomness)| {
-                IncomingUtxo {
-                    utxo,
-                    sender_randomness,
-                    receiver_preimage,
-                }
+            .map(move |(utxo, sender_randomness)| IncomingUtxo {
+                utxo,
+                sender_randomness,
+                receiver_preimage,
             })
             .collect()
     }
     /// converts a result into an Option and logs a warning on any error
     fn ok_warn<T>(&self, result: Result<T>) -> Option<T> {
         let Some(_receiver_identifier) = self.receiver_identifier() else {
-            panic!(
-                "Cannot call `ok_warn` unless the spending key has an associated address."
-            );
+            panic!("Cannot call `ok_warn` unless the spending key has an associated address.");
         };
         match result {
             Ok(v) => Some(v),
@@ -282,51 +267,55 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
+        pub use neptune_cash::models::state::wallet::address::symmetric_key::SymmetricKey;
         pub use neptune_cash::models::state::wallet::address::BaseKeyType;
         pub use neptune_cash::models::state::wallet::address::BaseSpendingKey;
     }
     #[test]
     fn test_bincode_serialization_for_base_key_type() {
-        let original_instance: BaseKeyType = todo!("Instantiate");
-        let nc_instance: nc::BaseKeyType = todo!("Instantiate");
+        let original_instance = BaseKeyType::Generation;
+        let nc_instance = nc::BaseKeyType::Generation;
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_base_key_type() {
-        let original_instance: BaseKeyType = todo!("Instantiate");
-        let nc_instance: nc::BaseKeyType = todo!("Instantiate");
+        let original_instance = BaseKeyType::Generation;
+        let nc_instance = nc::BaseKeyType::Generation;
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_base_key_type() {
-        let original_instance: BaseKeyType = todo!("Instantiate");
-        let nc_instance: nc::BaseKeyType = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        let original_instance = BaseKeyType::Generation;
+        let nc_instance = nc::BaseKeyType::Generation;
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_bincode_serialization_for_base_spending_key() {
-        let original_instance: BaseSpendingKey = todo!("Instantiate");
-        let nc_instance: nc::BaseSpendingKey = todo!("Instantiate");
+        let seed: Digest = rand::random();
+        let symkey = symmetric_key::SymmetricKey::from_seed(seed);
+        let original_instance: BaseSpendingKey = symkey.into();
+        let nc_symkey = nc::SymmetricKey::from_seed(dg(seed));
+        let nc_instance: nc::BaseSpendingKey = nc_symkey.into();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_base_spending_key() {
-        let original_instance: BaseSpendingKey = todo!("Instantiate");
-        let nc_instance: nc::BaseSpendingKey = todo!("Instantiate");
+        let seed: Digest = rand::random();
+        let symkey = symmetric_key::SymmetricKey::from_seed(seed);
+        let original_instance: BaseSpendingKey = symkey.into();
+        let nc_symkey = nc::SymmetricKey::from_seed(dg(seed));
+        let nc_instance: nc::BaseSpendingKey = nc_symkey.into();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_base_spending_key() {
-        let original_instance: BaseSpendingKey = todo!("Instantiate");
-        let nc_instance: nc::BaseSpendingKey = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        let seed: Digest = rand::random();
+        let symkey = symmetric_key::SymmetricKey::from_seed(seed);
+        let original_instance: BaseSpendingKey = symkey.into();
+        let nc_symkey = nc::SymmetricKey::from_seed(dg(seed));
+        let nc_instance: nc::BaseSpendingKey = nc_symkey.into();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

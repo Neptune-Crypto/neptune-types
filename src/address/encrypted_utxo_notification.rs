@@ -1,3 +1,6 @@
+use super::common::network_hrp_char;
+use crate::network::Network;
+use crate::public_announcement::PublicAnnouncement;
 use anyhow::anyhow;
 use anyhow::ensure;
 use anyhow::Result;
@@ -7,9 +10,6 @@ use get_size2::GetSize;
 use serde::Deserialize;
 use serde::Serialize;
 use twenty_first::prelude::*;
-use super::common::network_hrp_char;
-use crate::network::Network;
-use crate::public_announcement::PublicAnnouncement;
 /// an encrypted wrapper for UTXO notifications.
 ///
 /// This type is intended to be serialized and actually transferred between
@@ -20,17 +20,7 @@ use crate::public_announcement::PublicAnnouncement;
 ///
 /// the receiver_identifier enables the receiver to find the matching
 /// `SpendingKey` in their wallet.
-#[derive(
-    Clone,
-    Debug,
-    PartialEq,
-    Eq,
-    Hash,
-    GetSize,
-    Serialize,
-    Deserialize,
-    BFieldCodec
-)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, GetSize, Serialize, Deserialize, BFieldCodec)]
 pub struct EncryptedUtxoNotification {
     /// Describes the type of encoding used here
     pub(crate) flag: BFieldElement,
@@ -49,9 +39,7 @@ impl EncryptedUtxoNotification {
         [vec![self.flag, self.receiver_identifier], self.ciphertext].concat()
     }
 
-fn from_message(
-        message: Vec<BFieldElement>,
-    ) -> Result<Self, ConversionFromMessageError> {
+    fn from_message(message: Vec<BFieldElement>) -> Result<Self, ConversionFromMessageError> {
         if message.len() < 2 {
             Err(ConversionFromMessageError::MessageTooShort(message.len()))
         } else {
@@ -71,12 +59,9 @@ fn from_message(
     pub fn into_bech32m(self, network: Network) -> String {
         let hrp = Self::get_hrp(network);
         let message = self.into_message();
-        let payload = bincode::serialize(&message)
-            .unwrap_or_else(|e| {
-                panic!(
-                    "Serialization shouldn't fail. Message was: {message:?}\nerror: {e}"
-                )
-            });
+        let payload = bincode::serialize(&message).unwrap_or_else(|e| {
+            panic!("Serialization shouldn't fail. Message was: {message:?}\nerror: {e}")
+        });
         let payload_base_32 = payload.to_base32();
         let variant = bech32::Variant::Bech32m;
         bech32::encode(&hrp, payload_base_32, variant)
@@ -90,10 +75,11 @@ fn from_message(
     pub fn from_bech32m(encoded: &str, network: Network) -> Result<Self> {
         let (hrp, data, variant) = bech32::decode(encoded)?;
         ensure!(
-            variant == bech32::Variant::Bech32m, "Can only decode bech32m addresses."
+            variant == bech32::Variant::Bech32m,
+            "Can only decode bech32m addresses."
         );
         ensure!(
-            hrp == * Self::get_hrp(network),
+            hrp == *Self::get_hrp(network),
             "Could not decode bech32m address because of invalid prefix",
         );
         let payload = Vec::<u8>::from_base32(&data)?;
@@ -112,6 +98,8 @@ fn from_message(
 #[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
+    use super::EncryptedUtxoNotification;
+    use crate::config_models::network::Network;
     use arbitrary::Arbitrary;
     use arbitrary::Unstructured;
     use bech32::FromBase32;
@@ -123,8 +111,6 @@ mod tests {
     use tasm_lib::triton_vm::prelude::BFieldElement;
     use tasm_lib::twenty_first::bfe;
     use test_strategy::proptest;
-    use super::EncryptedUtxoNotification;
-    use crate::config_models::network::Network;
     impl<'a> Arbitrary<'a> for EncryptedUtxoNotification {
         fn arbitrary(u: &mut Unstructured<'a>) -> arbitrary::Result<Self> {
             let object = Self {
@@ -143,8 +129,7 @@ mod tests {
     }
     #[proptest]
     fn encrypted_utxo_notification_to_and_fro_bech32m(
-        #[strategy(arb())]
-        encrypted_utxo_notification: EncryptedUtxoNotification,
+        #[strategy(arb())] encrypted_utxo_notification: EncryptedUtxoNotification,
     ) {
         prop_assert!(bech32m_conversion_succeeds(encrypted_utxo_notification));
     }
@@ -161,12 +146,11 @@ mod tests {
     pub fn bech32m_conversion_succeeds(
         encrypted_utxo_notification: EncryptedUtxoNotification,
     ) -> bool {
-        let encoded = encrypted_utxo_notification.clone().into_bech32m(Network::Testnet);
-        let encrypted_utxo_notification_again = EncryptedUtxoNotification::from_bech32m(
-                &encoded,
-                Network::Testnet,
-            )
-            .unwrap();
+        let encoded = encrypted_utxo_notification
+            .clone()
+            .into_bech32m(Network::Testnet);
+        let encrypted_utxo_notification_again =
+            EncryptedUtxoNotification::from_bech32m(&encoded, Network::Testnet).unwrap();
         encrypted_utxo_notification == encrypted_utxo_notification_again
     }
 }
@@ -179,29 +163,26 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use crate::address::encrypted_utxo_notification::EncryptedUtxoNotification;
     }
     #[test]
     fn test_bincode_serialization_for_encrypted_utxo_notification() {
-        let original_instance: EncryptedUtxoNotification = todo!("Instantiate");
-        let nc_instance: nc::EncryptedUtxoNotification = todo!("Instantiate");
+        let original_instance = EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
+        let nc_instance = nc::EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_encrypted_utxo_notification() {
-        let original_instance: EncryptedUtxoNotification = todo!("Instantiate");
-        let nc_instance: nc::EncryptedUtxoNotification = todo!("Instantiate");
+        let original_instance = EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
+        let nc_instance = nc::EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_encrypted_utxo_notification() {
-        let original_instance: EncryptedUtxoNotification = todo!("Instantiate");
-        let nc_instance: nc::EncryptedUtxoNotification = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        let original_instance = EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
+        let nc_instance = nc::EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

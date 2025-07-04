@@ -1,12 +1,12 @@
-use itertools::Itertools;
-use serde::Deserialize;
-use serde::Serialize;
-use twenty_first::prelude::*;
-use triton_isa::triton_asm;
-use triton_isa::triton_instr;
 use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
 use crate::triton_vm::nondeterminism::NonDeterminism;
+use itertools::Itertools;
+use serde::Deserialize;
+use serde::Serialize;
+use triton_isa::triton_asm;
+use triton_isa::triton_instr;
+use twenty_first::prelude::*;
 pub(crate) const RAW_HASH_LOCK_KEY_FLAG_U8: u8 = 0u8;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct HashLockKey {
@@ -67,24 +67,21 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {}
     #[test]
     fn test_bincode_serialization_for_hash_lock_key() {
-        let original_instance: HashLockKey = todo!("Instantiate");
+        let original_instance = HashLockKey::from_preimage(rand::random());
         test_bincode_serialization_for_type(original_instance, None::<HashLockKey>);
     }
     #[test]
     fn test_serde_json_serialization_for_hash_lock_key() {
-        let original_instance: HashLockKey = todo!("Instantiate");
+        let original_instance = HashLockKey::from_preimage(rand::random());
         test_serde_json_serialization_for_type(original_instance, None::<HashLockKey>);
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_hash_lock_key() {
-        let original_instance: HashLockKey = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            None::<HashLockKey>,
-        );
+        let original_instance = HashLockKey::from_preimage(rand::random());
+        test_serde_json_wasm_serialization_for_type(original_instance, None::<HashLockKey>);
     }
 }

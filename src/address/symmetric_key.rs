@@ -1,4 +1,14 @@
 //! provides a symmetric key interface based on aes-256-gcm for sending and claiming [Utxo]
+use super::common;
+use super::common::deterministically_derive_seed_and_nonce;
+use super::encrypted_utxo_notification::EncryptedUtxoNotification;
+use super::hash_lock_key::HashLockKey;
+use crate::lock_script::LockScript;
+use crate::lock_script::LockScriptAndWitness;
+use crate::network::Network;
+use crate::public_announcement::PublicAnnouncement;
+use crate::utxo::Utxo;
+use crate::utxo_notification_payload::UtxoNotificationPayload;
 use aead::Aead;
 use aead::Key;
 use aead::KeyInit;
@@ -14,16 +24,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use twenty_first::prelude::*;
 use twenty_first::tip5::Tip5 as Hash;
-use super::common;
-use super::common::deterministically_derive_seed_and_nonce;
-use super::encrypted_utxo_notification::EncryptedUtxoNotification;
-use super::hash_lock_key::HashLockKey;
-use crate::lock_script::LockScript;
-use crate::lock_script::LockScriptAndWitness;
-use crate::network::Network;
-use crate::public_announcement::PublicAnnouncement;
-use crate::utxo::Utxo;
-use crate::utxo_notification_payload::UtxoNotificationPayload;
 /// represents a symmetric key decryption error
 #[derive(Debug, thiserror::Error)]
 pub enum DecryptError {
@@ -47,9 +47,7 @@ pub enum EncryptError {
 /// This uniquely identifies the type field of a PublicAnnouncement.
 /// it must not conflict with another type.
 pub(super) const SYMMETRIC_KEY_FLAG_U8: u8 = 80;
-pub const SYMMETRIC_KEY_FLAG: BFieldElement = BFieldElement::new(
-    SYMMETRIC_KEY_FLAG_U8 as u64,
-);
+pub const SYMMETRIC_KEY_FLAG: BFieldElement = BFieldElement::new(SYMMETRIC_KEY_FLAG_U8 as u64);
 /// represents an AES 256 bit symmetric key
 ///
 /// this is an opaque type.  all fields are read-only via accessor methods.
@@ -88,16 +86,14 @@ impl SymmetricKey {
     }
     /// returns the secret key
     pub fn secret_key(&self) -> Key<Aes256Gcm> {
-        common::shake256::<
-            32,
-        >(&bincode::serialize(&self.seed).expect("serialization should always succeed"))
-            .into()
+        common::shake256::<32>(
+            &bincode::serialize(&self.seed).expect("serialization should always succeed"),
+        )
+        .into()
     }
     /// returns the privacy preimage
     pub fn privacy_preimage(&self) -> Digest {
-        Hash::hash_varlen(
-            &[&self.seed.values(), [BFieldElement::new(0)].as_slice()].concat(),
-        )
+        Hash::hash_varlen(&[&self.seed.values(), [BFieldElement::new(0)].as_slice()].concat())
     }
     /// returns the privacy digest which is a hash of the privacy_preimage
     pub fn privacy_digest(&self) -> Digest {
@@ -122,8 +118,7 @@ impl SymmetricKey {
             true => ciphertext_bfes.split_at(NONCE_LEN),
             false => return Err(DecryptError::MissingNonce),
         };
-        let nonce_as_bytes = [&nonce_ctxt[0].value().to_be_bytes(), [0u8; 4].as_slice()]
-            .concat();
+        let nonce_as_bytes = [&nonce_ctxt[0].value().to_be_bytes(), [0u8; 4].as_slice()].concat();
         let nonce = Nonce::from_slice(&nonce_as_bytes);
         let ciphertext_bytes = common::bfes_to_bytes(ciphertext)?;
         let cipher = Aes256Gcm::new(&self.secret_key());
@@ -135,8 +130,7 @@ impl SymmetricKey {
     /// The output of `encrypt()` should be used as the input to `decrypt()`.
     pub fn encrypt(&self, payload: &UtxoNotificationPayload) -> Vec<BFieldElement> {
         let (_randomness, nonce_bfe) = deterministically_derive_seed_and_nonce(payload);
-        let nonce_as_bytes = [&nonce_bfe.value().to_be_bytes(), [0u8; 4].as_slice()]
-            .concat();
+        let nonce_as_bytes = [&nonce_bfe.value().to_be_bytes(), [0u8; 4].as_slice()].concat();
         let nonce = Nonce::from_slice(&nonce_as_bytes);
         let plaintext = bincode::serialize(payload).unwrap();
         let cipher = Aes256Gcm::new(&self.secret_key());
@@ -146,9 +140,7 @@ impl SymmetricKey {
     }
     /// returns the unlock key
     pub fn unlock_key(&self) -> Digest {
-        Hash::hash_varlen(
-            &[self.seed.values().to_vec(), vec![BFieldElement::new(1)]].concat(),
-        )
+        Hash::hash_varlen(&[self.seed.values().to_vec(), vec![BFieldElement::new(1)]].concat())
     }
     /// returns the spending lock which is a hash of unlock_key()
     pub fn lock_after_image(&self) -> Digest {
@@ -221,10 +213,11 @@ impl SymmetricKey {
     pub fn from_bech32m(encoded: &str, network: Network) -> Result<Self> {
         let (hrp, data, variant) = bech32::decode(encoded)?;
         ensure!(
-            variant == bech32::Variant::Bech32m, "Can only decode bech32m addresses.",
+            variant == bech32::Variant::Bech32m,
+            "Can only decode bech32m addresses.",
         );
         ensure!(
-            hrp == * Self::get_hrp(network),
+            hrp == *Self::get_hrp(network),
             "Could not decode bech32m address because of invalid prefix",
         );
         let payload = Vec::<u8>::from_base32(&data)?;
@@ -245,29 +238,29 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::api::export::SymmetricKey;
     }
     #[test]
     fn test_bincode_serialization_for_symmetric_key() {
-        let original_instance: SymmetricKey = todo!("Instantiate");
-        let nc_instance: nc::SymmetricKey = todo!("Instantiate");
+        let seed: Digest = rand::random();
+        let original_instance = SymmetricKey::from_seed(seed);
+        let nc_instance = nc::SymmetricKey::from_seed(dg(seed));
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_symmetric_key() {
-        let original_instance: SymmetricKey = todo!("Instantiate");
-        let nc_instance: nc::SymmetricKey = todo!("Instantiate");
+        let seed: Digest = rand::random();
+        let original_instance = SymmetricKey::from_seed(seed);
+        let nc_instance = nc::SymmetricKey::from_seed(dg(seed));
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_symmetric_key() {
-        let original_instance: SymmetricKey = todo!("Instantiate");
-        let nc_instance: nc::SymmetricKey = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        let seed: Digest = rand::random();
+        let original_instance = SymmetricKey::from_seed(seed);
+        let nc_instance = nc::SymmetricKey::from_seed(dg(seed));
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

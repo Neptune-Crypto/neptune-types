@@ -11,6 +11,17 @@
 //! put funds in a paper or metal wallet and ignore them for decades, perhaps
 //! until they are transferred to the original owner's children or
 //! grand-children.
+use super::common;
+use super::common::deterministically_derive_seed_and_nonce;
+use super::common::network_hrp_char;
+use super::encrypted_utxo_notification::EncryptedUtxoNotification;
+use super::hash_lock_key::HashLockKey;
+use crate::lock_script::LockScript;
+use crate::lock_script::LockScriptAndWitness;
+use crate::network::Network;
+use crate::public_announcement::PublicAnnouncement;
+use crate::utxo::Utxo;
+use crate::utxo_notification_payload::UtxoNotificationPayload;
 use aead::Aead;
 use aead::KeyInit;
 use aes_gcm::Aes256Gcm;
@@ -27,17 +38,6 @@ use serde::Serialize;
 use twenty_first::math::lattice;
 use twenty_first::math::lattice::kem::CIPHERTEXT_SIZE_IN_BFES;
 use twenty_first::prelude::*;
-use super::common;
-use super::common::deterministically_derive_seed_and_nonce;
-use super::common::network_hrp_char;
-use super::encrypted_utxo_notification::EncryptedUtxoNotification;
-use super::hash_lock_key::HashLockKey;
-use crate::lock_script::LockScript;
-use crate::lock_script::LockScriptAndWitness;
-use crate::network::Network;
-use crate::public_announcement::PublicAnnouncement;
-use crate::utxo::Utxo;
-use crate::utxo_notification_payload::UtxoNotificationPayload;
 pub(super) const GENERATION_FLAG_U8: u8 = 79;
 pub const GENERATION_FLAG: BFieldElement = BFieldElement::new(GENERATION_FLAG_U8 as u64);
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Serialize)]
@@ -66,14 +66,11 @@ impl<'de> serde::de::Deserialize<'de> for GenerationSpendingKey {
         struct FieldVisitor;
         impl<'de> serde::de::Visitor<'de> for FieldVisitor {
             type Value = GenerationSpendingKey;
-            fn expecting(
-                &self,
-                formatter: &mut std::fmt::Formatter,
-            ) -> std::fmt::Result {
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
                 formatter.write_str("struct GenerationSpendingKey")
             }
 
-fn visit_seq<V>(self, mut seq: V) -> Result<Self::Value, V::Error>
+            fn visit_seq<V>(self, mut seq: V) -> Result<Self::Value, V::Error>
             where
                 V: serde::de::SeqAccess<'de>,
             {
@@ -83,7 +80,7 @@ fn visit_seq<V>(self, mut seq: V) -> Result<Self::Value, V::Error>
                 Ok(GenerationSpendingKey::derive_from_seed(seed))
             }
 
-fn visit_map<V>(self, mut map: V) -> Result<Self::Value, V::Error>
+            fn visit_map<V>(self, mut map: V) -> Result<Self::Value, V::Error>
             where
                 V: serde::de::MapAccess<'de>,
             {
@@ -98,8 +95,7 @@ fn visit_map<V>(self, mut map: V) -> Result<Self::Value, V::Error>
                         }
                     }
                 }
-                let seed_digest = seed
-                    .ok_or_else(|| serde::de::Error::missing_field("seed"))?;
+                let seed_digest = seed.ok_or_else(|| serde::de::Error::missing_field("seed"))?;
                 Ok(GenerationSpendingKey::derive_from_seed(seed_digest))
             }
         }
@@ -125,9 +121,7 @@ impl<'a> Arbitrary<'a> for GenerationReceivingAddress {
 
 impl GenerationSpendingKey {
     pub fn to_address(&self) -> GenerationReceivingAddress {
-        let randomness: [u8; 32] = common::shake256::<
-            32,
-        >(&bincode::serialize(&self.seed).unwrap());
+        let randomness: [u8; 32] = common::shake256::<32>(&bincode::serialize(&self.seed).unwrap());
         let (_sk, pk) = lattice::kem::keygen(randomness);
         let privacy_digest = self.privacy_preimage.hash();
         GenerationReceivingAddress {
@@ -141,15 +135,11 @@ impl GenerationSpendingKey {
         HashLockKey::from_preimage(self.unlock_key_preimage).lock_script_and_witness()
     }
     pub fn derive_from_seed(seed: Digest) -> Self {
-        let privacy_preimage = Tip5::hash_varlen(
-            &[seed.values().to_vec(), vec![BFieldElement::new(0)]].concat(),
-        );
-        let unlock_key = Tip5::hash_varlen(
-            &[seed.values().to_vec(), vec![BFieldElement::new(1)]].concat(),
-        );
-        let randomness: [u8; 32] = common::shake256::<
-            32,
-        >(&bincode::serialize(&seed).unwrap());
+        let privacy_preimage =
+            Tip5::hash_varlen(&[seed.values().to_vec(), vec![BFieldElement::new(0)]].concat());
+        let unlock_key =
+            Tip5::hash_varlen(&[seed.values().to_vec(), vec![BFieldElement::new(1)]].concat());
+        let randomness: [u8; 32] = common::shake256::<32>(&bincode::serialize(&seed).unwrap());
         let (sk, _pk) = lattice::kem::keygen(randomness);
         let receiver_identifier = common::derive_receiver_id(seed);
         let spending_key = Self {
@@ -161,11 +151,8 @@ impl GenerationSpendingKey {
         };
         let receiving_address = spending_key.to_address();
         let encoded_address = receiving_address.to_bech32m(Network::Beta).unwrap();
-        let decoded_address = GenerationReceivingAddress::from_bech32m(
-                &encoded_address,
-                Network::Beta,
-            )
-            .unwrap();
+        let decoded_address =
+            GenerationReceivingAddress::from_bech32m(&encoded_address, Network::Beta).unwrap();
         assert_eq!(
             receiving_address, decoded_address,
             "encoding/decoding from bech32m must succeed. Receiving address was: {receiving_address:#?}"
@@ -179,20 +166,17 @@ impl GenerationSpendingKey {
             "Ciphertext does not have nonce.",
         );
         let (kem_ctxt, remainder_ctxt) = ciphertext.split_at(CIPHERTEXT_SIZE_IN_BFES);
-        ensure!(remainder_ctxt.len() > 1, "Ciphertext does not have payload.",);
+        ensure!(
+            remainder_ctxt.len() > 1,
+            "Ciphertext does not have payload.",
+        );
         let (nonce_ctxt, dem_ctxt) = remainder_ctxt.split_at(1);
-        let kem_ctxt_array: [BFieldElement; CIPHERTEXT_SIZE_IN_BFES] = kem_ctxt
-            .try_into()
-            .unwrap();
-        let Some(shared_key) = lattice::kem::dec(
-            self.decryption_key,
-            kem_ctxt_array.into(),
-        ) else {
+        let kem_ctxt_array: [BFieldElement; CIPHERTEXT_SIZE_IN_BFES] = kem_ctxt.try_into().unwrap();
+        let Some(shared_key) = lattice::kem::dec(self.decryption_key, kem_ctxt_array.into()) else {
             bail!("Could not establish shared secret key.");
         };
         let cipher = Aes256Gcm::new(&shared_key.into());
-        let nonce_as_bytes = [nonce_ctxt[0].value().to_be_bytes().to_vec(), vec![0u8; 4]]
-            .concat();
+        let nonce_as_bytes = [nonce_ctxt[0].value().to_be_bytes().to_vec(), vec![0u8; 4]].concat();
         let nonce = Nonce::from_slice(&nonce_as_bytes);
         let ciphertext_bytes = common::bfes_to_bytes(dem_ctxt)?;
         let plaintext = cipher
@@ -201,7 +185,7 @@ impl GenerationSpendingKey {
         Ok(bincode::deserialize(&plaintext)?)
     }
 
-fn generate_spending_lock(&self) -> Digest {
+    fn generate_spending_lock(&self) -> Digest {
         self.unlock_key_preimage.hash()
     }
     /// returns the privacy preimage.
@@ -221,9 +205,7 @@ impl GenerationReceivingAddress {
     pub fn from_spending_key(spending_key: &GenerationSpendingKey) -> Self {
         let seed = spending_key.seed;
         let receiver_identifier = common::derive_receiver_id(seed);
-        let randomness: [u8; 32] = common::shake256::<
-            32,
-        >(&bincode::serialize(&seed).unwrap());
+        let randomness: [u8; 32] = common::shake256::<32>(&bincode::serialize(&seed).unwrap());
         let (_sk, pk) = lattice::kem::keygen(randomness);
         let privacy_digest = spending_key.privacy_preimage.hash();
         Self {
@@ -241,9 +223,7 @@ impl GenerationReceivingAddress {
     /// address.
     pub fn can_unlock_with(&self, witness: &[BFieldElement]) -> bool {
         match witness.try_into() {
-            Ok(witness_array) => {
-                Digest::new(witness_array).hash() == self.lock_after_image
-            }
+            Ok(witness_array) => Digest::new(witness_array).hash() == self.lock_after_image,
             Err(_) => false,
         }
     }
@@ -252,20 +232,16 @@ impl GenerationReceivingAddress {
         let (shared_key, kem_ctxt) = lattice::kem::enc(self.encryption_key, randomness);
         let plaintext = bincode::serialize(payload).unwrap();
         let cipher = Aes256Gcm::new(&shared_key.into());
-        let nonce_as_bytes = [nonce_bfe.value().to_be_bytes().to_vec(), vec![0u8; 4]]
-            .concat();
+        let nonce_as_bytes = [nonce_bfe.value().to_be_bytes().to_vec(), vec![0u8; 4]].concat();
         let nonce = Nonce::from_slice(&nonce_as_bytes);
         let ciphertext = cipher.encrypt(nonce, plaintext.as_ref()).unwrap();
         let ciphertext_bfes = common::bytes_to_bfes(&ciphertext);
         [
-            std::convert::Into::<
-                [BFieldElement; CIPHERTEXT_SIZE_IN_BFES],
-            >::into(kem_ctxt)
-                .to_vec(),
+            std::convert::Into::<[BFieldElement; CIPHERTEXT_SIZE_IN_BFES]>::into(kem_ctxt).to_vec(),
             vec![nonce_bfe],
             ciphertext_bfes,
         ]
-            .concat()
+        .concat()
     }
     /// returns human readable prefix (hrp) of an address.
     pub(super) fn get_hrp(network: Network) -> String {
@@ -281,24 +257,23 @@ impl GenerationReceivingAddress {
         match bech32::encode(&hrp, payload.to_base32(), variant) {
             Ok(enc) => Ok(enc),
             Err(e) => {
-                bail!(
-                    "Could not encode generation address as bech32m because error: {e}"
-                )
+                bail!("Could not encode generation address as bech32m because error: {e}")
             }
         }
     }
     pub fn from_bech32m(encoded: &str, network: Network) -> Result<Self> {
         let (hrp, data, variant) = bech32::decode(encoded)?;
-        ensure!(variant == Variant::Bech32m, "Can only decode bech32m addresses.",);
         ensure!(
-            hrp[0..= 5] == Self::get_hrp(network),
+            variant == Variant::Bech32m,
+            "Can only decode bech32m addresses.",
+        );
+        ensure!(
+            hrp[0..=5] == Self::get_hrp(network),
             "Could not decode bech32m address because of invalid prefix",
         );
         let payload = Vec::<u8>::from_base32(&data)?;
         bincode::deserialize(&payload)
-            .map_err(|e| {
-                anyhow!("Could not decode bech32m address because of error: {e}")
-            })
+            .map_err(|e| anyhow!("Could not decode bech32m address because of error: {e}"))
     }
     /// returns an abbreviated address.
     ///
@@ -378,22 +353,16 @@ mod tests {
             use super::*;
             #[test]
             pub fn roundtrip_bincode() {
-                let spending_key = GenerationSpendingKey::derive_from_seed(
-                    rand::random(),
-                );
+                let spending_key = GenerationSpendingKey::derive_from_seed(rand::random());
                 let s = bincode::serialize(&spending_key).unwrap();
-                let deserialized_key: GenerationSpendingKey = bincode::deserialize(&s)
-                    .unwrap();
+                let deserialized_key: GenerationSpendingKey = bincode::deserialize(&s).unwrap();
                 assert_eq!(spending_key, deserialized_key);
             }
             #[test]
             pub fn roundtrip_json() {
-                let spending_key = GenerationSpendingKey::derive_from_seed(
-                    rand::random(),
-                );
+                let spending_key = GenerationSpendingKey::derive_from_seed(rand::random());
                 let s = serde_json::to_string(&spending_key).unwrap();
-                let deserialized_key: GenerationSpendingKey = serde_json::from_str(&s)
-                    .unwrap();
+                let deserialized_key: GenerationSpendingKey = serde_json::from_str(&s).unwrap();
                 assert_eq!(spending_key, deserialized_key);
             }
         }
@@ -408,29 +377,29 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::models::state::wallet::address::generation_address::GenerationReceivingAddress;
     }
     #[test]
     fn test_bincode_serialization_for_generation_receiving_address() {
-        let original_instance: GenerationReceivingAddress = todo!("Instantiate");
-        let nc_instance: nc::GenerationReceivingAddress = todo!("Instantiate");
+        let seed: Digest = rand::random();
+        let original_instance = GenerationReceivingAddress::derive_from_seed(seed);
+        let nc_instance = nc::GenerationReceivingAddress::derive_from_seed(dg(seed));
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_generation_receiving_address() {
-        let original_instance: GenerationReceivingAddress = todo!("Instantiate");
-        let nc_instance: nc::GenerationReceivingAddress = todo!("Instantiate");
+        let seed: Digest = rand::random();
+        let original_instance = GenerationReceivingAddress::derive_from_seed(seed);
+        let nc_instance = nc::GenerationReceivingAddress::derive_from_seed(dg(seed));
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_generation_receiving_address() {
-        let original_instance: GenerationReceivingAddress = todo!("Instantiate");
-        let nc_instance: nc::GenerationReceivingAddress = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        let seed: Digest = rand::random();
+        let original_instance = GenerationReceivingAddress::derive_from_seed(seed);
+        let nc_instance = nc::GenerationReceivingAddress::derive_from_seed(dg(seed));
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

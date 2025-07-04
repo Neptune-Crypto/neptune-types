@@ -7,23 +7,23 @@
 //! types that have a corresponding address.  This specialization
 //! enables the type system to enforce correct-by-construction
 //! semantics wherever the type is used.
-use anyhow::bail;
-use anyhow::Result;
-use serde::Deserialize;
-use serde::Serialize;
-use twenty_first::prelude::*;
 use super::base_key::BaseKeyType;
 use super::base_key::BaseSpendingKey;
 use super::common;
 use super::generation_address;
 use super::receiving_address::ReceivingAddress;
 use super::symmetric_key;
+use crate::incoming_utxo::IncomingUtxo;
 use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
-use crate::incoming_utxo::IncomingUtxo;
 use crate::network::Network;
 use crate::public_announcement::PublicAnnouncement;
 use crate::utxo::Utxo;
+use anyhow::bail;
+use anyhow::Result;
+use serde::Deserialize;
+use serde::Serialize;
+use twenty_first::prelude::*;
 /// Enumerates key types with corresponding addresses
 ///
 /// `AddressableKey` enumerates the sub-set of [BaseKeyType]
@@ -100,9 +100,7 @@ impl AddressableKeyType {
     /// returns human readable prefix of an address
     pub fn get_hrp(&self, network: Network) -> String {
         match self {
-            Self::Generation => {
-                generation_address::GenerationReceivingAddress::get_hrp(network)
-            }
+            Self::Generation => generation_address::GenerationReceivingAddress::get_hrp(network),
             Self::Symmetric => symmetric_key::SymmetricKey::get_hrp(network),
         }
     }
@@ -165,9 +163,7 @@ impl AddressableKey {
             AddressableKey::Generation(generation_spending_key) => {
                 generation_spending_key.lock_script_and_witness()
             }
-            AddressableKey::Symmetric(symmetric_key) => {
-                symmetric_key.lock_script_and_witness()
-            }
+            AddressableKey::Symmetric(symmetric_key) => symmetric_key.lock_script_and_witness(),
         }
     }
     pub fn lock_script(&self) -> LockScript {
@@ -246,16 +242,12 @@ impl AddressableKey {
                     == receiver_identifier
                 )
             })
-            .filter_map(|pa| {
-                self.ok_warn(common::ciphertext_from_public_announcement(pa))
-            })
+            .filter_map(|pa| self.ok_warn(common::ciphertext_from_public_announcement(pa)))
             .filter_map(|c| self.ok_warn(self.decrypt(&c)))
-            .map(move |(utxo, sender_randomness)| {
-                IncomingUtxo {
-                    utxo,
-                    sender_randomness,
-                    receiver_preimage,
-                }
+            .map(move |(utxo, sender_randomness)| IncomingUtxo {
+                utxo,
+                sender_randomness,
+                receiver_preimage,
             })
             .collect()
     }
@@ -267,10 +259,7 @@ impl AddressableKey {
         }
     }
     /// returns true if the [PublicAnnouncement] has a type-flag that matches the type of this key
-    pub(super) fn matches_public_announcement_key_type(
-        &self,
-        pa: &PublicAnnouncement,
-    ) -> bool {
+    pub(super) fn matches_public_announcement_key_type(&self, pa: &PublicAnnouncement) -> bool {
         matches!(
             AddressableKeyType::try_from(pa), Ok(kt) if kt ==
             AddressableKeyType::from(self)
@@ -286,51 +275,55 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
+        pub use neptune_cash::models::state::wallet::address::symmetric_key::SymmetricKey;
         pub use neptune_cash::models::state::wallet::address::AddressableKey;
         pub use neptune_cash::models::state::wallet::address::AddressableKeyType;
     }
     #[test]
     fn test_bincode_serialization_for_addressable_key() {
-        let original_instance: AddressableKey = todo!("Instantiate");
-        let nc_instance: nc::AddressableKey = todo!("Instantiate");
+        let seed: Digest = rand::random();
+        let symkey = symmetric_key::SymmetricKey::from_seed(seed);
+        let original_instance = AddressableKey::from(symkey);
+        let nc_symkey = nc::SymmetricKey::from_seed(dg(seed));
+        let nc_instance = nc::AddressableKey::from(nc_symkey);
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_addressable_key() {
-        let original_instance: AddressableKey = todo!("Instantiate");
-        let nc_instance: nc::AddressableKey = todo!("Instantiate");
+        let seed: Digest = rand::random();
+        let symkey = symmetric_key::SymmetricKey::from_seed(seed);
+        let original_instance = AddressableKey::from(symkey);
+        let nc_symkey = nc::SymmetricKey::from_seed(dg(seed));
+        let nc_instance = nc::AddressableKey::from(nc_symkey);
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_addressable_key() {
-        let original_instance: AddressableKey = todo!("Instantiate");
-        let nc_instance: nc::AddressableKey = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        let seed: Digest = rand::random();
+        let symkey = symmetric_key::SymmetricKey::from_seed(seed);
+        let original_instance = AddressableKey::from(symkey);
+        let nc_symkey = nc::SymmetricKey::from_seed(dg(seed));
+        let nc_instance = nc::AddressableKey::from(nc_symkey);
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_bincode_serialization_for_addressable_key_type() {
-        let original_instance: AddressableKeyType = todo!("Instantiate");
-        let nc_instance: nc::AddressableKeyType = todo!("Instantiate");
+        let original_instance = AddressableKeyType::Generation;
+        let nc_instance = nc::AddressableKeyType::Generation;
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_addressable_key_type() {
-        let original_instance: AddressableKeyType = todo!("Instantiate");
-        let nc_instance: nc::AddressableKeyType = todo!("Instantiate");
+        let original_instance = AddressableKeyType::Generation;
+        let nc_instance = nc::AddressableKeyType::Generation;
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_addressable_key_type() {
-        let original_instance: AddressableKeyType = todo!("Instantiate");
-        let nc_instance: nc::AddressableKeyType = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        let original_instance = AddressableKeyType::Generation;
+        let nc_instance = nc::AddressableKeyType::Generation;
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

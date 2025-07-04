@@ -1,9 +1,4 @@
 //! provides an abstraction over key and address types.
-use anyhow::bail;
-use anyhow::Result;
-use serde::Deserialize;
-use serde::Serialize;
-use twenty_first::prelude::*;
 use super::generation_address;
 use super::symmetric_key;
 use super::KeyType;
@@ -11,6 +6,11 @@ use crate::lock_script::LockScript;
 use crate::network::Network;
 use crate::public_announcement::PublicAnnouncement;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
+use anyhow::bail;
+use anyhow::Result;
+use serde::Deserialize;
+use serde::Serialize;
+use twenty_first::prelude::*;
 /// Represents any type of Neptune receiving Address.
 ///
 /// This enum provides an abstraction API for Address types, so that
@@ -105,8 +105,7 @@ impl ReceivingAddress {
                     .private_utxo_notification(&utxo_notification_payload, network)
             }
             ReceivingAddress::Symmetric(symmetric_key) => {
-                symmetric_key
-                    .private_utxo_notification(&utxo_notification_payload, network)
+                symmetric_key.private_utxo_notification(&utxo_notification_payload, network)
             }
         }
     }
@@ -205,7 +204,7 @@ impl ReceivingAddress {
         Ok(self.bech32m_abbreviate(self.to_display_bech32m(network)?, network))
     }
 
-fn bech32m_abbreviate(&self, bech32m: String, network: Network) -> String {
+    fn bech32m_abbreviate(&self, bech32m: String, network: Network) -> String {
         let first_len = self.get_hrp(network).len() + 12usize;
         let last_len = 12usize;
         assert!(bech32m.len() > first_len + last_len);
@@ -215,10 +214,9 @@ fn bech32m_abbreviate(&self, bech32m: String, network: Network) -> String {
     }
     /// parses an address from its bech32m encoding
     pub fn from_bech32m(encoded: &str, network: Network) -> Result<Self> {
-        if let Ok(addr) = generation_address::GenerationReceivingAddress::from_bech32m(
-            encoded,
-            network,
-        ) {
+        if let Ok(addr) =
+            generation_address::GenerationReceivingAddress::from_bech32m(encoded, network)
+        {
             return Ok(addr.into());
         }
         let key = symmetric_key::SymmetricKey::from_bech32m(encoded, network)?;
@@ -252,29 +250,36 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::api::export::ReceivingAddress;
+        pub use neptune_cash::api::export::SymmetricKey;
     }
     #[test]
     fn test_bincode_serialization_for_receiving_address() {
-        let original_instance: ReceivingAddress = todo!("Instantiate");
-        let nc_instance: nc::ReceivingAddress = todo!("Instantiate");
+        let seed: Digest = rand::random();
+        let symkey = symmetric_key::SymmetricKey::from_seed(seed);
+        let original_instance: ReceivingAddress = symkey.into();
+        let nc_symkey = nc::SymmetricKey::from_seed(dg(seed));
+        let nc_instance: nc::ReceivingAddress = nc_symkey.into();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_receiving_address() {
-        let original_instance: ReceivingAddress = todo!("Instantiate");
-        let nc_instance: nc::ReceivingAddress = todo!("Instantiate");
+        let seed: Digest = rand::random();
+        let symkey = symmetric_key::SymmetricKey::from_seed(seed);
+        let original_instance: ReceivingAddress = symkey.into();
+        let nc_symkey = nc::SymmetricKey::from_seed(dg(seed));
+        let nc_instance: nc::ReceivingAddress = nc_symkey.into();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_receiving_address() {
-        let original_instance: ReceivingAddress = todo!("Instantiate");
-        let nc_instance: nc::ReceivingAddress = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        let seed: Digest = rand::random();
+        let symkey = symmetric_key::SymmetricKey::from_seed(seed);
+        let original_instance: ReceivingAddress = symkey.into();
+        let nc_symkey = nc::SymmetricKey::from_seed(dg(seed));
+        let nc_instance: nc::ReceivingAddress = nc_symkey.into();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }
