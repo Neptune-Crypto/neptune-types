@@ -1,24 +1,16 @@
 //! provides an interface for working with transaction inputs
-
 use std::ops::Deref;
 use std::ops::DerefMut;
-
 use serde::Deserialize;
 use serde::Serialize;
-
 use crate::native_currency_amount::NativeCurrencyAmount;
 use crate::unlocked_utxo::UnlockedUtxo;
 use crate::utxo::Utxo;
-// use crate::mutator_set::mutator_set_accumulator::MutatorSetAccumulator;
-// use crate::mutator_set::ms_membership_proof::MsMembershipProof;
-// use crate::mutator_set::removal_record::RemovalRecord;
-
 /// represents a transaction input
 ///
 /// this is a newtype wrapper around UnlockedUtxo.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TxInput(UnlockedUtxo);
-
 impl From<UnlockedUtxo> for TxInput {
     fn from(unlocked_utxo: UnlockedUtxo) -> Self {
         Self(unlocked_utxo)
@@ -33,7 +25,6 @@ impl From<TxInput> for UnlockedUtxo {
 
 impl Deref for TxInput {
     type Target = UnlockedUtxo;
-
     fn deref(&self) -> &Self::Target {
         &self.0
     }
@@ -45,14 +36,11 @@ impl TxInput {
         self.utxo.get_native_currency_amount()
     }
 }
-
 /// Represents a list of [TxInput]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct TxInputList(Vec<TxInput>);
-
 impl Deref for TxInputList {
     type Target = Vec<TxInput>;
-
     fn deref(&self) -> &Self::Target {
         &self.0
     }
@@ -82,12 +70,6 @@ impl From<TxInputList> for Vec<TxInput> {
     }
 }
 
-// impl From<&TxInputList> for Vec<MsMembershipProof> {
-//     fn from(list: &TxInputList) -> Self {
-//         list.ms_membership_proofs_iter().into_iter().collect()
-//     }
-// }
-
 impl From<TxInputList> for Vec<UnlockedUtxo> {
     fn from(list: TxInputList) -> Self {
         list.0.into_iter().map(|v| v.into()).collect()
@@ -98,47 +80,73 @@ impl TxInputList {
     pub fn empty() -> Self {
         Self(vec![])
     }
-
     /// retrieves native currency sum(inputs)
     pub fn total_native_coins(&self) -> NativeCurrencyAmount {
-        self.0
-            .iter()
-            .map(|u| u.utxo.get_native_currency_amount())
-            .sum()
+        self.0.iter().map(|u| u.utxo.get_native_currency_amount()).sum()
     }
-
     /// provides an iterator over input Utxo
     pub fn utxos_iter(&self) -> impl IntoIterator<Item = Utxo> + '_ {
         self.0.iter().map(|u| &u.utxo).cloned()
     }
-
     /// retrieves all Utxo
     pub fn utxos(&self) -> Vec<Utxo> {
         self.utxos_iter().into_iter().collect()
     }
-
-    /*
-        /// provides iterator over removal records
-        pub fn removal_records_iter<'a>(
-            &'a self,
-            msa: &'a MutatorSetAccumulator,
-        ) -> impl IntoIterator<Item = RemovalRecord> + 'a {
-            self.0.iter().map(|u| u.removal_record(msa))
-        }
-
-        /// retrieves removal records
-        pub fn removal_records<'a>(&'a self, msa: &'a MutatorSetAccumulator) -> Vec<RemovalRecord> {
-            self.removal_records_iter(msa).into_iter().collect()
-        }
-
-        /// provides mutator-set membership proof iterator
-        pub fn ms_membership_proofs_iter(&self) -> impl IntoIterator<Item = MsMembershipProof> + '_ {
-            self.0.iter().map(|u| u.mutator_set_mp()).cloned()
-        }
-
-        /// retrieves mutator-set membership proofs
-        pub fn ms_membership_proofs(&self) -> Vec<MsMembershipProof> {
-            self.ms_membership_proofs_iter().into_iter().collect()
-        }
-    */
+}
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Serialize, Deserialize};
+    pub mod nc {
+        pub use neptune_cash::api::export::TxInput;
+        pub use neptune_cash::api::export::TxInputList;
+    }
+    #[test]
+    fn test_bincode_serialization_for_tx_input() {
+        let original_instance: TxInput = todo!("Instantiate");
+        let nc_instance: nc::TxInput = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_tx_input() {
+        let original_instance: TxInput = todo!("Instantiate");
+        let nc_instance: nc::TxInput = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_tx_input() {
+        let original_instance: TxInput = todo!("Instantiate");
+        let nc_instance: nc::TxInput = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
+    }
+    #[test]
+    fn test_bincode_serialization_for_tx_input_list() {
+        let original_instance: TxInputList = TxInputList::default();
+        let nc_instance: nc::TxInputList = neptune_cash::api::export::TxInputList::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_tx_input_list() {
+        let original_instance: TxInputList = TxInputList::default();
+        let nc_instance: nc::TxInputList = neptune_cash::api::export::TxInputList::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_tx_input_list() {
+        let original_instance: TxInputList = TxInputList::default();
+        let nc_instance: nc::TxInputList = neptune_cash::api::export::TxInputList::default();
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
+    }
 }

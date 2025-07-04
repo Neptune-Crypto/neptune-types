@@ -4,7 +4,6 @@ use std::ops::Add;
 use std::ops::Neg;
 use std::ops::Sub;
 use std::str::FromStr;
-
 use crate::utxo::Coin;
 use anyhow::anyhow;
 use anyhow::bail;
@@ -22,15 +21,7 @@ use regex::Regex;
 use serde::Deserialize;
 use serde::Serialize;
 use twenty_first::prelude::*;
-// use tasm_lib::structure::tasm_object::TasmObject;
-// use tasm_lib::triton_vm::prelude::LabelledInstruction;
-// use tasm_lib::twenty_first::math::bfield_codec::BFieldCodec;
-
 use crate::native_currency::NativeCurrency;
-// use crate::models::blockchain::transaction::utxo::Coin;
-// use crate::models::proof_abstractions::tasm::program::ConsensusProgram;
-// use crate::triton_vm::prelude::triton_instr;
-
 /// Records an amount of Neptune coins. Amounts are internally represented by an
 /// atomic unit called Neptune atomic units (nau), which itself is represented
 /// as a 128 bit integer.
@@ -48,44 +39,17 @@ use crate::native_currency::NativeCurrency;
 /// the latter operation does not care about overflow. Not testing for overflow can cause
 /// inflation bugs.
 #[derive(Clone, Debug, Copy, Serialize, Deserialize, Eq, Default, BFieldCodec)]
-pub struct NativeCurrencyAmount(
-    // so i128 can be serialized by serde-json-wasm crate.
-    #[serde(with = "crate::serde::i128")] i128,
-);
-
-// impl TasmObject for NativeCurrencyAmount {
-//     fn label_friendly_name() -> String {
-//         "NativeCurrencyAmount".to_owned()
-//     }
-
-//     fn compute_size_and_assert_valid_size_indicator(
-//         library: &mut tasm_lib::prelude::Library,
-//     ) -> Vec<tasm_lib::triton_vm::prelude::LabelledInstruction> {
-//         u128::compute_size_and_assert_valid_size_indicator(library)
-//     }
-
-//     fn decode_iter<Itr: Iterator<Item = tasm_lib::triton_vm::prelude::BFieldElement>>(
-//         iterator: &mut Itr,
-//     ) -> std::result::Result<Box<Self>, Box<dyn std::error::Error + Send + Sync>> {
-//         let inner = *u128::decode_iter(iterator)? as i128;
-
-//         std::result::Result::Ok(Box::new(NativeCurrencyAmount(inner)))
-//     }
-// }
-
+pub struct NativeCurrencyAmount(#[serde(with = "crate::serde::i128")] i128);
 impl NativeCurrencyAmount {
     pub const MAX_NAU: i128 = 42_000_000 * Self::conversion_factor();
-
     /// The maximum amount that is still valid.
     pub fn max() -> Self {
         Self(Self::MAX_NAU)
     }
-
     /// The minimum amount that is still valid.
     pub fn min() -> Self {
         Self(-Self::MAX_NAU)
     }
-
     /// The conversion factor is 10^30 * 2^2.
     /// It is such that 42 000 000 * 10^30 * 2^2 is just one bit shy of being 128 bits
     /// wide. The one shy bit is used for the sign.
@@ -97,7 +61,6 @@ impl NativeCurrencyAmount {
             product *= ten;
             i += 1;
         }
-
         let two = 2i128;
         i = 0;
         while i < 2 {
@@ -106,38 +69,31 @@ impl NativeCurrencyAmount {
         }
         product
     }
-
     /// Return the element that corresponds to 1 nau. Use in tests only.
     pub fn one() -> NativeCurrencyAmount {
         NativeCurrencyAmount(1i128)
     }
-
     /// Create an NativeCurrencyAmount object of the given number of whole coins.
     ///
     /// Note that the maximum number of whole coins is 42 million which fits
     /// within a u32.
     pub const fn coins(num_whole_coins: u32) -> NativeCurrencyAmount {
         assert!(
-            num_whole_coins <= 42_000_000,
-            "Number of coins must be less than 42000000"
+            num_whole_coins <= 42_000_000, "Number of coins must be less than 42000000"
         );
         let number: i128 = num_whole_coins as i128;
         Self(Self::conversion_factor() * number)
     }
-
     pub fn div_two(&mut self) {
         self.0 /= 2;
     }
-
     /// Create a `coins` object for use in a UTXO
     pub fn to_native_coins(&self) -> Vec<Coin> {
-        let dictionary = vec![Coin {
-            type_script_hash: NativeCurrency.hash(),
-            state: self.encode(),
-        }];
+        let dictionary = vec![
+            Coin { type_script_hash : NativeCurrency.hash(), state : self.encode(), }
+        ];
         dictionary
     }
-
     /// Convert the amount to Neptune atomic units (nau) as a 64-bit floating
     /// point number. Note that this function loses precision!
     ///
@@ -146,7 +102,6 @@ impl NativeCurrencyAmount {
     pub fn to_nau_f64(&self) -> f64 {
         self.0 as f64
     }
-
     /// Convert the amount (of Neptune Coins) to Neptune atomic units (nau).
     ///
     /// Quantities whose unit is nau are used for internal logic and are not to
@@ -154,23 +109,20 @@ impl NativeCurrencyAmount {
     pub fn to_nau(&self) -> i128 {
         self.0
     }
-
     /// Convert the number of Neptune atomic units (nau) to a
     /// `NativeCurrencyAmount`.
     pub fn from_nau(nau: i128) -> Self {
         Self(nau)
     }
-
     /// Multiply the amount by a non-negative 32-bit number.
     ///
     /// Crashes in case of overflow.
     pub fn scalar_mul(&self, factor: u32) -> Self {
         let factor_as_i128 = i128::from(factor);
         let (res, overflow) = self.0.overflowing_mul(factor_as_i128);
-        assert!(!overflow, "Overflow on scalar multiplication not allowed.");
+        assert!(! overflow, "Overflow on scalar multiplication not allowed.");
         NativeCurrencyAmount(res)
     }
-
     /// Multiply a coin amount with a fraction, in a lossy manner. Result is
     /// guaranteed to not exceed `self`.
     ///
@@ -178,19 +130,13 @@ impl NativeCurrencyAmount {
     ///
     /// If the provided fraction is not between 0 and 1 (inclusive).
     pub fn lossy_f64_fraction_mul(&self, fraction: f64) -> NativeCurrencyAmount {
-        assert!(
-            (0.0..=1.0).contains(&fraction),
-            "fraction must be between 0 and 1"
-        );
-
+        assert!((0.0..= 1.0).contains(& fraction), "fraction must be between 0 and 1");
         if self.is_negative() {
             return self.neg().lossy_f64_fraction_mul(fraction);
         }
-
         if fraction == 1.0 {
             return *self;
         }
-
         let value_as_f64 = self.to_nau_f64();
         let res = fraction * value_as_f64;
         let as_i128 = match res.to_i128() {
@@ -199,7 +145,6 @@ impl NativeCurrencyAmount {
         };
         Self::from_nau(as_i128)
     }
-
     /// Generate an iterator for the running balance, updated with each item.
     ///
     /// Note that balances cannot be negative, so this method clamps at zero.
@@ -207,21 +152,23 @@ impl NativeCurrencyAmount {
         balance_update_itr: &I,
         initial_balance: Self,
     ) -> impl Iterator<Item = Self> + '_ {
-        balance_update_itr.clone().into_iter().scan(
-            initial_balance,
-            |current_balance, new_update| {
-                *current_balance = if new_update.is_negative() {
-                    current_balance
-                        .checked_add_negative(&new_update)
-                        .unwrap_or(Self::zero())
-                } else {
-                    *current_balance + new_update
-                };
-                Some(*current_balance)
-            },
-        )
+        balance_update_itr
+            .clone()
+            .into_iter()
+            .scan(
+                initial_balance,
+                |current_balance, new_update| {
+                    *current_balance = if new_update.is_negative() {
+                        current_balance
+                            .checked_add_negative(&new_update)
+                            .unwrap_or(Self::zero())
+                    } else {
+                        *current_balance + new_update
+                    };
+                    Some(*current_balance)
+                },
+            )
     }
-
     /// Add two [`NativeCurrencyAmount`]s, of which at most one is negative.
     ///
     /// The following cases generate `None`:
@@ -232,25 +179,14 @@ impl NativeCurrencyAmount {
         if self.is_negative() && rhs.is_negative() {
             return None;
         }
-
         let value = self.0.checked_add(rhs.0)?;
-
         if value > Self::MAX_NAU || value.is_negative() {
             None
         } else {
             Some(Self(value))
         }
     }
-
     /// Generate tasm code for pushing this amount to the stack.
-    // pub(crate) fn push_to_stack(&self) -> Vec<LabelledInstruction> {
-    //     self.encode()
-    //         .into_iter()
-    //         .rev()
-    //         .map(|b| triton_instr!(push b))
-    //         .collect()
-    // }
-
     /// Display the `NativeCurrencyAmount` as a fractional number of coins in
     /// base 10 with `n` decimal digits after the comma.
     ///
@@ -261,13 +197,10 @@ impl NativeCurrencyAmount {
         if self.is_negative() {
             return "-".to_owned() + &self.neg().display_n_decimals(n);
         }
-
         let conversion_factor = Self::conversion_factor();
-
         let mut remainder = self.0;
         let integer_part = remainder / conversion_factor;
         remainder %= conversion_factor;
-
         let mut decimals = vec![integer_part];
         for _ in 0..n {
             remainder *= 10;
@@ -287,14 +220,8 @@ impl NativeCurrencyAmount {
                 i -= 1;
             }
         }
-
-        format!(
-            "{}.{}",
-            decimals[0],
-            decimals.iter().skip(1).copied().join("")
-        )
+        format!("{}.{}", decimals[0], decimals.iter().skip(1).copied().join(""))
     }
-
     /// Display the `NativeCurrencyAmount` as a fractional number of coins in
     /// base 10 with enough decimal places to guarantee zero precision loss.
     ///
@@ -312,7 +239,6 @@ impl NativeCurrencyAmount {
     pub fn is_negative(&self) -> bool {
         self.0.is_negative()
     }
-
     pub fn is_positive(&self) -> bool {
         self.0.is_positive()
     }
@@ -323,11 +249,11 @@ impl GetSize for NativeCurrencyAmount {
         std::mem::size_of::<Self>()
     }
 
-    fn get_heap_size(&self) -> usize {
+fn get_heap_size(&self) -> usize {
         0
     }
 
-    fn get_size(&self) -> usize {
+fn get_size(&self) -> usize {
         Self::get_stack_size() + GetSize::get_heap_size(self)
     }
 }
@@ -340,7 +266,6 @@ impl Ord for NativeCurrencyAmount {
 
 impl Add for NativeCurrencyAmount {
     type Output = Self;
-
     fn add(self, rhs: Self) -> Self::Output {
         Self(self.0 + rhs.0)
     }
@@ -354,7 +279,6 @@ impl Sum for NativeCurrencyAmount {
 
 impl Sub for NativeCurrencyAmount {
     type Output = NativeCurrencyAmount;
-
     fn sub(self, _rhs: Self) -> Self::Output {
         panic!("Cannot subtract `NativeCurrencyAmount`s; use `checked_sub` instead.")
     }
@@ -376,17 +300,16 @@ impl CheckedAdd for NativeCurrencyAmount {
     /// Return Some(self+other) if (there is no i128-overflow and) the result is
     /// smaller than the maximum number of nau.
     fn checked_add(&self, v: &Self) -> Option<Self> {
-        self.0.checked_add(v.0).and_then(|sum| {
-            (-Self::MAX_NAU..=Self::MAX_NAU)
-                .contains(&sum)
-                .then_some(Self(sum))
-        })
+        self.0
+            .checked_add(v.0)
+            .and_then(|sum| {
+                (-Self::MAX_NAU..=Self::MAX_NAU).contains(&sum).then_some(Self(sum))
+            })
     }
 }
 
 impl Neg for NativeCurrencyAmount {
     type Output = Self;
-
     fn neg(self) -> Self::Output {
         Self(-self.0)
     }
@@ -409,11 +332,10 @@ impl Zero for NativeCurrencyAmount {
         NativeCurrencyAmount(0)
     }
 
-    fn is_zero(&self) -> bool {
+fn is_zero(&self) -> bool {
         self.0 == 0
     }
 }
-
 #[derive(Debug, Copy, Clone)]
 pub enum FloatConversionError {
     NaN,
@@ -425,7 +347,6 @@ pub enum FloatConversionError {
 
 impl TryFrom<f64> for NativeCurrencyAmount {
     type Error = FloatConversionError;
-
     fn try_from(value: f64) -> Result<Self, Self::Error> {
         let i = if value.is_nan() {
             Err(FloatConversionError::NaN)
@@ -476,19 +397,22 @@ impl NativeCurrencyAmount {
             BigInt::zero()
         } else {
             let denominator = decimal_shift;
-            let conversion_factor = BigInt::from_i128(Self::conversion_factor()).unwrap();
-            let nau_rational = BigRational::new(numerator * conversion_factor, denominator).round();
+            let conversion_factor = BigInt::from_i128(Self::conversion_factor())
+                .unwrap();
+            let nau_rational = BigRational::new(
+                    numerator * conversion_factor,
+                    denominator,
+                )
+                .round();
             match sign {
                 num_bigint::Sign::Minus => -nau_rational.numer(),
                 num_bigint::Sign::Plus => nau_rational.numer().to_owned(),
                 num_bigint::Sign::NoSign => unreachable!(),
             }
         };
-
         let max_nau = BigInt::from(Self::MAX_NAU);
-        ensure!(nau >= -max_nau.clone(), "amount of Neptune coins too small");
+        ensure!(nau >= - max_nau.clone(), "amount of Neptune coins too small");
         ensure!(nau <= max_nau, "amount of Neptune coins too large");
-
         i128::try_from(nau)
             .map(Self)
             .map_err(|e| anyhow!("invalid amount of Neptune coins: {e:?}"))
@@ -500,36 +424,34 @@ impl Display for NativeCurrencyAmount {
         write!(f, "{}", self.display_n_decimals(8))
     }
 }
-
-#[cfg(any(test, feature = "arbitrary-impls"))]
+///# [cfg (any (test , feature = "arbitrary-impls"))]
+#[cfg(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"))]
 pub mod neptune_arbitrary {
     use arbitrary::Arbitrary;
     use proptest::prelude::BoxedStrategy;
     use proptest::prelude::Strategy;
     use proptest_arbitrary_interop::arb;
-
     use super::*;
-
     impl<'a> Arbitrary<'a> for NativeCurrencyAmount {
         /// Generate an arbitrary amount of NativeCurrencyAmount that is small in absolute
         /// value but can be negative.
-        fn arbitrary(u: &mut ::arbitrary::Unstructured<'a>) -> ::arbitrary::Result<Self> {
+        fn arbitrary(
+            u: &mut ::arbitrary::Unstructured<'a>,
+        ) -> ::arbitrary::Result<Self> {
             let nau: u128 = u.arbitrary()?;
             Ok(NativeCurrencyAmount((nau as i128) >> 10))
         }
     }
 
-    impl NativeCurrencyAmount {
+impl NativeCurrencyAmount {
         pub(crate) fn abs(&self) -> Self {
             Self(self.0.abs())
         }
-
         pub(crate) fn arbitrary_non_negative() -> BoxedStrategy<Self> {
             arb::<u128>()
                 .prop_map(|uint| NativeCurrencyAmount((uint >> 10) as i128))
                 .boxed()
         }
-
         /// Generate a strategy for an Option of NativeCurrencyAmount, which if set will be
         /// a small non-negative amount.
         pub(crate) fn arbitrary_coinbase() -> BoxedStrategy<Option<Self>> {
@@ -537,7 +459,6 @@ pub mod neptune_arbitrary {
                 .prop_map(|coinbase| coinbase.map(|c| c.abs()))
                 .boxed()
         }
-
         /// Generate a strategy for a NativeCurrencyAmount anywhere between the
         /// minimum and maximum numbers (extrema included).
         #[cfg(test)]
@@ -548,14 +469,13 @@ pub mod neptune_arbitrary {
         }
     }
 }
-
-#[cfg(test)]
+///# [cfg (test)]
+#[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
-#[allow(clippy::explicit_deref_methods)] // suppress clippy's bad autosuggestion
+#[allow(clippy::explicit_deref_methods)]
 pub(crate) mod tests {
     use std::cmp::max;
     use std::panic::catch_unwind;
-
     use get_size2::GetSize;
     use itertools::Itertools;
     use num_bigint::BigInt;
@@ -568,69 +488,26 @@ pub(crate) mod tests {
     use proptest::prop_assume;
     use proptest_arbitrary_interop::arb;
     use test_strategy::proptest;
-
     use super::*;
-
     impl NativeCurrencyAmount {
         pub(crate) fn from_raw_i128(int: i128) -> Self {
             Self(int)
         }
     }
-
     pub(crate) fn invalid_positive_amount() -> BoxedStrategy<NativeCurrencyAmount> {
         let i128_max = (u128::MAX >> 1) as i128;
         ((NativeCurrencyAmount::MAX_NAU + 1)..=i128_max)
             .prop_map(NativeCurrencyAmount)
             .boxed()
     }
-
     proptest::proptest! {
-        #![proptest_config(ProptestConfig {
-            cases: 100, .. ProptestConfig::default()
-          })]
-        #[test]
-        fn test_string_conversion(
-            number in 0..42000000u32
-        ) {
-            let amount = NativeCurrencyAmount::coins(number);
-            let string = amount.to_string();
-            let reconstructed_amount = NativeCurrencyAmount::coins_from_str(&string)
-                .expect("Could not parse as number a string generated from a number.");
-
-            assert_eq!(amount, reconstructed_amount);
-        }
+        #![proptest_config(ProptestConfig { cases : 100, ..ProptestConfig::default() })]
+        #[test] fn test_string_conversion(number in 0..42000000u32) { let amount =
+        NativeCurrencyAmount::coins(number); let string = amount.to_string(); let
+        reconstructed_amount = NativeCurrencyAmount::coins_from_str(& string)
+        .expect("Could not parse as number a string generated from a number.");
+        assert_eq!(amount, reconstructed_amount); }
     }
-
-    /*
-        proptest::proptest! {
-            #![proptest_config(ProptestConfig {
-                cases: 5, .. ProptestConfig::default()
-              })]
-            #[test]
-            fn test_bfe_conversion(amount in arb::<NativeCurrencyAmount>()) {
-                let bfes = amount.encode();
-                let reconstructed_amount = *NativeCurrencyAmount::decode(&bfes).unwrap();
-
-                assert_eq!(amount, reconstructed_amount);
-            }
-        }
-
-        #[test]
-        fn test_bfe_conversion_with_option_amount() {
-            proptest::proptest!(ProptestConfig::with_cases(10), |(amount in arb::<NativeCurrencyAmount>())| {
-                let bfes = Some(amount).encode();
-                let reconstructed_amount = *Option::<NativeCurrencyAmount>::decode(&bfes).unwrap();
-
-                assert_eq!(Some(amount), reconstructed_amount);
-            });
-
-            let amount: Option<NativeCurrencyAmount> = None;
-            let bfes = amount.encode();
-            let reconstructed_amount = *Option::<NativeCurrencyAmount>::decode(&bfes).unwrap();
-            assert!(reconstructed_amount.is_none());
-        }
-    */
-
     #[test]
     fn from_coins_conversion_simple_test() {
         let a = 41000000;
@@ -639,100 +516,76 @@ pub(crate) mod tests {
         let b_amount: NativeCurrencyAmount = NativeCurrencyAmount::coins(b);
         assert_eq!(a_amount + b_amount, NativeCurrencyAmount::coins(a + b));
     }
-
     proptest::proptest! {
-        #[test]
-        fn from_nau_conversion_pbt(
-            a in (0u64..(1 << 63)),
-            b in (0u64..(1 << 63)),
-        ) {
-            let a_amount: NativeCurrencyAmount = NativeCurrencyAmount::from_nau(a.into());
-            let b_amount: NativeCurrencyAmount = NativeCurrencyAmount::from_nau(b.into());
-            assert_eq!(
-                a_amount + b_amount,
-                NativeCurrencyAmount::from_nau((a + b).into())
-            );
-        }
-
-        #[test]
-        fn amount_scalar_mul_pbt(
-            a in 0..42000000u32,
-            b in 0..42000000u32
-        ) {
-            if u64::from(a) * u64::from(b) <= 42000000 {
-                let prod_checked: NativeCurrencyAmount = NativeCurrencyAmount::coins(a * b);
-                let mut prod_calculated: NativeCurrencyAmount = NativeCurrencyAmount::coins(a);
-                prod_calculated = prod_calculated.scalar_mul(b);
-                assert_eq!(prod_checked, prod_calculated);
-            } else {assert![catch_unwind(|| NativeCurrencyAmount::coins(a).scalar_mul(b)).is_err()]}
-        }
+        #[test] fn from_nau_conversion_pbt(a in (0u64.. (1 << 63)), b in (0u64.. (1 <<
+        63)),) { let a_amount : NativeCurrencyAmount = NativeCurrencyAmount::from_nau(a
+        .into()); let b_amount : NativeCurrencyAmount = NativeCurrencyAmount::from_nau(b
+        .into()); assert_eq!(a_amount + b_amount, NativeCurrencyAmount::from_nau((a + b)
+        .into())); } #[test] fn amount_scalar_mul_pbt(a in 0..42000000u32, b in 0
+        ..42000000u32) { if u64::from(a) * u64::from(b) <= 42000000 { let prod_checked :
+        NativeCurrencyAmount = NativeCurrencyAmount::coins(a * b); let mut
+        prod_calculated : NativeCurrencyAmount = NativeCurrencyAmount::coins(a);
+        prod_calculated = prod_calculated.scalar_mul(b); assert_eq!(prod_checked,
+        prod_calculated); } else { assert![catch_unwind(|| NativeCurrencyAmount::coins(a)
+        .scalar_mul(b)).is_err()] } }
     }
-
     #[test]
     fn amount_simple_scalar_mul_test() {
         let fourteen: NativeCurrencyAmount = NativeCurrencyAmount::coins(14);
         let fourtytwo: NativeCurrencyAmount = NativeCurrencyAmount::coins(42);
         assert_eq!(fourtytwo, fourteen.scalar_mul(3));
     }
-
     #[test]
     fn simple_f64_lossy_mul_half() {
         let one_hundred = NativeCurrencyAmount::coins(100);
         let half_of_one_hundred = one_hundred.lossy_f64_fraction_mul(0.5);
-
-        // Assert that the value is in a reasonable range, close enough.
         assert!(
-            half_of_one_hundred > NativeCurrencyAmount::coins(49)
-                && half_of_one_hundred < NativeCurrencyAmount::coins(51)
+            half_of_one_hundred > NativeCurrencyAmount::coins(49) && half_of_one_hundred
+            < NativeCurrencyAmount::coins(51)
         );
     }
-
     #[test]
     fn simple_f64_lossy_mul_zero() {
         let one_hundred = NativeCurrencyAmount::coins(100);
         assert_eq!(
-            NativeCurrencyAmount::zero(),
-            one_hundred.lossy_f64_fraction_mul(0f64)
+            NativeCurrencyAmount::zero(), one_hundred.lossy_f64_fraction_mul(0f64)
         );
     }
-
     #[test]
     fn simple_f64_lossy_mul_one() {
         let one_hundred = NativeCurrencyAmount::coins(100);
         assert_eq!(one_hundred, one_hundred.lossy_f64_fraction_mul(1f64));
     }
-
     #[test]
     fn get_size_test() {
         let fourteen: NativeCurrencyAmount = NativeCurrencyAmount::coins(14);
         assert_eq!(4 * 4, fourteen.get_size())
     }
-
     #[test]
     fn conversion_factor_is_optimal() {
         let forty_two_million = BigInt::from_i32(42_000_000).unwrap();
-        let conversion_factor =
-            BigInt::from_i128(NativeCurrencyAmount::conversion_factor()).unwrap();
+        let conversion_factor = BigInt::from_i128(
+                NativeCurrencyAmount::conversion_factor(),
+            )
+            .unwrap();
         let two_pow_127 = BigInt::from_i8(1).unwrap() << 127;
         assert!(conversion_factor.clone() * forty_two_million.clone() < two_pow_127);
-
-        // let's also test optimality:
-        // adding another factor 5 or 2 will break this property
         let five = BigInt::from_i8(5).unwrap();
         let two = BigInt::from_i8(2).unwrap();
-        assert!(conversion_factor.clone() * two * forty_two_million.clone() >= two_pow_127);
+        assert!(
+            conversion_factor.clone() * two * forty_two_million.clone() >= two_pow_127
+        );
         assert!(conversion_factor * five * forty_two_million >= two_pow_127);
     }
-
     #[test]
     fn from_decimal_test() {
         let parsed = NativeCurrencyAmount::coins_from_str("-10.125").unwrap();
         let cf = NativeCurrencyAmount::conversion_factor() >> 3;
-        let fixed = -(NativeCurrencyAmount::from_nau(cf) + NativeCurrencyAmount::coins(10));
+        let fixed = -(NativeCurrencyAmount::from_nau(cf)
+            + NativeCurrencyAmount::coins(10));
         assert_eq!(parsed.clone(), fixed);
         assert!(parsed.is_negative());
         println!("parsed: {}", parsed);
-
         for s in [
             "-12387.4382975",
             "823457.983247",
@@ -754,7 +607,6 @@ pub(crate) mod tests {
                 .unwrap_or_else(|e| panic!("cannot decode {} because {}", s, e));
             println!("{s}: {nc}");
         }
-
         for s in [
             "-12398745.2348573245.234897234",
             "--894357435.23489234",
@@ -773,21 +625,20 @@ pub(crate) mod tests {
             println!("trying to parse {s} ...");
             assert!(
                 NativeCurrencyAmount::coins_from_str(s).is_err(),
-                "valid parsing: {}; parsed to: {}",
-                s,
+                "valid parsing: {}; parsed to: {}", s,
                 NativeCurrencyAmount::coins_from_str(s).unwrap()
             );
         }
     }
-
     #[proptest]
     fn small_amounts_can_be_safely_added(
-        #[strategy(arb())] a0: NativeCurrencyAmount,
-        #[strategy(arb())] a1: NativeCurrencyAmount,
+        #[strategy(arb())]
+        a0: NativeCurrencyAmount,
+        #[strategy(arb())]
+        a1: NativeCurrencyAmount,
     ) {
         a0.checked_add(&a1).unwrap();
     }
-
     #[proptest]
     fn checked_add_proptest_quarter_range(lhs: i128, rhs: i128) {
         let lhs = lhs >> 2;
@@ -795,112 +646,96 @@ pub(crate) mod tests {
         let expected = NativeCurrencyAmount(lhs + rhs);
         let lhs = NativeCurrencyAmount(lhs);
         let rhs = NativeCurrencyAmount(rhs);
-
-        prop_assert_eq!(expected, lhs.checked_add(&rhs).unwrap());
+        prop_assert_eq!(expected, lhs.checked_add(& rhs).unwrap());
     }
-
     #[proptest]
     fn checked_add_proptest_full_range(
-        #[strategy(0..=NativeCurrencyAmount::MAX_NAU >> 1)] lhs: i128,
-        #[strategy(0..=NativeCurrencyAmount::MAX_NAU >> 1)] rhs: i128,
+        #[strategy(0..= NativeCurrencyAmount::MAX_NAU>>1)]
+        lhs: i128,
+        #[strategy(0..= NativeCurrencyAmount::MAX_NAU>>1)]
+        rhs: i128,
     ) {
         let expected = NativeCurrencyAmount(lhs + rhs);
         let lhs = NativeCurrencyAmount(lhs);
         let rhs = NativeCurrencyAmount(rhs);
-        prop_assert_eq!(expected, lhs.checked_add(&rhs).unwrap());
+        prop_assert_eq!(expected, lhs.checked_add(& rhs).unwrap());
     }
-
     #[proptest]
-    fn checked_add_proptest_limit(#[strategy(0..=NativeCurrencyAmount::MAX_NAU)] lhs: i128) {
+    fn checked_add_proptest_limit(
+        #[strategy(0..= NativeCurrencyAmount::MAX_NAU)]
+        lhs: i128,
+    ) {
         let rhs = NativeCurrencyAmount(NativeCurrencyAmount::MAX_NAU - lhs);
-        prop_assert!(!rhs.is_negative());
-
+        prop_assert!(! rhs.is_negative());
         let lhs = NativeCurrencyAmount(lhs);
         let expected = NativeCurrencyAmount::max();
-        prop_assert_eq!(expected, lhs.checked_add(&rhs).unwrap());
+        prop_assert_eq!(expected, lhs.checked_add(& rhs).unwrap());
     }
-
     #[test]
     fn checked_add_unittest_limit() {
         let lhs = NativeCurrencyAmount(NativeCurrencyAmount::MAX_NAU >> 1);
         let rhs = NativeCurrencyAmount(NativeCurrencyAmount::MAX_NAU >> 1);
-
         let expected = NativeCurrencyAmount::max();
-        assert_eq!(expected, lhs.checked_add(&rhs).unwrap());
+        assert_eq!(expected, lhs.checked_add(& rhs).unwrap());
     }
-
     #[proptest]
     fn checked_add_with_self_matches_scalar_mul_two(
-        #[strategy(0..=NativeCurrencyAmount::MAX_NAU >> 1)] lhs: i128,
+        #[strategy(0..= NativeCurrencyAmount::MAX_NAU>>1)]
+        lhs: i128,
     ) {
         let lhs = NativeCurrencyAmount(lhs);
-        prop_assert_eq!(lhs.scalar_mul(2), lhs.checked_add(&lhs).unwrap());
+        prop_assert_eq!(lhs.scalar_mul(2), lhs.checked_add(& lhs).unwrap());
     }
-
     #[proptest]
     fn checked_add_with_self_and_self_matches_scalar_mul_three(
-        #[strategy(0..=NativeCurrencyAmount::MAX_NAU >> 2)] lhs: i128,
+        #[strategy(0..= NativeCurrencyAmount::MAX_NAU>>2)]
+        lhs: i128,
     ) {
         let lhs = NativeCurrencyAmount(lhs);
         prop_assert_eq!(
-            lhs.scalar_mul(3),
-            lhs.checked_add(&lhs).unwrap().checked_add(&lhs).unwrap()
+            lhs.scalar_mul(3), lhs.checked_add(& lhs).unwrap().checked_add(& lhs)
+            .unwrap()
         );
     }
-
     #[proptest]
     fn checked_add_positive_overflow_proptest(rhs: u128) {
         let lhs = NativeCurrencyAmount(NativeCurrencyAmount::MAX_NAU);
         let rhs = NativeCurrencyAmount((rhs >> 2) as i128);
-        prop_assume!(!rhs.is_zero());
-        prop_assert!(lhs.checked_add(&rhs).is_none());
+        prop_assume!(! rhs.is_zero());
+        prop_assert!(lhs.checked_add(& rhs).is_none());
     }
-
     #[proptest]
     fn checked_add_negative_overflow_proptest(rhs: u128) {
         let lhs = NativeCurrencyAmount(-NativeCurrencyAmount::MAX_NAU);
         let rhs = -NativeCurrencyAmount((rhs >> 2) as i128);
-        prop_assume!(!rhs.is_zero());
-        prop_assert!(lhs.checked_add(&rhs).is_none());
+        prop_assume!(! rhs.is_zero());
+        prop_assert!(lhs.checked_add(& rhs).is_none());
     }
-
     #[test]
     fn checked_add_positive_overflow_unit_test() {
         let one_nau = NativeCurrencyAmount(1);
         let max_value = NativeCurrencyAmount(NativeCurrencyAmount::MAX_NAU);
-        assert!(max_value.checked_add(&one_nau).is_none());
-        assert!(max_value
-            .checked_add(&NativeCurrencyAmount::zero())
-            .is_some());
+        assert!(max_value.checked_add(& one_nau).is_none());
+        assert!(max_value.checked_add(& NativeCurrencyAmount::zero()).is_some());
     }
-
     #[test]
     fn checked_add_negative_overflow_unit_test() {
         let minus_one_nau = -NativeCurrencyAmount(1);
         let min_value = -NativeCurrencyAmount(NativeCurrencyAmount::MAX_NAU);
-        assert!(min_value.checked_add(&minus_one_nau).is_none());
-        assert!(min_value
-            .checked_add(&NativeCurrencyAmount::zero())
-            .is_some());
+        assert!(min_value.checked_add(& minus_one_nau).is_none());
+        assert!(min_value.checked_add(& NativeCurrencyAmount::zero()).is_some());
     }
-    /*
-        #[test]
-        fn expected_coins_static_length() {
-            assert_eq!(Some(4), NativeCurrencyAmount::static_length());
-        }
-    */
-
     #[proptest]
     fn to_and_from_nau_identity(
-        #[strategy(-NativeCurrencyAmount::MAX_NAU..=NativeCurrencyAmount::MAX_NAU)] num_naus: i128,
+        #[strategy(-NativeCurrencyAmount::MAX_NAU..= NativeCurrencyAmount::MAX_NAU)]
+        num_naus: i128,
     ) {
         let val = NativeCurrencyAmount(num_naus);
         prop_assert_eq!(val, NativeCurrencyAmount::from_nau(val.to_nau()));
     }
-
     #[proptest]
     fn scalar_mul_2_div_2_is_identity(
-        #[strategy(-NativeCurrencyAmount::MAX_NAU/2..=NativeCurrencyAmount::MAX_NAU/2)]
+        #[strategy(-NativeCurrencyAmount::MAX_NAU/2..= NativeCurrencyAmount::MAX_NAU/2)]
         num_naus: i128,
     ) {
         let original = NativeCurrencyAmount(num_naus);
@@ -908,19 +743,14 @@ pub(crate) mod tests {
         calculated.div_two();
         prop_assert_eq!(original, calculated);
     }
-
     #[proptest]
-    fn new_and_display_consistency_proptest(#[strategy(0u32..=42000000)] num_coins: u32) {
+    fn new_and_display_consistency_proptest(
+        #[strategy(0u32..= 42000000)]
+        num_coins: u32,
+    ) {
         let val = NativeCurrencyAmount::coins(num_coins);
         assert_eq!(format!("{val}"), format!("{num_coins}.00000000"));
     }
-    /*
-        #[proptest]
-        fn encode_decode_identity(val: i128) {
-            let val = NativeCurrencyAmount(val >> 1);
-            prop_assert!(val == *NativeCurrencyAmount::decode(&val.encode()).unwrap());
-        }
-    */
     #[proptest]
     fn outer_ordering_agrees_with_inner(lhs: i128, rhs: i128) {
         let inner_cmp = lhs < rhs;
@@ -929,18 +759,16 @@ pub(crate) mod tests {
         let outer_cmp = lhs < rhs;
         prop_assert!(inner_cmp == outer_cmp);
     }
-
     #[test]
     fn unsafe_amounts_fail() {
         let a0 = NativeCurrencyAmount(1i128 << 126);
         let a1 = NativeCurrencyAmount(1i128 << 126);
-        assert!(a0.checked_add(&a1).is_none());
+        assert!(a0.checked_add(& a1).is_none());
     }
-
     #[test]
     fn scan_balance_returns_sane_result() {
-        let balance_updates =
-            [64, 32, 32, 64, 32, 32, 64, 32, 32, -64, 53, 64, 32, 32].map(|i: i32| {
+        let balance_updates = [64, 32, 32, 64, 32, 32, 64, 32, 32, -64, 53, 64, 32, 32]
+            .map(|i: i32| {
                 if i.is_negative() {
                     -NativeCurrencyAmount::coins((-i) as u32)
                 } else {
@@ -950,69 +778,60 @@ pub(crate) mod tests {
         let expected_balances = [
             64, 96, 128, 192, 224, 256, 320, 352, 384, 320, 373, 437, 469, 501,
         ]
-        .map(NativeCurrencyAmount::coins)
-        .to_vec();
-        let computed_balances =
-            NativeCurrencyAmount::scan_balance(&balance_updates, NativeCurrencyAmount::zero())
-                .collect_vec();
+            .map(NativeCurrencyAmount::coins)
+            .to_vec();
+        let computed_balances = NativeCurrencyAmount::scan_balance(
+                &balance_updates,
+                NativeCurrencyAmount::zero(),
+            )
+            .collect_vec();
         assert_eq!(expected_balances, computed_balances);
     }
-
     #[test]
     fn can_negate_zero() {
-        println!("{}", -NativeCurrencyAmount(0));
+        println!("{}", - NativeCurrencyAmount(0));
     }
-
     #[proptest]
     fn display_lossless_matches_parse(
-        #[strategy(NativeCurrencyAmount::arbitrary_full_range())] amount: NativeCurrencyAmount,
+        #[strategy(NativeCurrencyAmount::arbitrary_full_range())]
+        amount: NativeCurrencyAmount,
     ) {
         let as_string = amount.display_lossless();
         let parsed = NativeCurrencyAmount::coins_from_str(&as_string).unwrap();
         prop_assert_eq!(parsed, amount);
     }
-
     #[test]
     fn display_lossless_can_have_36_chars() {
         assert_eq!(
-            36,
-            NativeCurrencyAmount::from_nau(1.into())
-                .display_lossless()
-                .len()
+            36, NativeCurrencyAmount::from_nau(1.into()).display_lossless().len()
         );
     }
-
     #[test]
     fn display_lossless_can_have_44_chars() {
-        assert_eq!(44, (-NativeCurrencyAmount::max()).display_lossless().len());
+        assert_eq!(44, (- NativeCurrencyAmount::max()).display_lossless().len());
     }
-
     #[proptest]
     fn display_agrees_with_display_8_decimals(
-        #[strategy(NativeCurrencyAmount::arbitrary_full_range())] amount: NativeCurrencyAmount,
+        #[strategy(NativeCurrencyAmount::arbitrary_full_range())]
+        amount: NativeCurrencyAmount,
     ) {
         prop_assert_eq!(format!("{}", amount), amount.display_n_decimals(8))
     }
-
     #[proptest]
     fn display_large_integer_minus_epsilon_rounds_up(
-        #[strategy(1_u32..42_000_000)] integer_amount: u32,
+        #[strategy(1_u32..42_000_000)]
+        integer_amount: u32,
     ) {
-        // Catches issue #383 [1]
-        // [1]: https://github.com/Neptune-Crypto/neptune-core/issues/383
-
         let amount = NativeCurrencyAmount::coins(integer_amount)
             .checked_sub(&NativeCurrencyAmount::from_nau(1))
             .unwrap();
         for num_decimal_places in 0..34 {
-            // note that the range 0..34 contains 8, which corresponds to
-            // `amount.display()`
-
             let amount_as_string = amount.display_n_decimals(num_decimal_places);
-            let expected_num_characters = integer_amount.to_string().len() + 1 + num_decimal_places;
+            let expected_num_characters = integer_amount.to_string().len() + 1
+                + num_decimal_places;
             prop_assert_eq!(expected_num_characters, amount_as_string.len());
-
-            let amount_again = NativeCurrencyAmount::coins_from_str(&amount_as_string).unwrap();
+            let amount_again = NativeCurrencyAmount::coins_from_str(&amount_as_string)
+                .unwrap();
             let difference = amount
                 .checked_sub(&amount_again)
                 .unwrap_or_else(|| amount_again.checked_sub(&amount).unwrap());
@@ -1020,8 +839,46 @@ pub(crate) mod tests {
             for _ in 0..num_decimal_places {
                 difference_threshold = difference_threshold.lossy_f64_fraction_mul(0.1);
             }
-            difference_threshold = max(difference_threshold, NativeCurrencyAmount::from_nau(1));
+            difference_threshold = max(
+                difference_threshold,
+                NativeCurrencyAmount::from_nau(1),
+            );
             prop_assert!(difference < difference_threshold);
         }
+    }
+}
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Serialize, Deserialize};
+    pub mod nc {
+        pub use neptune_cash::api::export::NativeCurrencyAmount;
+    }
+    #[test]
+    fn test_bincode_serialization_for_native_currency_amount() {
+        let original_instance: NativeCurrencyAmount = NativeCurrencyAmount::default();
+        let nc_instance: nc::NativeCurrencyAmount = neptune_cash::api::export::NativeCurrencyAmount::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_native_currency_amount() {
+        let original_instance: NativeCurrencyAmount = NativeCurrencyAmount::default();
+        let nc_instance: nc::NativeCurrencyAmount = neptune_cash::api::export::NativeCurrencyAmount::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_native_currency_amount() {
+        let original_instance: NativeCurrencyAmount = NativeCurrencyAmount::default();
+        let nc_instance: nc::NativeCurrencyAmount = neptune_cash::api::export::NativeCurrencyAmount::default();
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
     }
 }

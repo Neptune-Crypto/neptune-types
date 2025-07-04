@@ -1,7 +1,6 @@
 use std::fmt::Display;
 use std::hash::Hash as StdHash;
 use std::hash::Hasher as StdHasher;
-
 use get_size2::GetSize;
 use itertools::Itertools;
 use num_traits::Zero;
@@ -11,25 +10,19 @@ use rand::RngCore;
 use rand::SeedableRng;
 use serde::Deserialize;
 use serde::Serialize;
-// use tasm_lib::prelude::TasmObject;
 use twenty_first::prelude::*;
-// use twenty_first::math::b_field_element::BFieldElement;
-// use twenty_first::math::bfield_codec::BFieldCodec;
-// use twenty_first::math::tip5::Digest;
-
 use crate::lock_script::LockScript;
-// use crate::models::blockchain::type_scripts::known_type_scripts::is_known_type_script_with_valid_state;
 use crate::native_currency::NativeCurrency;
 use crate::native_currency_amount::NativeCurrencyAmount;
 use crate::time_lock::TimeLock;
-// use crate::models::proof_abstractions::tasm::program::ConsensusProgram;
 use crate::address::hash_lock_key::HashLockKey;
 use crate::timestamp::Timestamp;
-// use crate::prelude::twenty_first;
-
-// #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, BFieldCodec, TasmObject)]
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, BFieldCodec)]
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
+///# [cfg_attr (any (test , feature = "arbitrary-impls") , derive (arbitrary :: Arbitrary))]
+#[cfg_attr(
+    any(all(test, feature = "original-tests"), feature = "arbitrary-impls"),
+    derive(arbitrary::Arbitrary)
+)]
 pub struct Coin {
     pub type_script_hash: Digest,
     pub state: Vec<BFieldElement>,
@@ -49,7 +42,6 @@ impl Display for Coin {
         } else {
             "Unknown type script hash".to_owned()
         };
-
         write!(f, "{}", output)
     }
 }
@@ -62,7 +54,6 @@ impl Coin {
             None
         }
     }
-
     pub fn new_native_currency(amount: NativeCurrencyAmount) -> Self {
         Self {
             type_script_hash: NativeCurrency.hash(),
@@ -70,8 +61,6 @@ impl Coin {
         }
     }
 }
-
-// #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, BFieldCodec, TasmObject)]
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, BFieldCodec)]
 pub struct Utxo {
     lock_script_hash: Digest,
@@ -81,13 +70,8 @@ pub struct Utxo {
 impl Display for Utxo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
-            f,
-            "{}",
-            self.coins
-                .iter()
-                .enumerate()
-                .map(|(i, coin)| format!("coin {i}: {coin}"))
-                .join("; ")
+            f, "{}", self.coins.iter().enumerate().map(| (i, coin) |
+            format!("coin {i}: {coin}")).join("; ")
         )
     }
 }
@@ -97,24 +81,19 @@ impl GetSize for Utxo {
         size_of::<Self>()
     }
 
-    fn get_heap_size(&self) -> usize {
-        // self.lock_script.get_heap_size() + self.coins.len() * (std::mem::size_of::<Digest>())
+fn get_heap_size(&self) -> usize {
         let mut total = self.lock_script_hash().get_heap_size();
         for v in &self.coins {
             total += size_of::<Digest>();
             total += v.state.len() * size_of::<BFieldElement>();
         }
-
         total
     }
 }
 
 impl From<(Digest, Vec<Coin>)> for Utxo {
     fn from((lock_script_hash, coins): (Digest, Vec<Coin>)) -> Self {
-        Self {
-            lock_script_hash,
-            coins,
-        }
+        Self { lock_script_hash, coins }
     }
 }
 
@@ -122,31 +101,26 @@ impl Utxo {
     pub fn new(lock_script: LockScript, coins: Vec<Coin>) -> Self {
         (lock_script.hash(), coins).into()
     }
-
     pub fn coins(&self) -> &[Coin] {
         &self.coins
     }
-
     pub fn lock_script_hash(&self) -> Digest {
         self.lock_script_hash
     }
-
     /// Returns true iff this UTXO is a lock script with the preimage provided
     /// as input argument.
     pub fn is_lockscript_with_preimage(&self, preimage: Digest) -> bool {
         self.lock_script_hash == HashLockKey::from_preimage(preimage).lock_script_hash()
     }
-
-    pub fn new_native_currency(lock_script: LockScript, amount: NativeCurrencyAmount) -> Self {
+    pub fn new_native_currency(
+        lock_script: LockScript,
+        amount: NativeCurrencyAmount,
+    ) -> Self {
         Self::new(lock_script, vec![Coin::new_native_currency(amount)])
     }
-
     pub fn has_native_currency(&self) -> bool {
-        self.coins
-            .iter()
-            .any(|coin| coin.type_script_hash == NativeCurrency.hash())
+        self.coins.iter().any(|coin| coin.type_script_hash == NativeCurrency.hash())
     }
-
     /// Get the amount of Neptune coins that are encapsulated in this UTXO,
     /// regardless of which other coins are present. (Even if that makes the
     /// Neptune coins unspendable.)
@@ -160,50 +134,11 @@ impl Utxo {
             })
             .sum()
     }
-
     /// If the UTXO has a timelock, find out what the release date is.
     pub fn release_date(&self) -> Option<Timestamp> {
         self.coins.iter().find_map(Coin::release_date)
     }
-
     /// Test the coins for state validity, relative to known type scripts.
-    // pub fn all_type_script_states_are_valid(&self) -> bool {
-    //     self.coins.iter().all(is_known_type_script_with_valid_state)
-    // }
-    /*
-        /// Determine if the UTXO can be spent at a given date in the future,
-        /// assuming it can be unlocked. Currently, this boils down to checking
-        /// whether it has a time lock and if it does, verifying that the release
-        /// date is in the past.
-        pub fn can_spend_at(&self, timestamp: Timestamp) -> bool {
-            crate::macros::log_slow_scope!();
-            // unknown type script
-            if !self.all_type_script_states_are_valid() {
-                return false;
-            }
-
-            // decode and test release date(s) (if any)
-            for state in self
-                .coins
-                .iter()
-                .filter(|c| c.type_script_hash == TimeLock.hash())
-                .map(|c| c.state.clone())
-            {
-                match Timestamp::decode(&state) {
-                    Ok(release_date) => {
-                        if timestamp <= *release_date {
-                            return false;
-                        }
-                    }
-                    Err(_) => {
-                        return false;
-                    }
-                };
-            }
-
-            true
-        }
-    */
     /// Adds a time-lock coin, if necessary.
     ///
     /// Does nothing if there is a time lock present already whose release date
@@ -224,18 +159,14 @@ impl Utxo {
             }
         }
     }
-
     /// Determine whether there is a time-lock, with any release date, on the
     /// UTXO.
-    #[cfg(test)]
+    ///# [cfg (test)]
+    #[cfg(all(test, feature = "original-tests"))]
     pub(crate) fn is_timelocked(&self) -> bool {
-        self.coins
-            .iter()
-            .filter_map(Coin::release_date)
-            .any(|_| true)
+        self.coins.iter().filter_map(Coin::release_date).any(|_| true)
     }
 }
-
 /// Make `Utxo` hashable with `StdHash` for using it in `HashMap`.
 ///
 /// The Clippy warning is safe to suppress, because we do not violate the invariant: k1 == k2 => hash(k1) == hash(k2).
@@ -244,7 +175,6 @@ impl StdHash for Utxo {
         StdHash::hash(&self.encode(), state);
     }
 }
-
 /// Generate a UTXO pseudorandomly, for testing purposes
 pub fn pseudorandom_utxo(seed: [u8; 32]) -> Utxo {
     let mut rng: StdRng = SeedableRng::from_seed(seed);
@@ -253,46 +183,41 @@ pub fn pseudorandom_utxo(seed: [u8; 32]) -> Utxo {
         NativeCurrencyAmount::coins(rng.next_u32() % 42000000).to_native_coins(),
     ))
 }
-
-#[cfg(any(test, feature = "arbitrary-impls"))]
+///# [cfg (any (test , feature = "arbitrary-impls"))]
+#[cfg(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"))]
 pub mod neptune_arbitrary {
     use super::*;
-
     impl<'a> Arbitrary<'a> for Utxo {
         /// Produce a strategy for "arbitrary" UTXOs where "arbitrary" means:
         ///  - lock script corresponding to an arbitrary generation address
         ///  - one coin of type NativeCurrency and arbitrary, non-negative amount.
-        fn arbitrary(u: &mut ::arbitrary::Unstructured<'a>) -> ::arbitrary::Result<Self> {
+        fn arbitrary(
+            u: &mut ::arbitrary::Unstructured<'a>,
+        ) -> ::arbitrary::Result<Self> {
             let lock_script_hash: Digest = Digest::arbitrary(u)?;
             let type_script_hash = NativeCurrency.hash();
             let amount = NativeCurrencyAmount::arbitrary(u)?.abs();
-            let coins = vec![Coin {
-                type_script_hash,
-                state: amount.encode(),
-            }];
+            let coins = vec![Coin { type_script_hash, state : amount.encode(), }];
             Ok((lock_script_hash, coins).into())
         }
     }
 }
-
-#[cfg(test)]
+///# [cfg (test)]
+#[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
-#[allow(clippy::explicit_deref_methods)] // suppress clippy's bad autosuggestion
+#[allow(clippy::explicit_deref_methods)]
 mod tests {
     use proptest::prelude::*;
     use proptest_arbitrary_interop::arb;
     use test_strategy::proptest;
     use tracing_test::traced_test;
-
     use super::*;
     use crate::triton_vm::prelude::*;
-
     impl Utxo {
         pub(crate) fn with_coin(mut self, coin: Coin) -> Self {
             self.coins.push(coin);
             self
         }
-
         pub(crate) fn append_to_coin_state(
             mut self,
             coin_index: usize,
@@ -302,14 +227,10 @@ mod tests {
             self
         }
     }
-
     proptest::proptest! {
-        #[test]
-        fn hash_utxo_test(output in arb::<Utxo>()) {
-            let _digest = crate::Hash::hash(&output);
-        }
+        #[test] fn hash_utxo_test(output in arb::< Utxo > ()) { let _digest = crate
+        ::Hash::hash(& output); }
     }
-
     #[traced_test]
     #[proptest]
     fn serialization_test(#[strategy(arb::<Utxo>())] utxo: Utxo) {
@@ -317,29 +238,83 @@ mod tests {
         let utxo_again: Utxo = serde_json::from_str(&serialized).unwrap();
         assert_eq!(utxo, utxo_again);
     }
-
     #[proptest]
     fn utxo_timelock_test(
-        #[strategy(0_u64..1 << 63)]
-        #[map(|t| Timestamp(bfe!(t)))]
+        #[strategy(0_u64..1<<63)]
+        #[map(|t|Timestamp(bfe!(t)))]
         release_date: Timestamp,
-        #[strategy(0_u64..1 << 63)]
-        #[map(|t| Timestamp(bfe!(t)))]
-        #[filter(Timestamp::zero() < #delta && #delta <= #release_date)]
+        #[strategy(0_u64..1<<63)]
+        #[map(|t|Timestamp(bfe!(t)))]
+        #[filter(Timestamp::zero()<#delta&&#delta<= #release_date)]
         delta: Timestamp,
     ) {
         let no_lock = LockScript::new(triton_program!(halt));
         let mut coins = NativeCurrencyAmount::coins(1).to_native_coins();
         coins.push(TimeLock::until(release_date));
         let utxo = Utxo::new(no_lock, coins);
-
-        prop_assert!(!utxo.can_spend_at(release_date - delta));
+        prop_assert!(! utxo.can_spend_at(release_date - delta));
         prop_assert!(utxo.is_timelocked());
-
         let epsilon = Timestamp::millis(1);
-        prop_assert!(!utxo.can_spend_at(release_date - epsilon));
-        prop_assert!(!utxo.can_spend_at(release_date));
+        prop_assert!(! utxo.can_spend_at(release_date - epsilon));
+        prop_assert!(! utxo.can_spend_at(release_date));
         prop_assert!(utxo.can_spend_at(release_date + epsilon));
         prop_assert!(utxo.can_spend_at(release_date + delta));
+    }
+}
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Serialize, Deserialize};
+    pub mod nc {
+        pub use neptune_cash::models::blockchain::transaction::utxo::Coin;
+        pub use neptune_cash::models::blockchain::transaction::utxo::Utxo;
+    }
+    #[test]
+    fn test_bincode_serialization_for_coin() {
+        let original_instance: Coin = todo!("Instantiate");
+        let nc_instance: nc::Coin = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_coin() {
+        let original_instance: Coin = todo!("Instantiate");
+        let nc_instance: nc::Coin = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_coin() {
+        let original_instance: Coin = todo!("Instantiate");
+        let nc_instance: nc::Coin = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
+    }
+    #[test]
+    fn test_bincode_serialization_for_utxo() {
+        let original_instance: Utxo = todo!("Instantiate");
+        let nc_instance: nc::Utxo = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_utxo() {
+        let original_instance: Utxo = todo!("Instantiate");
+        let nc_instance: nc::Utxo = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_utxo() {
+        let original_instance: Utxo = todo!("Instantiate");
+        let nc_instance: nc::Utxo = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
     }
 }

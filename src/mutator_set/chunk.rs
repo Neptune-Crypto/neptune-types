@@ -3,9 +3,7 @@ use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use twenty_first::prelude::*;
-
 use super::shared::CHUNK_SIZE;
-
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, GetSize, BFieldCodec)]
 #[cfg_attr(feature = "tasm-lib", derive(tasm_lib::prelude::TasmObject))]
 pub struct Chunk {
@@ -14,32 +12,25 @@ pub struct Chunk {
 
 impl Chunk {
     pub fn empty_chunk() -> Self {
-        Chunk {
-            relative_indices: vec![],
-        }
+        Chunk { relative_indices: vec![] }
     }
-
     pub fn is_empty(&self) -> bool {
         self.relative_indices.is_empty()
     }
-
     pub fn insert(&mut self, index: u32) {
         assert!(
             index < CHUNK_SIZE,
             "index cannot exceed chunk size in `insert`. CHUNK_SIZE = {}, got index = {}",
-            CHUNK_SIZE,
-            index
+            CHUNK_SIZE, index
         );
         self.relative_indices.push(index);
         self.relative_indices.sort();
     }
-
     pub fn remove_once(&mut self, index: u32) {
         assert!(
             index < CHUNK_SIZE,
             "index cannot exceed chunk size in `remove`. CHUNK_SIZE = {}, got index = {}",
-            CHUNK_SIZE,
-            index
+            CHUNK_SIZE, index
         );
         let mut drop = None;
         for i in 0..self.relative_indices.len() {
@@ -47,23 +38,18 @@ impl Chunk {
                 drop = Some(i);
             }
         }
-
         if let Some(d) = drop {
             self.relative_indices.remove(d);
         }
     }
-
     pub fn contains(&self, index: u32) -> bool {
         assert!(
             index < CHUNK_SIZE,
             "index cannot exceed chunk size in `contains`. CHUNK_SIZE = {}, got index = {}",
-            CHUNK_SIZE,
-            index
+            CHUNK_SIZE, index
         );
-
         self.relative_indices.contains(&index)
     }
-
     /// Return a chunk with indices which are the concatenation and sorting of indices in two input chunks
     pub fn combine(self, other: Self) -> Self {
         let mut ret = Self::empty_chunk();
@@ -76,39 +62,32 @@ impl Chunk {
         ret.relative_indices.sort();
         ret
     }
-
     pub fn subtract(&mut self, other: Self) {
         for remove_index in other.relative_indices {
-            // Find the 1st match and remove that
-            match self
-                .relative_indices
-                .iter()
-                .find_position(|x| **x == remove_index)
-            {
+            match self.relative_indices.iter().find_position(|x| **x == remove_index) {
                 Some((i, _)) => self.relative_indices.remove(i),
-                None => panic!("Attempted to remove index that was not present in chunk."),
+                None => {
+                    panic!("Attempted to remove index that was not present in chunk.")
+                }
             };
         }
     }
-
     pub fn to_indices(&self) -> Vec<u32> {
         self.relative_indices.clone()
     }
-
     pub fn from_indices(relative_indices: &[u32]) -> Self {
         Chunk {
             relative_indices: relative_indices.to_vec(),
         }
     }
-
     pub fn from_slice(sl: &[u32]) -> Chunk {
         Chunk {
             relative_indices: sl.to_vec(),
         }
     }
 }
-
-#[cfg(any(test, feature = "arbitrary-impls"))]
+///# [cfg (any (test , feature = "arbitrary-impls"))]
+#[cfg(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"))]
 impl<'a> Arbitrary<'a> for Chunk {
     fn arbitrary(u: &mut arbitrary::Unstructured<'a>) -> arbitrary::Result<Self> {
         let relative_indices = (0..10)
@@ -125,33 +104,27 @@ impl<'a> Arbitrary<'a> for Chunk {
         })
     }
 }
-
-#[cfg(test)]
+///# [cfg (test)]
+#[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use std::collections::HashMap;
     use std::collections::HashSet;
-
     use num_traits::Zero;
     use rand::rng;
     use rand::RngCore;
     use statrs::distribution::ContinuousCDF;
     use statrs::distribution::Normal;
     use twenty_first::math::b_field_element::BFieldElement;
-
     use super::*;
     use crate::util_types::mutator_set::shared::BATCH_SIZE;
     use crate::util_types::mutator_set::shared::NUM_TRIALS;
     use crate::util_types::mutator_set::shared::WINDOW_SIZE;
-
     #[test]
     fn chunk_is_reversible_bloom_filter() {
         let mut aw = Chunk::empty_chunk();
-
-        // Insert an index twice, remove it once and the verify that
-        // it is still there
         let index = 7;
-        assert!(!aw.contains(index));
+        assert!(! aw.contains(index));
         aw.insert(index);
         assert!(aw.contains(index));
         aw.insert(index);
@@ -159,19 +132,15 @@ mod tests {
         aw.remove_once(index);
         assert!(aw.contains(index));
         aw.remove_once(index);
-        assert!(!aw.contains(index));
-
-        // Verify that we can remove once without index being present, without crashing
+        assert!(! aw.contains(index));
         aw.remove_once(index);
     }
-
     #[test]
     fn insert_remove_contains_pbt() {
         let mut aw = Chunk::empty_chunk();
         for i in 0..CHUNK_SIZE {
-            assert!(!aw.contains(i));
+            assert!(! aw.contains(i));
         }
-
         let mut prng = rand::rng();
         for _ in 0..CHUNK_SIZE {
             let index = prng.next_u32() % CHUNK_SIZE;
@@ -179,49 +148,32 @@ mod tests {
             if set {
                 aw.insert(index);
             }
-
             assert_eq!(set, aw.contains(index));
-
             aw.remove_once(index);
         }
-
-        // Set all indices, then check that they are present
         for i in 0..CHUNK_SIZE {
             aw.insert(i);
         }
-
         for i in 0..CHUNK_SIZE {
             assert!(aw.contains(i));
         }
     }
-
     #[test]
     fn chunk_hashpreimage_test() {
         let zero_chunk = Chunk::empty_chunk();
-
-        // Encoded chunk is prepended with its length.
         let zero_chunk_preimage = zero_chunk.encode();
         println!("zero chunk preimage: {:?}", zero_chunk_preimage);
-        assert!(zero_chunk_preimage
-            .iter()
-            .skip(1)
-            .all(|elem| elem.is_zero()));
-
+        assert!(zero_chunk_preimage.iter().skip(1).all(| elem | elem.is_zero()));
         let mut one_chunk = Chunk::empty_chunk();
         one_chunk.insert(32);
         let one_chunk_preimage = one_chunk.encode();
-
         assert_ne!(zero_chunk_preimage, one_chunk_preimage);
-
         let mut two_ones_chunk = Chunk::empty_chunk();
         two_ones_chunk.insert(32);
         two_ones_chunk.insert(33);
         let two_ones_preimage = two_ones_chunk.encode();
-
         assert_ne!(two_ones_preimage, one_chunk_preimage);
         assert_ne!(two_ones_preimage, zero_chunk_preimage);
-
-        // Verify that inserting any index produces a unique hash-preimage value
         let mut previous_values: HashSet<Vec<BFieldElement>> = HashSet::new();
         for i in 0..CHUNK_SIZE {
             let mut chunk = Chunk::empty_chunk();
@@ -229,88 +181,53 @@ mod tests {
             assert!(previous_values.insert(chunk.encode()));
         }
     }
-
     #[test]
     fn subtract_and_combine_and_is_empty_test() {
         let mut chunk_a = Chunk::empty_chunk();
         chunk_a.insert(12);
         chunk_a.insert(13);
         chunk_a.insert(48);
-
         let mut chunk_b = Chunk::empty_chunk();
         chunk_b.insert(48);
         chunk_b.insert(13);
-
         let mut expected_sub = Chunk::empty_chunk();
         expected_sub.insert(12);
-
         let mut chunk_c = chunk_a.clone();
         chunk_c.subtract(chunk_b.clone());
-
-        assert_eq!(
-            expected_sub, chunk_c,
-            "subtract on chunks must behave as expected"
-        );
-
+        assert_eq!(expected_sub, chunk_c, "subtract on chunks must behave as expected");
         let mut expected_combine = Chunk::empty_chunk();
         expected_combine.insert(12);
         expected_combine.insert(13);
         expected_combine.insert(13);
         expected_combine.insert(48);
         expected_combine.insert(48);
-
         chunk_c = chunk_a.clone().combine(chunk_b.clone());
         assert_eq!(
-            expected_combine, chunk_c,
-            "combine on chunks must behave as expected"
+            expected_combine, chunk_c, "combine on chunks must behave as expected"
         );
-
-        // Verify that `is_empty` behaves as expected
-        assert!(!chunk_a.is_empty());
-        assert!(!chunk_b.is_empty());
-        assert!(!chunk_c.is_empty());
+        assert!(! chunk_a.is_empty());
+        assert!(! chunk_b.is_empty());
+        assert!(! chunk_c.is_empty());
         assert!(Chunk::empty_chunk().is_empty());
     }
-
     #[test]
     fn serialization_test() {
-        // TODO: You could argue that this test doesn't belong here, as it tests the behavior of
-        // an imported library. I included it here, though, because the setup seems a bit clumsy
-        // to me so far.
         let chunk = Chunk::empty_chunk();
         let json = serde_json::to_string(&chunk).unwrap();
         let s_back = serde_json::from_str::<Chunk>(&json).unwrap();
         assert!(s_back.relative_indices.is_empty());
     }
-
     proptest::proptest! {
-        #[test]
-        fn test_indices(indices in proptest::collection::vec(0u32..CHUNK_SIZE, 100)) {
-            let mut chunk = Chunk::empty_chunk();
-            for index in indices {
-                chunk.insert(index);
-            }
-
-            let chunk_indices = chunk.to_indices();
-            let reconstructed_chunk = Chunk::from_indices(&chunk_indices);
-
-            proptest::prop_assert_eq!(chunk, reconstructed_chunk);
-        }
-
-        #[test]
-        fn test_chunk_decode(indices in proptest::collection::vec(0u32..CHUNK_SIZE, 100)) {
-            let mut chunk = Chunk::empty_chunk();
-            for index in indices {
-                chunk.insert(index);
-            }
-
-            let encoded = chunk.encode();
-            let decoded = *Chunk::decode(&encoded).unwrap();
-
-            proptest::prop_assert_eq!(chunk, decoded);
-        }
+        #[test] fn test_indices(indices in proptest::collection::vec(0u32..CHUNK_SIZE,
+        100)) { let mut chunk = Chunk::empty_chunk(); for index in indices { chunk
+        .insert(index); } let chunk_indices = chunk.to_indices(); let reconstructed_chunk
+        = Chunk::from_indices(& chunk_indices); proptest::prop_assert_eq!(chunk,
+        reconstructed_chunk); } #[test] fn test_chunk_decode(indices in
+        proptest::collection::vec(0u32..CHUNK_SIZE, 100)) { let mut chunk =
+        Chunk::empty_chunk(); for index in indices { chunk.insert(index); } let encoded =
+        chunk.encode(); let decoded = * Chunk::decode(& encoded).unwrap();
+        proptest::prop_assert_eq!(chunk, decoded); }
     }
-
     /// Collect statistics about the typical number of elements in a `Chunk`.
     ///
     /// This information is relevant in the context of densly representing
@@ -346,8 +263,6 @@ mod tests {
     fn chunk_length_statistics() {
         const NUM_CHUNKS_IN_WINDOW: u32 = WINDOW_SIZE / CHUNK_SIZE;
         const N: u32 = NUM_CHUNKS_IN_WINDOW * NUM_TRIALS * BATCH_SIZE;
-
-        // sample histogram  chunk-size --> frequency
         let num_samples = 100000;
         let mut rng = rng();
         let mut hist = HashMap::<usize, usize>::new();
@@ -359,25 +274,16 @@ mod tests {
             }
             hist.entry(chunk_size).and_modify(|v| *v += 1).or_insert(1);
         }
-
-        // calculate mean and stddev
-        let mean: f64 = hist
-            .iter()
-            .map(|(k, v)| (*k as f64) * (*v as f64))
-            .sum::<f64>()
+        let mean: f64 = hist.iter().map(|(k, v)| (*k as f64) * (*v as f64)).sum::<f64>()
             / f64::from(num_samples);
         let variance: f64 = hist
             .iter()
             .map(|(k, v)| ((*k as f64) - mean) * ((*k as f64) - mean) * (*v as f64))
-            .sum::<f64>()
-            / f64::from(num_samples);
+            .sum::<f64>() / f64::from(num_samples);
         let stddev = variance.sqrt();
-
         println!("mean: {mean}");
         println!("variance: {variance}");
         println!("stddev: {stddev}");
-
-        // compute frequencies of large chunks
         for threshold in [500, 600, 700, 800, 900] {
             let excess = hist
                 .iter()
@@ -385,24 +291,47 @@ mod tests {
                 .map(|(_k, v)| *v)
                 .sum::<usize>();
             println!(
-                "tail mass >= {threshold}: {excess} / {num_samples} = {}",
-                (excess as f64) / f64::from(num_samples)
+                "tail mass >= {threshold}: {excess} / {num_samples} = {}", (excess as
+                f64) / f64::from(num_samples)
             );
         }
-
-        // modeling the distribution as Gaussian, what's the probability of
-        // having 4096 or more elements in one `Chunk`? The answer to this
-        // question could motivate using 12 bits to store its length.
         let gauss = Normal::new(mean, stddev).unwrap();
-        // let overfull_probability = gauss.cdf(4096);
-        // Actually, we want the right tail, corresponding to 1 minus the above
-        // quantity.
-        // Computing 1 - that is not very precise -- so we compute the
-        // equivalent left tail instead.
         let overfull_probability = gauss.cdf(-(4096.0 - mean) + mean);
         println!("Pr[#elements in Chunk >= 4096] ≈ {overfull_probability:e}");
-
-        // note that underflow might send a negligible but nonzero probability
-        // to 0e0.
+    }
+}
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Serialize, Deserialize};
+    pub mod nc {
+        pub use neptune_cash::util_types::mutator_set::chunk::Chunk;
+    }
+    #[test]
+    fn test_bincode_serialization_for_chunk() {
+        let original_instance: Chunk = todo!("Instantiate");
+        let nc_instance: nc::Chunk = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_chunk() {
+        let original_instance: Chunk = todo!("Instantiate");
+        let nc_instance: nc::Chunk = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_chunk() {
+        let original_instance: Chunk = todo!("Instantiate");
+        let nc_instance: nc::Chunk = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
     }
 }

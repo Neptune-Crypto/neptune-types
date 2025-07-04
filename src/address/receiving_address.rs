@@ -1,11 +1,9 @@
 //! provides an abstraction over key and address types.
-
 use anyhow::bail;
 use anyhow::Result;
 use serde::Deserialize;
 use serde::Serialize;
 use twenty_first::prelude::*;
-
 use super::generation_address;
 use super::symmetric_key;
 use super::KeyType;
@@ -13,25 +11,20 @@ use crate::lock_script::LockScript;
 use crate::network::Network;
 use crate::public_announcement::PublicAnnouncement;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
-
-// note: assigning the flags to `KeyType` variants as discriminants has bonus
-// that we get a compiler verification that values do not conflict.  which is
-// nice since they are (presently) defined in separate files.
-//
-// anyway it is a desirable property that KeyType variants match the values
-// actually stored in PublicAnnouncement.
-
 /// Represents any type of Neptune receiving Address.
 ///
 /// This enum provides an abstraction API for Address types, so that
 /// a method or struct may simply accept a `ReceivingAddress` and be
 /// forward-compatible with new types of Address as they are implemented.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
+///# [cfg_attr (any (test , feature = "arbitrary-impls") , derive (arbitrary :: Arbitrary))]
+#[cfg_attr(
+    any(all(test, feature = "original-tests"), feature = "arbitrary-impls"),
+    derive(arbitrary::Arbitrary)
+)]
 pub enum ReceivingAddress {
     /// a [generation_address]
     Generation(Box<generation_address::GenerationReceivingAddress>),
-
     /// a [symmetric_key] acting as an address.
     Symmetric(symmetric_key::SymmetricKey),
 }
@@ -62,12 +55,10 @@ impl From<&symmetric_key::SymmetricKey> for ReceivingAddress {
 
 impl TryFrom<ReceivingAddress> for generation_address::GenerationReceivingAddress {
     type Error = anyhow::Error;
-
     fn try_from(a: ReceivingAddress) -> Result<Self> {
         let ReceivingAddress::Generation(a) = a else {
             bail!("not a generation address");
         };
-
         Ok(*a)
     }
 }
@@ -80,7 +71,6 @@ impl ReceivingAddress {
             Self::Symmetric(a) => a.receiver_identifier(),
         }
     }
-
     /// generates a [PublicAnnouncement] for an output Utxo
     ///
     /// The public announcement contains a [`Vec<BFieldElement>`] with fields:
@@ -104,7 +94,6 @@ impl ReceivingAddress {
             }
         }
     }
-
     pub fn private_notification(
         &self,
         utxo_notification_payload: UtxoNotificationPayload,
@@ -116,11 +105,11 @@ impl ReceivingAddress {
                     .private_utxo_notification(&utxo_notification_payload, network)
             }
             ReceivingAddress::Symmetric(symmetric_key) => {
-                symmetric_key.private_utxo_notification(&utxo_notification_payload, network)
+                symmetric_key
+                    .private_utxo_notification(&utxo_notification_payload, network)
             }
         }
     }
-
     /// returns the `spending_lock`
     pub fn spending_lock(&self) -> Digest {
         match self {
@@ -128,7 +117,6 @@ impl ReceivingAddress {
             Self::Symmetric(k) => k.lock_after_image(),
         }
     }
-
     /// returns a privacy digest which corresponds to the.privacy_preimage(),
     /// of the matching [SpendingKey](super::SpendingKey)
     pub fn privacy_digest(&self) -> Digest {
@@ -137,9 +125,9 @@ impl ReceivingAddress {
             Self::Symmetric(k) => k.privacy_digest(),
         }
     }
-
     /// encrypts a [Utxo] and `sender_randomness` secret for purpose of transferring to payment recipient
-    #[cfg(test)]
+    ///# [cfg (test)]
+    #[cfg(all(test, feature = "original-tests"))]
     pub(crate) fn encrypt(
         &self,
         utxo_notification_payload: &UtxoNotificationPayload,
@@ -149,7 +137,6 @@ impl ReceivingAddress {
             Self::Symmetric(a) => a.encrypt(utxo_notification_payload),
         }
     }
-
     /// encodes this address as bech32m
     ///
     /// For any key-type, the resulting bech32m can be provided as input to
@@ -166,7 +153,6 @@ impl ReceivingAddress {
             Self::Symmetric(k) => k.to_bech32m(network),
         }
     }
-
     /// returns an abbreviated bech32m encoded address.
     ///
     /// This method *may* reveal secret-key information for some key-types.  For
@@ -185,7 +171,6 @@ impl ReceivingAddress {
     pub fn to_bech32m_abbreviated(&self, network: Network) -> Result<String> {
         Ok(self.bech32m_abbreviate(self.to_bech32m(network)?, network))
     }
-
     /// returns a bech32m string suitable for display purposes.
     ///
     /// This method does not reveal secret-key information for any key-type.
@@ -203,7 +188,6 @@ impl ReceivingAddress {
             Self::Symmetric(k) => k.to_display_bech32m(network),
         }
     }
-
     /// returns an abbreviated address suitable for display purposes.
     ///
     /// This method does not reveal secret-key information for any key-type.
@@ -221,38 +205,29 @@ impl ReceivingAddress {
         Ok(self.bech32m_abbreviate(self.to_display_bech32m(network)?, network))
     }
 
-    fn bech32m_abbreviate(&self, bech32m: String, network: Network) -> String {
+fn bech32m_abbreviate(&self, bech32m: String, network: Network) -> String {
         let first_len = self.get_hrp(network).len() + 12usize;
         let last_len = 12usize;
-
         assert!(bech32m.len() > first_len + last_len);
-
         let (first, _) = bech32m.split_at(first_len);
         let (_, last) = bech32m.split_at(bech32m.len() - last_len);
-
         format!("{first}...{last}")
     }
-
     /// parses an address from its bech32m encoding
     pub fn from_bech32m(encoded: &str, network: Network) -> Result<Self> {
-        if let Ok(addr) =
-            generation_address::GenerationReceivingAddress::from_bech32m(encoded, network)
-        {
+        if let Ok(addr) = generation_address::GenerationReceivingAddress::from_bech32m(
+            encoded,
+            network,
+        ) {
             return Ok(addr.into());
         }
-
         let key = symmetric_key::SymmetricKey::from_bech32m(encoded, network)?;
         Ok(key.into())
-
-        // when future addr types are supported, we would attempt each type in
-        // turn.
     }
-
     /// returns human-readable-prefix (hrp) for a given network
     pub fn get_hrp(&self, network: Network) -> String {
         KeyType::from(self).get_hrp(network)
     }
-
     /// generates a lock script from the spending lock.
     ///
     /// Satisfaction of this lock script establishes the UTXO owner's assent to
@@ -263,9 +238,43 @@ impl ReceivingAddress {
             Self::Symmetric(k) => k.lock_script(),
         }
     }
-
     /// returns true if the [PublicAnnouncement] has a type-flag that matches the type of this address.
     pub fn matches_public_announcement_key_type(&self, pa: &PublicAnnouncement) -> bool {
         matches!(KeyType::try_from(pa), Ok(kt) if kt == KeyType::from(self))
+    }
+}
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Serialize, Deserialize};
+    pub mod nc {
+        pub use neptune_cash::api::export::ReceivingAddress;
+    }
+    #[test]
+    fn test_bincode_serialization_for_receiving_address() {
+        let original_instance: ReceivingAddress = todo!("Instantiate");
+        let nc_instance: nc::ReceivingAddress = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_receiving_address() {
+        let original_instance: ReceivingAddress = todo!("Instantiate");
+        let nc_instance: nc::ReceivingAddress = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_receiving_address() {
+        let original_instance: ReceivingAddress = todo!("Instantiate");
+        let nc_instance: nc::ReceivingAddress = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
     }
 }

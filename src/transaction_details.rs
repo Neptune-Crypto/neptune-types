@@ -1,25 +1,15 @@
 use std::fmt::Display;
-
-// use anyhow::Result;
 use itertools::Itertools;
 use num_traits::CheckedSub;
 use num_traits::Zero;
 use serde::Deserialize;
 use serde::Serialize;
-// use twenty_first::prelude::*;
-
 use crate::network::Network;
-// use crate::tx_output::TxOutput;
-// use crate::utxo_notification::UtxoNotifyMethod;
-// use crate::models::blockchain::block::MINING_REWARD_TIME_LOCK_PERIOD;
-// use crate::models::blockchain::transaction::primitive_witness::PrimitiveWitness;
-// use crate::models::blockchain::transaction::primitive_witness::WitnessValidationError;
 use crate::mutator_set::mutator_set_accumulator::MutatorSetAccumulator;
 use crate::native_currency_amount::NativeCurrencyAmount;
 use crate::timestamp::Timestamp;
 use crate::tx_input::TxInputList;
 use crate::tx_output::TxOutputList;
-
 /// contains the unblinded data that a [Transaction](crate::models::blockchain::transaction::Transaction) is generated from,
 /// minus the [TransactionProof](crate::models::blockchain::transaction::TransactionProof).
 ///
@@ -48,7 +38,6 @@ pub struct TransactionDetails {
     pub network: Network,
 }
 
-// so we can emit a detailed log msg when sending a transaction.
 impl Display for TransactionDetails {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -66,121 +55,19 @@ impl Display for TransactionDetails {
     owned_outputs: {},
     network: {},
 "#,
-            self.timestamp.standard_format(),
-            self.spend_amount(),
-            self.tx_inputs.total_native_coins(),
-            self.tx_outputs.total_native_coins(),
-            self.fee,
-            self.coinbase.unwrap_or_else(NativeCurrencyAmount::zero),
-            self.tx_inputs
-                .iter()
-                .map(|o| o.native_currency_amount())
-                .join(", "),
-            self.tx_outputs
-                .iter()
-                .map(|o| o.native_currency_amount())
-                .join(", "),
-            self.tx_outputs
-                .change_iter()
-                .map(|o| o.native_currency_amount())
-                .join(", "),
-            self.tx_outputs
-                .owned_iter()
-                .map(|o| o.native_currency_amount())
-                .join(", "),
+            self.timestamp.standard_format(), self.spend_amount(), self.tx_inputs
+            .total_native_coins(), self.tx_outputs.total_native_coins(), self.fee, self
+            .coinbase.unwrap_or_else(NativeCurrencyAmount::zero), self.tx_inputs.iter()
+            .map(| o | o.native_currency_amount()).join(", "), self.tx_outputs.iter()
+            .map(| o | o.native_currency_amount()).join(", "), self.tx_outputs
+            .change_iter().map(| o | o.native_currency_amount()).join(", "), self
+            .tx_outputs.owned_iter().map(| o | o.native_currency_amount()).join(", "),
             self.network,
         )
     }
 }
 
 impl TransactionDetails {
-    /*
-        /// Create (`TransactionDetails` for) a nop-transaction, with no inputs and
-        /// no outputs. Can be used if a merge bit needs to be flipped.
-        pub(crate) fn nop(
-            mutator_set_accumulator: MutatorSetAccumulator,
-            now: Timestamp,
-            network: Network,
-        ) -> Self {
-            Self::fee_gobbler(
-                NativeCurrencyAmount::zero(),
-                Digest::default(),
-                mutator_set_accumulator,
-                now,
-                UtxoNotifyMethod::None,
-                network,
-            )
-        }
-
-        /// Create (`TransactionDetails` for) a new fee-gobbler transaction.
-        ///
-        /// The produced transaction has no inputs, sets a negative fee, and
-        /// distributes it over two UTXOs (one time-locked and one liquid
-        /// immediately) of which both are locked to the given lock script hash.
-        /// The produced transaction is supported by a [`PrimitiveWitness`], so
-        /// the caller still needs a follow-up proving operation.
-        pub(crate) fn fee_gobbler(
-            gobbled_fee: NativeCurrencyAmount,
-            sender_randomness: Digest,
-            mutator_set_accumulator: MutatorSetAccumulator,
-            now: Timestamp,
-            notification_method: UtxoNotifyMethod,
-            network: Network,
-        ) -> Self {
-            let gobbling_utxos = if gobbled_fee.is_zero() {
-                vec![]
-            } else {
-                let mut amount_liquid = gobbled_fee;
-                amount_liquid.div_two();
-                let amount_timelocked = gobbled_fee.checked_sub(&amount_liquid).unwrap();
-                match notification_method {
-                    UtxoNotifyMethod::OnChain(receiving_address) => vec![
-                        TxOutput::onchain_native_currency(
-                            amount_liquid,
-                            sender_randomness,
-                            receiving_address.clone(),
-                            true, // owned
-                        ),
-                        TxOutput::onchain_native_currency(
-                            amount_timelocked,
-                            sender_randomness,
-                            receiving_address,
-                            true, // owned
-                        )
-                        .with_time_lock(now + MINING_REWARD_TIME_LOCK_PERIOD),
-                    ],
-                    UtxoNotifyMethod::OffChain(receiving_address) => vec![
-                        TxOutput::offchain_native_currency(
-                            amount_liquid,
-                            sender_randomness,
-                            receiving_address.clone(),
-                            true, // owned
-                        ),
-                        TxOutput::offchain_native_currency(
-                            amount_timelocked,
-                            sender_randomness,
-                            receiving_address,
-                            true, // owned
-                        )
-                        .with_time_lock(now + MINING_REWARD_TIME_LOCK_PERIOD),
-                    ],
-                    UtxoNotifyMethod::None => {
-                        panic!("Cannot produce fee gobbler transaction without UTXO notification")
-                    }
-                }
-            };
-
-            TransactionDetails::new_without_coinbase(
-                TxInputList::empty(),
-                gobbling_utxos,
-                -gobbled_fee,
-                now,
-                mutator_set_accumulator,
-                network,
-            )
-        }
-    */
-
     /// Construct a [`TransactionDetails`] instance with coinbase from state
     /// information.
     ///
@@ -208,7 +95,6 @@ impl TransactionDetails {
             network,
         )
     }
-
     /// Construct a [`TransactionDetails`] instance without coinbase from state
     /// information.
     ///
@@ -235,7 +121,6 @@ impl TransactionDetails {
             network,
         )
     }
-
     /// Constructor for TransactionDetails with some sanity checks.
     ///
     /// This fn does not perform any validation.  use validate() instead.
@@ -258,52 +143,35 @@ impl TransactionDetails {
             network,
         }
     }
-
     /// amount spent (excludes change and fee)
     ///
     /// ie: sum(inputs) - (change + fee)
     pub fn spend_amount(&self) -> NativeCurrencyAmount {
         let not_spend = self.tx_outputs.change_amount() + self.fee;
-
-        // sum(inputs) - (change + fee)
         self.tx_inputs
             .total_native_coins()
             .checked_sub(&not_spend)
             .unwrap_or_else(NativeCurrencyAmount::zero)
     }
-    /*
-        /// verifies the transaction details are valid.
-        ///
-        /// specifically, a [PrimitiveWitness] is built from these
-        /// details and validated.
-        pub async fn validate(&self) -> Result<(), WitnessValidationError> {
-            PrimitiveWitness::from_transaction_details(self)
-                .validate()
-                .await
-        }
-
-        pub fn primitive_witness(&self) -> PrimitiveWitness {
-            self.into()
-        }
-    */
 }
-
-#[cfg(test)]
+///# [cfg (test)]
+#[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use proptest_arbitrary_interop::arb;
     use test_strategy::proptest;
-
     use super::*;
-
     #[proptest]
     fn test_fee_gobbler_properties(
         #[strategy(NativeCurrencyAmount::arbitrary_non_negative())]
         gobbled_fee: NativeCurrencyAmount,
-        #[strategy(arb())] sender_randomness: Digest,
-        #[strategy(arb())] mutator_set_accumulator: MutatorSetAccumulator,
-        #[strategy(arb())] now: Timestamp,
-        #[filter(#notification_method != UtxoNotifyMethod::None)]
+        #[strategy(arb())]
+        sender_randomness: Digest,
+        #[strategy(arb())]
+        mutator_set_accumulator: MutatorSetAccumulator,
+        #[strategy(arb())]
+        now: Timestamp,
+        #[filter(#notification_method!= UtxoNotifyMethod::None)]
         #[strategy(arb())]
         notification_method: UtxoNotifyMethod,
     ) {
@@ -315,48 +183,69 @@ mod tests {
             notification_method,
             Network::Main,
         );
-
-        assert!(
-            fee_gobbler.tx_inputs.is_empty(),
-            "fee gobbler must have no inputs"
-        );
-
+        assert!(fee_gobbler.tx_inputs.is_empty(), "fee gobbler must have no inputs");
         assert_eq!(
-            NativeCurrencyAmount::zero(),
-            fee_gobbler
-                .tx_outputs
-                .iter()
-                .map(|txo| txo.utxo().get_native_currency_amount())
-                .sum::<NativeCurrencyAmount>()
-                + fee_gobbler.fee,
-            "total transaction amount must be zero for fee gobbler"
+            NativeCurrencyAmount::zero(), fee_gobbler.tx_outputs.iter().map(| txo | txo
+            .utxo().get_native_currency_amount()).sum::< NativeCurrencyAmount > () +
+            fee_gobbler.fee, "total transaction amount must be zero for fee gobbler"
         );
-
         assert!(
             fee_gobbler.fee.is_negative() || fee_gobbler.fee.is_zero(),
-            "fee must be negative or zero; got {}",
-            fee_gobbler.fee
+            "fee must be negative or zero; got {}", fee_gobbler.fee
         );
-
         let mut half_of_fee = fee_gobbler.fee;
         half_of_fee.div_two();
-
         let time_locked_amount = fee_gobbler
             .tx_outputs
             .iter()
             .map(|txo| txo.utxo())
             .filter(|utxo| match utxo.release_date() {
-                Some(date) => date >= fee_gobbler.timestamp + MINING_REWARD_TIME_LOCK_PERIOD,
+                Some(date) => {
+                    date >= fee_gobbler.timestamp + MINING_REWARD_TIME_LOCK_PERIOD
+                }
                 None => false,
             })
             .map(|utxo| utxo.get_native_currency_amount())
             .sum::<NativeCurrencyAmount>();
         assert!(
-            -half_of_fee
-                <= time_locked_amount,
+            - half_of_fee <= time_locked_amount,
             "at least half of negative-fee must be time-locked\nhalf of negative fee: {}\ntime-locked amount: {}",
-            -half_of_fee,
-            time_locked_amount,
+            - half_of_fee, time_locked_amount,
+        );
+    }
+}
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Serialize, Deserialize};
+    pub mod nc {
+        pub use neptune_cash::api::export::TransactionDetails;
+    }
+    #[test]
+    fn test_bincode_serialization_for_transaction_details() {
+        let original_instance: TransactionDetails = todo!("Instantiate");
+        let nc_instance: nc::TransactionDetails = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_transaction_details() {
+        let original_instance: TransactionDetails = todo!("Instantiate");
+        let nc_instance: nc::TransactionDetails = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_transaction_details() {
+        let original_instance: TransactionDetails = todo!("Instantiate");
+        let nc_instance: nc::TransactionDetails = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
         );
     }
 }

@@ -3,7 +3,6 @@ use std::cmp::Ordering;
 use std::fmt::Display;
 use std::ops::Add;
 use std::ops::Sub;
-
 use get_size2::GetSize;
 use num_traits::ConstZero;
 use num_traits::One;
@@ -12,67 +11,59 @@ use serde::Deserialize;
 use serde::Serialize;
 use twenty_first::math::b_field_element::BFieldElement;
 use twenty_first::math::bfield_codec::BFieldCodec;
-
 use twenty_first;
-
 /// The distance, in number of blocks, to the genesis block.
 ///
 /// This struct wraps around a [`BFieldElement`], so the maximum block height
 /// is P-1 = 2^64 - 2^32. With an average block time of 588 seconds, this
 /// maximum will be reached roughly 344 trillion years after launch. Not urgent.
 #[derive(
-    Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, Hash, BFieldCodec, GetSize,
+    Clone,
+    Copy,
+    Debug,
+    Default,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    Hash,
+    BFieldCodec,
+    GetSize,
 )]
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
+///# [cfg_attr (any (test , feature = "arbitrary-impls") , derive (arbitrary :: Arbitrary))]
+#[cfg_attr(
+    any(all(test, feature = "original-tests"), feature = "arbitrary-impls"),
+    derive(arbitrary::Arbitrary)
+)]
 pub struct BlockHeight(BFieldElement);
-
-// Assuming a block time of 588 seconds, and a halving every three years,
-// the number of blocks per halving cycle is 160815.
 pub const BLOCKS_PER_GENERATION: u64 = 160815;
-
 impl BlockHeight {
     pub const MAX: u64 = BFieldElement::MAX;
-
     pub const fn new(value: BFieldElement) -> Self {
         Self(value)
     }
-
     pub fn get_generation(&self) -> u64 {
         self.0.value() / BLOCKS_PER_GENERATION
     }
-
     pub fn next(&self) -> Self {
         Self(self.0 + BFieldElement::one())
     }
-
     pub fn previous(&self) -> Option<Self> {
-        if self.is_genesis() {
-            None
-        } else {
-            Some(Self(self.0 - BFieldElement::one()))
-        }
+        if self.is_genesis() { None } else { Some(Self(self.0 - BFieldElement::one())) }
     }
-
     pub const fn genesis() -> Self {
         Self(BFieldElement::ZERO)
     }
-
     pub fn is_genesis(&self) -> bool {
         self.0.is_zero()
     }
-
     pub fn arithmetic_mean(left: Self, right: Self) -> Self {
-        // Calculate arithmetic mean, without risk of overflow.
         let left = left.0.value();
         let right = right.0.value();
         let ret = (left / 2) + (right / 2) + (left % 2 + right % 2) / 2;
-
         Self(BFieldElement::new(ret))
     }
-
     /// Subtract a number from a block height.
-    //
-    // *NOT* implemented as trait `CheckedSub` because of type mismatch.
     pub fn checked_sub(&self, v: u64) -> Option<Self> {
         self.0.value().checked_sub(v).map(|x| x.into())
     }
@@ -110,7 +101,6 @@ impl Ord for BlockHeight {
 
 impl Add<usize> for BlockHeight {
     type Output = BlockHeight;
-
     fn add(self, rhs: usize) -> Self::Output {
         Self(BFieldElement::new(self.0.value() + rhs as u64))
     }
@@ -118,7 +108,6 @@ impl Add<usize> for BlockHeight {
 
 impl Sub for BlockHeight {
     type Output = i128;
-
     fn sub(self, rhs: Self) -> Self::Output {
         i128::from(self.0.value()) - i128::from(rhs.0.value())
     }
@@ -135,15 +124,14 @@ impl Display for BlockHeight {
         write!(f, "{}", u64::from(self.0))
     }
 }
-
-#[cfg(test)]
+///# [cfg (test)]
+#[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use macro_rules_attr::apply;
     use num_traits::CheckedAdd;
     use num_traits::CheckedSub;
     use tracing_test::traced_test;
-
     use super::*;
     use crate::models::blockchain::block::tests::PREMINE_MAX_SIZE;
     use crate::models::blockchain::block::Block;
@@ -151,56 +139,45 @@ mod tests {
     use crate::models::blockchain::type_scripts::native_currency_amount::NativeCurrencyAmount;
     use crate::models::proof_abstractions::timestamp::Timestamp;
     use crate::tests::shared_tokio_runtime;
-
     #[traced_test]
     #[apply(shared_tokio_runtime)]
     async fn genesis_test() {
         assert!(BlockHeight::genesis().is_genesis());
-        assert!(!BlockHeight::genesis().next().is_genesis());
+        assert!(! BlockHeight::genesis().next().is_genesis());
     }
-
     #[test]
     fn block_interval_times_generation_count_is_three_years() {
         let network = Network::Main;
-        let calculated_halving_time =
-            network.target_block_interval() * (BLOCKS_PER_GENERATION as usize);
+        let calculated_halving_time = network.target_block_interval()
+            * (BLOCKS_PER_GENERATION as usize);
         let calculated_halving_time = calculated_halving_time.to_millis();
         let three_years = Timestamp::years(3);
         let three_years = three_years.to_millis();
         assert!(
-            (calculated_halving_time as f64) * 1.01 > three_years as f64
-                && (calculated_halving_time as f64) * 0.99 < three_years as f64,
+            (calculated_halving_time as f64) * 1.01 > three_years as f64 &&
+            (calculated_halving_time as f64) * 0.99 < three_years as f64,
             "target halving time must be within 1 % of 3 years. Got:\n\
             three years = {three_years}ms\n calculated_halving_time = {calculated_halving_time}ms"
         );
     }
-
     #[test]
     fn asymptotic_limit_is_42_million() {
         let generation_0_subsidy = Block::block_subsidy(BlockHeight::genesis().next());
-
-        // Genesis block does not contain block subsidy so it must be subtracted
-        // from total number.
         let mineable_amount = generation_0_subsidy
             .scalar_mul(BLOCKS_PER_GENERATION as u32)
             .scalar_mul(2)
             .checked_sub(&generation_0_subsidy)
             .unwrap();
-
         println!("mineable_amount: {mineable_amount}");
         let designated_premine = PREMINE_MAX_SIZE;
         let asymptotic_limit = mineable_amount.checked_add(&designated_premine).unwrap();
-
         let expected_limit = NativeCurrencyAmount::coins(42_000_000);
         assert_eq!(expected_limit, asymptotic_limit);
-
-        // Premine is less than promise of 1.98 %
-        let relative_premine = designated_premine.to_nau_f64() / expected_limit.to_nau_f64();
+        let relative_premine = designated_premine.to_nau_f64()
+            / expected_limit.to_nau_f64();
         println!("relative_premine: {relative_premine}");
         println!("absolute premine: {designated_premine} coins");
         assert!(relative_premine < 0.0198, "Premine may not exceed promise");
-
-        // Designated premine is less than or equal to allocation
         let actual_premine = Block::premine_distribution()
             .iter()
             .map(|(_receiving_address, amount)| *amount)
@@ -208,6 +185,41 @@ mod tests {
         assert!(
             actual_premine <= designated_premine,
             "Distributed premine may not exceed designated value"
+        );
+    }
+}
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Serialize, Deserialize};
+    pub mod nc {
+        pub use neptune_cash::api::export::BlockHeight;
+    }
+    #[test]
+    fn test_bincode_serialization_for_block_height() {
+        let original_instance: BlockHeight = BlockHeight::default();
+        let nc_instance: nc::BlockHeight = neptune_cash::api::export::BlockHeight::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_block_height() {
+        let original_instance: BlockHeight = BlockHeight::default();
+        let nc_instance: nc::BlockHeight = neptune_cash::api::export::BlockHeight::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_block_height() {
+        let original_instance: BlockHeight = BlockHeight::default();
+        let nc_instance: nc::BlockHeight = neptune_cash::api::export::BlockHeight::default();
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
         );
     }
 }

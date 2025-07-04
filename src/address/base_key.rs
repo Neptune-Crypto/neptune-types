@@ -1,12 +1,9 @@
 //! provides an abstraction over all spending key types.
-
 use anyhow::bail;
 use anyhow::Result;
 use serde::Deserialize;
 use serde::Serialize;
 use twenty_first::prelude::*;
-// use tracing::warn;
-
 use super::common;
 use super::generation_address;
 use super::hash_lock_key;
@@ -17,15 +14,6 @@ use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
 use crate::public_announcement::PublicAnnouncement;
 use crate::utxo::Utxo;
-// use crate::BFieldElement;
-
-// note: assigning the flags to `BaseKeyType` variants as discriminants has bonus
-// that we get a compiler verification that values do not conflict.  which is
-// nice since they are (presently) defined in separate files.
-//
-// anyway it is a desirable property that BaseKeyType variants match the values
-// actually stored in PublicAnnouncement.
-
 /// Enumerates available cryptographic key implementations for sending funds.
 ///
 /// In most (but not all) cases there is a matching address.
@@ -37,12 +25,10 @@ use crate::utxo::Utxo;
 pub enum BaseKeyType {
     /// To unlock, prove knowledge of the preimage.
     RawHashLock = hash_lock_key::RAW_HASH_LOCK_KEY_FLAG_U8,
-
     /// [generation_address] built on [crate::prelude::twenty_first::math::lattice::kem]
     ///
     /// wraps a symmetric key built on aes-256-gcm
     Generation = generation_address::GENERATION_FLAG_U8,
-
     /// [symmetric_key] built on aes-256-gcm
     Symmetric = symmetric_key::SYMMETRIC_KEY_FLAG_U8,
 }
@@ -84,7 +70,6 @@ impl From<BaseKeyType> for BFieldElement {
 
 impl TryFrom<&PublicAnnouncement> for BaseKeyType {
     type Error = anyhow::Error;
-
     fn try_from(pa: &PublicAnnouncement) -> Result<Self> {
         match common::key_type_from_public_announcement(pa) {
             Ok(kt) if kt == Self::Generation.into() => Ok(Self::Generation),
@@ -100,7 +85,6 @@ impl BaseKeyType {
         vec![Self::RawHashLock, Self::Generation, Self::Symmetric]
     }
 }
-
 /// Represents cryptographic data necessary for spending funds (or, more
 /// specifically, for unlocking UTXOs).
 ///
@@ -116,10 +100,8 @@ impl BaseKeyType {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum BaseSpendingKey {
     RawHashLock(hash_lock_key::HashLockKey),
-
     /// a key from [generation_address]
     Generation(generation_address::GenerationSpendingKey),
-
     /// a [symmetric_key]
     Symmetric(symmetric_key::SymmetricKey),
 }
@@ -142,17 +124,6 @@ impl From<symmetric_key::SymmetricKey> for BaseSpendingKey {
     }
 }
 
-// future improvements: a strong argument can be made that this type
-// (and the key types it wraps) should not have any methods with
-// outside types as parameters.  for example:
-//
-// pub fn scan_for_announced_utxos(
-//     &self,
-//     tx_kernel: &TransactionKernel,
-// ) -> Vec<IncomingUtxo> {
-//
-// this method is dealing with types far outside the concern of
-// a key, which means this method belongs elsewhere.
 impl BaseSpendingKey {
     /// returns the address that corresponds to this spending key.
     pub fn to_address(&self) -> Option<ReceivingAddress> {
@@ -162,28 +133,28 @@ impl BaseSpendingKey {
             Self::RawHashLock(_) => None,
         }
     }
-
     /// Return the lock script and its witness
     pub fn lock_script_and_witness(&self) -> LockScriptAndWitness {
         match self {
             BaseSpendingKey::Generation(generation_spending_key) => {
                 generation_spending_key.lock_script_and_witness()
             }
-            BaseSpendingKey::Symmetric(symmetric_key) => symmetric_key.lock_script_and_witness(),
-            BaseSpendingKey::RawHashLock(raw_hash_lock) => raw_hash_lock.lock_script_and_witness(),
+            BaseSpendingKey::Symmetric(symmetric_key) => {
+                symmetric_key.lock_script_and_witness()
+            }
+            BaseSpendingKey::RawHashLock(raw_hash_lock) => {
+                raw_hash_lock.lock_script_and_witness()
+            }
         }
     }
-
     pub fn lock_script(&self) -> LockScript {
         LockScript {
             program: self.lock_script_and_witness().program,
         }
     }
-
     pub fn lock_script_hash(&self) -> Digest {
         self.lock_script().hash()
     }
-
     /// Return the privacy preimage if this spending key has a corresponding
     /// receiving address.
     ///
@@ -196,7 +167,6 @@ impl BaseSpendingKey {
             Self::RawHashLock { .. } => None,
         }
     }
-
     /// Return the receiver_identifier if this spending key has a corresponding
     /// receiving address.
     ///
@@ -217,7 +187,6 @@ impl BaseSpendingKey {
             Self::RawHashLock { .. } => None,
         }
     }
-
     /// Decrypt a slice of BFieldElement into a [Utxo] and [Digest] representing
     /// `sender_randomness`, if this spending key has a corresponding receiving
     /// address.
@@ -227,7 +196,10 @@ impl BaseSpendingKey {
     ///  - `None` if this spending key has no associated receiving address.
     ///  - `Some(Err(..))` if decryption failed.
     ///  - `Some(Ok(..))` if decryption succeeds.
-    pub fn decrypt(&self, ciphertext_bfes: &[BFieldElement]) -> Option<Result<(Utxo, Digest)>> {
+    pub fn decrypt(
+        &self,
+        ciphertext_bfes: &[BFieldElement],
+    ) -> Option<Result<(Utxo, Digest)>> {
         let result = match self {
             Self::Generation(k) => k.decrypt(ciphertext_bfes),
             Self::Symmetric(k) => k.decrypt(ciphertext_bfes).map_err(anyhow::Error::new),
@@ -237,7 +209,6 @@ impl BaseSpendingKey {
         };
         Some(result)
     }
-
     /// Scans all public announcements in a `Transaction` and return all
     /// UTXOs that are recognized by this spending key.
     ///
@@ -251,60 +222,111 @@ impl BaseSpendingKey {
         &self,
         public_announcements: impl Iterator<Item = &'a PublicAnnouncement>,
     ) -> Vec<IncomingUtxo> {
-        // pre-compute some fields, and early-abort if key cannot receive.
         let Some(receiver_identifier) = self.receiver_identifier() else {
             return vec![];
         };
         let Some(receiver_preimage) = self.privacy_preimage() else {
             return vec![];
         };
-
-        // for all public announcements
         public_announcements
-
-            // ... that are marked as encrypted to our key type
             .filter(|pa| self.matches_public_announcement_key_type(pa))
-
-            // ... that match the receiver_id of this key
             .filter(move |pa| {
-                matches!(common::receiver_identifier_from_public_announcement(pa), Ok(r) if r == receiver_identifier)
+                matches!(
+                    common::receiver_identifier_from_public_announcement(pa), Ok(r) if r
+                    == receiver_identifier
+                )
             })
-
-            // ... that have a ciphertext field
-            .filter_map(|pa| self.ok_warn(common::ciphertext_from_public_announcement(pa)))
-
-            // ... which can be decrypted with this key
-            .filter_map(|c| self.ok_warn(self.decrypt(&c).expect("non-hash-lock key should have decryption option")))
-
-            // ... map to IncomingUtxo
+            .filter_map(|pa| {
+                self.ok_warn(common::ciphertext_from_public_announcement(pa))
+            })
+            .filter_map(|c| {
+                self
+                    .ok_warn(
+                        self
+                            .decrypt(&c)
+                            .expect("non-hash-lock key should have decryption option"),
+                    )
+            })
             .map(move |(utxo, sender_randomness)| {
-                // and join those with the receiver digest to get a commitment
-                // Note: the commitment is computed in the same way as in the mutator set.
                 IncomingUtxo {
                     utxo,
                     sender_randomness,
                     receiver_preimage,
                 }
-            }).collect()
+            })
+            .collect()
     }
-
     /// converts a result into an Option and logs a warning on any error
     fn ok_warn<T>(&self, result: Result<T>) -> Option<T> {
         let Some(_receiver_identifier) = self.receiver_identifier() else {
-            panic!("Cannot call `ok_warn` unless the spending key has an associated address.");
+            panic!(
+                "Cannot call `ok_warn` unless the spending key has an associated address."
+            );
         };
         match result {
             Ok(v) => Some(v),
-            Err(_e) => {
-                // todo!
-                // warn!("possible loss of funds! skipping public announcement for {:?} key with receiver_identifier: {}.  error: {}", BaseKeyType::from(self), receiver_identifier, e.to_string());
-                None
-            }
+            Err(_e) => None,
         }
     }
-
     /// returns true if the [PublicAnnouncement] has a type-flag that matches the type of this key
     fn matches_public_announcement_key_type(&self, pa: &PublicAnnouncement) -> bool {
         matches!(BaseKeyType::try_from(pa), Ok(kt) if kt == BaseKeyType::from(self))
+    }
+}
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Serialize, Deserialize};
+    pub mod nc {
+        pub use neptune_cash::models::state::wallet::address::BaseKeyType;
+        pub use neptune_cash::models::state::wallet::address::BaseSpendingKey;
+    }
+    #[test]
+    fn test_bincode_serialization_for_base_key_type() {
+        let original_instance: BaseKeyType = todo!("Instantiate");
+        let nc_instance: nc::BaseKeyType = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_base_key_type() {
+        let original_instance: BaseKeyType = todo!("Instantiate");
+        let nc_instance: nc::BaseKeyType = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_base_key_type() {
+        let original_instance: BaseKeyType = todo!("Instantiate");
+        let nc_instance: nc::BaseKeyType = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
+    }
+    #[test]
+    fn test_bincode_serialization_for_base_spending_key() {
+        let original_instance: BaseSpendingKey = todo!("Instantiate");
+        let nc_instance: nc::BaseSpendingKey = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_base_spending_key() {
+        let original_instance: BaseSpendingKey = todo!("Instantiate");
+        let nc_instance: nc::BaseSpendingKey = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_base_spending_key() {
+        let original_instance: BaseSpendingKey = todo!("Instantiate");
+        let nc_instance: nc::BaseSpendingKey = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
     }
 }

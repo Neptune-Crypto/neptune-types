@@ -12,29 +12,22 @@
 //!
 //! Public API's such as RPCs should accept a BlockSelector rather than a Digest
 //! or Height.
-
 use std::num::ParseIntError;
 use std::str::FromStr;
-
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
-
 use crate::block_height::BlockHeight;
-// use crate::models::state::GlobalState;
 use twenty_first::prelude::*;
 use twenty_first::error::TryFromHexDigestError;
-// use twenty_first::math::digest::Digest;
-
 /// Provides alternatives for looking up a block.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum BlockSelector {
-    Digest(Digest),      // Identifies block by Digest (hash)
-    Height(BlockHeight), // Identifies block by Height (count from genesis)
-    Genesis,             // Indicates the genesis block
-    Tip,                 // Indicates the latest canonical block
+    Digest(Digest),
+    Height(BlockHeight),
+    Genesis,
+    Tip,
 }
-
 /// BlockSelector can be written out as any of:
 /// ```text
 ///  genesis
@@ -55,31 +48,22 @@ impl std::fmt::Display for BlockSelector {
         }
     }
 }
-
 #[derive(Debug, Clone, Error)]
 pub enum BlockSelectorParseError {
     #[error("Invalid selector {0}.  Try genesis or tip")]
     InvalidSelector(String),
-
     #[error("Invalid pair selector {0}.  Try height/<N> or digest/<hex>")]
     InvalidPairSelector(String),
-
     #[error("Wrong selector length {0}.  (too many or too few '/')")]
     WrongSelectorLength(usize),
-
     #[error("Bad Digest")]
     BadDigest(#[from] TryFromHexDigestError),
-
     #[error("Bad Height")]
     BadHeight(#[from] ParseIntError),
 }
 
 impl FromStr for BlockSelector {
     type Err = BlockSelectorParseError;
-
-    // note: this parses the output of impl Display for BlockSelector
-    // note: this is used by clap parser in neptune-cli for block-info command
-    //       and probably future commands as well.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parts: Vec<&str> = s.split('/').collect();
         if parts.len() == 1 {
@@ -92,9 +76,9 @@ impl FromStr for BlockSelector {
             match parts[0] {
                 "digest" => Ok(Self::Digest(Digest::try_from_hex(parts[1])?)),
                 "height" => Ok(Self::Height(parts[1].parse::<u64>()?.into())),
-                other => Err(BlockSelectorParseError::InvalidPairSelector(
-                    other.to_string(),
-                )),
+                other => {
+                    Err(BlockSelectorParseError::InvalidPairSelector(other.to_string()))
+                }
             }
         } else {
             Err(BlockSelectorParseError::WrongSelectorLength(parts.len()))
@@ -103,14 +87,12 @@ impl FromStr for BlockSelector {
 }
 
 impl BlockSelector {
-
     pub async fn to_digest(&self) -> Option<Digest> {
         match self {
             BlockSelector::Digest(d) => Some(*d),
             _ => None,
         }
     }
-
     /// returns canonical chain block Digest for this selector, if it exists.
     ///
     /// note: if multiple blocks with same height are found only the digest
@@ -124,9 +106,43 @@ impl BlockSelector {
         }
     }
 }
-
 pub trait BlockSelectorSource {
     fn block_digest_for_height(&self, height: BlockHeight) -> Option<Digest>;
     fn block_digest_for_tip(&self) -> Option<Digest>;
     fn block_digest_for_genesis(&self) -> Option<Digest>;
+}
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Serialize, Deserialize};
+    pub mod nc {
+        pub use neptune_cash::models::blockchain::block::block_selector::BlockSelector;
+    }
+    #[test]
+    fn test_bincode_serialization_for_block_selector() {
+        let original_instance: BlockSelector = todo!("Instantiate");
+        let nc_instance: nc::BlockSelector = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_block_selector() {
+        let original_instance: BlockSelector = todo!("Instantiate");
+        let nc_instance: nc::BlockSelector = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_block_selector() {
+        let original_instance: BlockSelector = todo!("Instantiate");
+        let nc_instance: nc::BlockSelector = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
+    }
 }

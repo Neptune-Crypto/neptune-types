@@ -12,9 +12,6 @@ use anyhow::Result;
 use serde::Deserialize;
 use serde::Serialize;
 use twenty_first::prelude::*;
-
-// use tracing::warn;
-
 use super::base_key::BaseKeyType;
 use super::base_key::BaseSpendingKey;
 use super::common;
@@ -23,21 +20,10 @@ use super::receiving_address::ReceivingAddress;
 use super::symmetric_key;
 use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
-// use crate::models::blockchain::transaction::transaction_kernel::TransactionKernel;
 use crate::incoming_utxo::IncomingUtxo;
 use crate::network::Network;
 use crate::public_announcement::PublicAnnouncement;
 use crate::utxo::Utxo;
-
-// use crate::BFieldElement;
-
-// note: assigning the flags to `AddressableKeyType` variants as discriminants has bonus
-// that we get a compiler verification that values do not conflict.  which is
-// nice since they are (presently) defined in separate files.
-//
-// anyway it is a desirable property that AddressableKeyType variants match the values
-// actually stored in PublicAnnouncement.
-
 /// Enumerates key types with corresponding addresses
 ///
 /// `AddressableKey` enumerates the sub-set of [BaseKeyType]
@@ -49,7 +35,6 @@ pub enum AddressableKeyType {
     ///
     /// wraps a symmetric key built on aes-256-gcm
     Generation = generation_address::GENERATION_FLAG_U8,
-
     /// [symmetric_key] built on aes-256-gcm
     Symmetric = symmetric_key::SYMMETRIC_KEY_FLAG_U8,
 }
@@ -98,7 +83,6 @@ impl From<AddressableKeyType> for BFieldElement {
 
 impl TryFrom<&PublicAnnouncement> for AddressableKeyType {
     type Error = anyhow::Error;
-
     fn try_from(pa: &PublicAnnouncement) -> Result<Self> {
         match common::key_type_from_public_announcement(pa) {
             Ok(kt) if kt == Self::Generation.into() => Ok(Self::Generation),
@@ -113,16 +97,16 @@ impl AddressableKeyType {
     pub fn all_types() -> Vec<AddressableKeyType> {
         vec![Self::Generation, Self::Symmetric]
     }
-
     /// returns human readable prefix of an address
     pub fn get_hrp(&self, network: Network) -> String {
         match self {
-            Self::Generation => generation_address::GenerationReceivingAddress::get_hrp(network),
+            Self::Generation => {
+                generation_address::GenerationReceivingAddress::get_hrp(network)
+            }
             Self::Symmetric => symmetric_key::SymmetricKey::get_hrp(network),
         }
     }
 }
-
 /// Represents cryptographic data necessary for spending funds (or, more
 /// specifically, for unlocking UTXOs).
 ///
@@ -136,7 +120,6 @@ impl AddressableKeyType {
 pub enum AddressableKey {
     /// a key from [generation_address]
     Generation(generation_address::GenerationSpendingKey),
-
     /// a [symmetric_key]
     Symmetric(symmetric_key::SymmetricKey),
 }
@@ -168,17 +151,6 @@ impl From<symmetric_key::SymmetricKey> for AddressableKey {
     }
 }
 
-// future improvements: a strong argument can be made that this type
-// (and the key types it wraps) should not have any methods with
-// outside types as parameters.  for example:
-//
-// pub fn scan_for_announced_utxos(
-//     &self,
-//     tx_kernel: &TransactionKernel,
-// ) -> Vec<IncomingUtxo> {
-//
-// this method is dealing with types far outside the concern of
-// a key, which means this method belongs elsewhere.
 impl AddressableKey {
     /// returns the address that corresponds to this spending key.
     pub fn to_address(self) -> ReceivingAddress {
@@ -187,27 +159,25 @@ impl AddressableKey {
             Self::Symmetric(k) => k.into(),
         }
     }
-
     /// Return the lock script and its witness
     pub fn lock_script_and_witness(&self) -> LockScriptAndWitness {
         match self {
             AddressableKey::Generation(generation_spending_key) => {
                 generation_spending_key.lock_script_and_witness()
             }
-            AddressableKey::Symmetric(symmetric_key) => symmetric_key.lock_script_and_witness(),
+            AddressableKey::Symmetric(symmetric_key) => {
+                symmetric_key.lock_script_and_witness()
+            }
         }
     }
-
     pub fn lock_script(&self) -> LockScript {
         LockScript {
             program: self.lock_script_and_witness().program,
         }
     }
-
     pub fn lock_script_hash(&self) -> Digest {
         self.lock_script().hash()
     }
-
     /// Return the privacy preimage if this spending key has a corresponding
     /// receiving address.
     ///
@@ -219,7 +189,6 @@ impl AddressableKey {
             Self::Symmetric(k) => k.privacy_preimage(),
         }
     }
-
     /// Return the receiver_identifier if this spending key has a corresponding
     /// receiving address.
     ///
@@ -239,7 +208,6 @@ impl AddressableKey {
             Self::Symmetric(k) => k.receiver_identifier(),
         }
     }
-
     /// Decrypt a slice of BFieldElement into a [Utxo] and [Digest] representing
     /// `sender_randomness`, if this spending key has a corresponding receiving
     /// address.
@@ -255,7 +223,6 @@ impl AddressableKey {
             Self::Symmetric(k) => k.decrypt(ciphertext_bfes).map_err(anyhow::Error::new),
         }
     }
-
     /// Scans all public announcements in a `Transaction` and return all
     /// UTXOs that are recognized by this spending key.
     ///
@@ -269,53 +236,101 @@ impl AddressableKey {
         &self,
         public_announcements: impl Iterator<Item = &'a PublicAnnouncement>,
     ) -> Vec<IncomingUtxo> {
-        // pre-compute some fields, and early-abort if key cannot receive.
         let receiver_identifier = self.receiver_identifier();
         let receiver_preimage = self.privacy_preimage();
-
-        // for all public announcements
         public_announcements
-
-            // ... that are marked as encrypted to our key type
             .filter(|pa| self.matches_public_announcement_key_type(pa))
-
-            // ... that match the receiver_id of this key
             .filter(move |pa| {
-                matches!(common::receiver_identifier_from_public_announcement(pa), Ok(r) if r == receiver_identifier)
+                matches!(
+                    common::receiver_identifier_from_public_announcement(pa), Ok(r) if r
+                    == receiver_identifier
+                )
             })
-
-            // ... that have a ciphertext field
-            .filter_map(|pa| self.ok_warn(common::ciphertext_from_public_announcement(pa)))
-
-            // ... which can be decrypted with this key
+            .filter_map(|pa| {
+                self.ok_warn(common::ciphertext_from_public_announcement(pa))
+            })
             .filter_map(|c| self.ok_warn(self.decrypt(&c)))
-
-            // ... map to IncomingUtxo
             .map(move |(utxo, sender_randomness)| {
-                // and join those with the receiver digest to get a commitment
-                // Note: the commitment is computed in the same way as in the mutator set.
                 IncomingUtxo {
                     utxo,
                     sender_randomness,
                     receiver_preimage,
                 }
-            }).collect()
+            })
+            .collect()
     }
-
     /// converts a result into an Option and logs a warning on any error
     fn ok_warn<T>(&self, result: Result<T>) -> Option<T> {
         match result {
             Ok(v) => Some(v),
-            Err(_e) => {
-                // todo!  warn.
-                // warn!("possible loss of funds! skipping public announcement for {:?} key with receiver_identifier: {}.  error: {}", AddressableKeyType::from(self), self.receiver_identifier(), e.to_string());
-                None
-            }
+            Err(_e) => None,
         }
     }
-
     /// returns true if the [PublicAnnouncement] has a type-flag that matches the type of this key
-    pub(super) fn matches_public_announcement_key_type(&self, pa: &PublicAnnouncement) -> bool {
-        matches!(AddressableKeyType::try_from(pa), Ok(kt) if kt == AddressableKeyType::from(self))
+    pub(super) fn matches_public_announcement_key_type(
+        &self,
+        pa: &PublicAnnouncement,
+    ) -> bool {
+        matches!(
+            AddressableKeyType::try_from(pa), Ok(kt) if kt ==
+            AddressableKeyType::from(self)
+        )
+    }
+}
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Serialize, Deserialize};
+    pub mod nc {
+        pub use neptune_cash::models::state::wallet::address::AddressableKey;
+        pub use neptune_cash::models::state::wallet::address::AddressableKeyType;
+    }
+    #[test]
+    fn test_bincode_serialization_for_addressable_key() {
+        let original_instance: AddressableKey = todo!("Instantiate");
+        let nc_instance: nc::AddressableKey = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_addressable_key() {
+        let original_instance: AddressableKey = todo!("Instantiate");
+        let nc_instance: nc::AddressableKey = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_addressable_key() {
+        let original_instance: AddressableKey = todo!("Instantiate");
+        let nc_instance: nc::AddressableKey = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
+    }
+    #[test]
+    fn test_bincode_serialization_for_addressable_key_type() {
+        let original_instance: AddressableKeyType = todo!("Instantiate");
+        let nc_instance: nc::AddressableKeyType = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_addressable_key_type() {
+        let original_instance: AddressableKeyType = todo!("Instantiate");
+        let nc_instance: nc::AddressableKeyType = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_addressable_key_type() {
+        let original_instance: AddressableKeyType = todo!("Instantiate");
+        let nc_instance: nc::AddressableKeyType = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
     }
 }

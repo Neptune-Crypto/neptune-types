@@ -1,7 +1,10 @@
 use std::ops::Deref;
 use twenty_first::prelude::*;
-
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
+///# [cfg_attr (any (test , feature = "arbitrary-impls") , derive (arbitrary :: Arbitrary))]
+#[cfg_attr(
+    any(all(test, feature = "original-tests"), feature = "arbitrary-impls"),
+    derive(arbitrary::Arbitrary)
+)]
 #[derive(Debug, Default, Clone, Eq, PartialEq, BFieldCodec)]
 pub struct PublicInput {
     pub individual_tokens: Vec<BFieldElement>,
@@ -39,7 +42,6 @@ impl From<&[BFieldElement]> for PublicInput {
 
 impl Deref for PublicInput {
     type Target = [BFieldElement];
-
     fn deref(&self) -> &Self::Target {
         &self.individual_tokens
     }

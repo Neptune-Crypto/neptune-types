@@ -1,15 +1,9 @@
 use serde::Deserialize;
 use serde::Serialize;
 use twenty_first::prelude::*;
-
 use crate::lock_script::LockScriptAndWitness;
 use crate::utxo::Utxo;
-// use crate::util_types::mutator_set::addition_record::AdditionRecord;
-// use crate::util_types::mutator_set::commit;
 use crate::mutator_set::ms_membership_proof::MsMembershipProof;
-// use crate::util_types::mutator_set::mutator_set_accumulator::MutatorSetAccumulator;
-// use crate::util_types::mutator_set::removal_record::RemovalRecord;
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UnlockedUtxo {
     pub utxo: Utxo,
@@ -29,31 +23,44 @@ impl UnlockedUtxo {
             membership_proof,
         }
     }
-
     /// Return the `item` from the perspective of the mutator set
     pub fn mutator_set_item(&self) -> Digest {
         Tip5::hash(&self.utxo)
     }
-
     pub fn mutator_set_mp(&self) -> &MsMembershipProof {
         &self.membership_proof
     }
-
     pub fn lock_script_and_witness(&self) -> &LockScriptAndWitness {
         &self.lock_script_and_witness
     }
-
-    // pub(crate) fn removal_record(&self, mutator_set: &MutatorSetAccumulator) -> RemovalRecord {
-    //     let item = self.mutator_set_item();
-    //     let msmp = &self.membership_proof;
-    //     mutator_set.drop(item, msmp)
-    // }
-
-    // pub(crate) fn addition_record(&self) -> AdditionRecord {
-    //     commit(
-    //         self.mutator_set_item(),
-    //         self.membership_proof.sender_randomness,
-    //         self.membership_proof.receiver_preimage.hash(),
-    //     )
-    // }
+}
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Serialize, Deserialize};
+    pub mod nc {}
+    #[test]
+    fn test_bincode_serialization_for_unlocked_utxo() {
+        let original_instance: UnlockedUtxo = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, None::<UnlockedUtxo>);
+    }
+    #[test]
+    fn test_serde_json_serialization_for_unlocked_utxo() {
+        let original_instance: UnlockedUtxo = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, None::<UnlockedUtxo>);
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_unlocked_utxo() {
+        let original_instance: UnlockedUtxo = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            None::<UnlockedUtxo>,
+        );
+    }
 }

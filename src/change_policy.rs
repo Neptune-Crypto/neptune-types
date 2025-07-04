@@ -1,13 +1,10 @@
 use std::fmt::Debug;
 use std::sync::Arc;
-
 use serde::Deserialize;
 use serde::Serialize;
-
 use super::address::KeyType;
 use super::address::SpendingKey;
 use super::utxo_notification::UtxoNotificationMedium;
-
 /// specifies how to handle change for a transaction.
 ///
 /// When the selected inputs represent more coins than the outputs (with fee)
@@ -19,27 +16,17 @@ use super::utxo_notification::UtxoNotificationMedium;
 pub enum ChangePolicy {
     /// Inputs must exactly equal spend amount, or else an error will result.
     ExactChange,
-
     /// recover change to the next unused key.
     ///
     /// (of specified key-type, via specified notification medium)
-    RecoverToNextUnusedKey {
-        key_type: KeyType,
-        medium: UtxoNotificationMedium,
-    },
-
+    RecoverToNextUnusedKey { key_type: KeyType, medium: UtxoNotificationMedium },
     /// recover change to the provided key.
     ///
     /// (via specified notification medium)
-    RecoverToProvidedKey {
-        key: Arc<SpendingKey>,
-        medium: UtxoNotificationMedium,
-    },
-
+    RecoverToProvidedKey { key: Arc<SpendingKey>, medium: UtxoNotificationMedium },
     /// If the change is nonzero, the excess funds will be lost forever.
     Burn,
 }
-
 /// The default behavior is to recover to the next unused (symmetric) key with
 /// onchain utxo notifications.
 impl Default for ChangePolicy {
@@ -53,7 +40,6 @@ impl ChangePolicy {
     pub fn exact_change() -> Self {
         Self::ExactChange
     }
-
     /// instantiate `RecoverToProvidedKey` variant
     ///
     /// Enable change-recovery and configure which key and notification medium
@@ -67,17 +53,20 @@ impl ChangePolicy {
             medium: notification_medium,
         }
     }
-
     /// instantiate `RecoverToNextUnusedKey` variant with symmetric key and onchain notification
     pub fn recover_to_next_unused_symmetric_key_onchain() -> Self {
-        Self::recover_to_next_unused_key(KeyType::Symmetric, UtxoNotificationMedium::OnChain)
+        Self::recover_to_next_unused_key(
+            KeyType::Symmetric,
+            UtxoNotificationMedium::OnChain,
+        )
     }
-
     /// instantiate `RecoverToNextUnusedKey` variant with symmetric key and offchain notification
     pub fn recover_to_next_unused_symmetric_key_offchain() -> Self {
-        Self::recover_to_next_unused_key(KeyType::Symmetric, UtxoNotificationMedium::OffChain)
+        Self::recover_to_next_unused_key(
+            KeyType::Symmetric,
+            UtxoNotificationMedium::OffChain,
+        )
     }
-
     /// instantiate `RecoverToNextUnusedKey` variant
     pub fn recover_to_next_unused_key(
         key_type: KeyType,
@@ -88,9 +77,43 @@ impl ChangePolicy {
             medium: notification_medium,
         }
     }
-
     /// instantiate `Burn` variant
     pub fn burn() -> Self {
         Self::Burn
+    }
+}
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Serialize, Deserialize};
+    pub mod nc {
+        pub use neptune_cash::api::export::ChangePolicy;
+    }
+    #[test]
+    fn test_bincode_serialization_for_change_policy() {
+        let original_instance: ChangePolicy = todo!("Instantiate");
+        let nc_instance: nc::ChangePolicy = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_change_policy() {
+        let original_instance: ChangePolicy = todo!("Instantiate");
+        let nc_instance: nc::ChangePolicy = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_change_policy() {
+        let original_instance: ChangePolicy = todo!("Instantiate");
+        let nc_instance: nc::ChangePolicy = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
     }
 }

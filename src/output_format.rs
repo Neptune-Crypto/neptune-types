@@ -6,37 +6,26 @@
 //! see [builder](super) for examples of using the builders together.
 use serde::Deserialize;
 use serde::Serialize;
-
 use crate::address::ReceivingAddress;
 use crate::native_currency_amount::NativeCurrencyAmount;
 use crate::tx_output::TxOutput;
 use crate::utxo::Utxo;
 use crate::utxo_notification::UtxoNotificationMedium;
-
-// ##multicoin## :
-//  1. The *AndUtxo variants enable basic multi-coin support.
-//  2. maybe there should be some variant like AddressAndCoinAndAmount(ReceivingAddress, Coin, CoinAmount)
-//     but this requires a new amount type.
-
 /// enumerates various ways to specify a transaction output as a simple tuple.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum OutputFormat {
     /// specify receiving address and amount
     AddressAndAmount(ReceivingAddress, NativeCurrencyAmount),
-
     /// specify receiving address, amount, and a utxo-notification-medium
     AddressAndAmountAndMedium(
         ReceivingAddress,
         NativeCurrencyAmount,
         UtxoNotificationMedium,
     ),
-
     /// specify utxo and receiving address
     AddressAndUtxo(ReceivingAddress, Utxo),
-
     /// specify utxo, receiving address, and a utxo-notification-medium
     AddressAndUtxoAndMedium(ReceivingAddress, Utxo, UtxoNotificationMedium),
-
     /// specify a [TxOutput]
     TxOutput(TxOutput),
 }
@@ -52,9 +41,6 @@ impl OutputFormat {
             Self::TxOutput(to) => to.native_currency_amount(),
         }
     }
-
-    // ##multicoin## : maybe something like
-    // pub fn amount(&self, coint: Coin) -> CoinAmount;
 }
 
 impl From<(ReceivingAddress, NativeCurrencyAmount)> for OutputFormat {
@@ -63,19 +49,10 @@ impl From<(ReceivingAddress, NativeCurrencyAmount)> for OutputFormat {
     }
 }
 
-impl
-    From<(
-        ReceivingAddress,
-        NativeCurrencyAmount,
-        UtxoNotificationMedium,
-    )> for OutputFormat
-{
+impl From<(ReceivingAddress, NativeCurrencyAmount, UtxoNotificationMedium)>
+for OutputFormat {
     fn from(
-        v: (
-            ReceivingAddress,
-            NativeCurrencyAmount,
-            UtxoNotificationMedium,
-        ),
+        v: (ReceivingAddress, NativeCurrencyAmount, UtxoNotificationMedium),
     ) -> Self {
         Self::AddressAndAmountAndMedium(v.0, v.1, v.2)
     }
@@ -96,5 +73,40 @@ impl From<(ReceivingAddress, Utxo, UtxoNotificationMedium)> for OutputFormat {
 impl From<TxOutput> for OutputFormat {
     fn from(v: TxOutput) -> Self {
         Self::TxOutput(v)
+    }
+}
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Serialize, Deserialize};
+    pub mod nc {
+        pub use neptune_cash::api::export::OutputFormat;
+    }
+    #[test]
+    fn test_bincode_serialization_for_output_format() {
+        let original_instance: OutputFormat = todo!("Instantiate");
+        let nc_instance: nc::OutputFormat = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_output_format() {
+        let original_instance: OutputFormat = todo!("Instantiate");
+        let nc_instance: nc::OutputFormat = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_output_format() {
+        let original_instance: OutputFormat = todo!("Instantiate");
+        let nc_instance: nc::OutputFormat = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
     }
 }

@@ -2,7 +2,6 @@ use crate::utxo::Utxo;
 use serde::Deserialize;
 use serde::Serialize;
 use twenty_first::prelude::*;
-
 /// The payload of a UTXO notification, containing all information necessary
 /// to claim it, provided access to the associated spending key.
 ///
@@ -18,9 +17,41 @@ pub struct UtxoNotificationPayload {
 
 impl UtxoNotificationPayload {
     pub fn new(utxo: Utxo, sender_randomness: Digest) -> Self {
-        Self {
-            utxo,
-            sender_randomness,
-        }
+        Self { utxo, sender_randomness }
+    }
+}
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Serialize, Deserialize};
+    pub mod nc {
+        pub use neptune_cash::models::state::wallet::utxo_notification::UtxoNotificationPayload;
+    }
+    #[test]
+    fn test_bincode_serialization_for_utxo_notification_payload() {
+        let original_instance: UtxoNotificationPayload = todo!("Instantiate");
+        let nc_instance: nc::UtxoNotificationPayload = todo!("Instantiate");
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_serialization_for_utxo_notification_payload() {
+        let original_instance: UtxoNotificationPayload = todo!("Instantiate");
+        let nc_instance: nc::UtxoNotificationPayload = todo!("Instantiate");
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+    #[test]
+    fn test_serde_json_wasm_serialization_for_utxo_notification_payload() {
+        let original_instance: UtxoNotificationPayload = todo!("Instantiate");
+        let nc_instance: nc::UtxoNotificationPayload = todo!("Instantiate");
+        test_serde_json_wasm_serialization_for_type(
+            original_instance,
+            Some(nc_instance),
+        );
     }
 }

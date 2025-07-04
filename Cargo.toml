@@ -5,6 +5,7 @@ edition = "2024"
 
 [features]
 
+original-tests = []
 # implements arbitrary::Arbitrary for various types
 arbitrary-impls = ["dep:arbitrary", "dep:proptest-arbitrary-interop"]
 
