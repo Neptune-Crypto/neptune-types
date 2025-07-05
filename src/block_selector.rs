@@ -126,20 +126,20 @@ mod generated_tests {
     }
     #[test]
     fn test_bincode_serialization_for_block_selector() {
-        let original_instance: BlockSelector = todo!("Instantiate");
-        let nc_instance: nc::BlockSelector = todo!("Instantiate");
+        let original_instance = BlockSelector::Tip;
+        let nc_instance = nc::BlockSelector::Tip;
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_block_selector() {
-        let original_instance: BlockSelector = todo!("Instantiate");
-        let nc_instance: nc::BlockSelector = todo!("Instantiate");
+        let original_instance = BlockSelector::Tip;
+        let nc_instance = nc::BlockSelector::Tip;
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_block_selector() {
-        let original_instance: BlockSelector = todo!("Instantiate");
-        let nc_instance: nc::BlockSelector = todo!("Instantiate");
+        let original_instance = BlockSelector::Tip;
+        let nc_instance = nc::BlockSelector::Tip;
         test_serde_json_wasm_serialization_for_type(
             original_instance,
             Some(nc_instance),

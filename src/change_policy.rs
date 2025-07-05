@@ -97,20 +97,20 @@ mod generated_tests {
     }
     #[test]
     fn test_bincode_serialization_for_change_policy() {
-        let original_instance: ChangePolicy = todo!("Instantiate");
-        let nc_instance: nc::ChangePolicy = todo!("Instantiate");
+        let original_instance = ChangePolicy::ExactChange;
+        let nc_instance = nc::ChangePolicy::ExactChange;
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_change_policy() {
-        let original_instance: ChangePolicy = todo!("Instantiate");
-        let nc_instance: nc::ChangePolicy = todo!("Instantiate");
+        let original_instance = ChangePolicy::ExactChange;
+        let nc_instance = nc::ChangePolicy::ExactChange;
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_change_policy() {
-        let original_instance: ChangePolicy = todo!("Instantiate");
-        let nc_instance: nc::ChangePolicy = todo!("Instantiate");
+        let original_instance = ChangePolicy::ExactChange;
+        let nc_instance = nc::ChangePolicy::ExactChange;
         test_serde_json_wasm_serialization_for_type(
             original_instance,
             Some(nc_instance),
