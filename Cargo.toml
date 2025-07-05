@@ -55,7 +55,8 @@ arbitrary = { version = "1.4.1", features = ["derive"] }
 #proptest = { version = "1.5" }
 #proptest-arbitrary-interop = { version = "0.1" }
 #test-strategy = "0.3"
-neptune-cash = { git = "https://github.com/dan-da/neptune-core.git", rev = "2353aec5adcb61c4da37f271aa82cec3fe6d191b" }
+neptune-cash = { git = "https://github.com/Neptune-Crypto/neptune-core.git", rev = "08a26dd134c5205017633e11a266ccd704d522d2" }
+#neptune-cash = { git = "https://github.com/dan-da/neptune-core.git", rev = "2353aec5adcb61c4da37f271aa82cec3fe6d191b" }
 serde-json-wasm = "1.0.1"
 serde_json = "1.0.140"
 
