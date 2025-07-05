@@ -114,6 +114,8 @@ pub fn test_serde_json_wasm_serialization_for_type<
 }
 
 // glue fn until both crates use same version of twenty-first
-pub fn dg(digest: twenty_first::prelude::Digest) -> neptune_cash::prelude::twenty_first::prelude::Digest {
+pub fn dg(
+    digest: twenty_first::prelude::Digest,
+) -> neptune_cash::prelude::twenty_first::prelude::Digest {
     neptune_cash::prelude::twenty_first::prelude::Digest::try_from_hex(digest.to_hex()).unwrap()
 }
