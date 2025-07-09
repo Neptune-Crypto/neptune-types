@@ -27,3 +27,7 @@ The types in this crate are designed to be direct, binary-compatible replacement
 Add this crate to your `Cargo.toml`:
 
 ```toml [dependencies] neptune-types = "0.1"
+
+## Run tests
+
+cargo test
