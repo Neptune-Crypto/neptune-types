@@ -22,6 +22,11 @@ The types in this crate are designed to be direct, binary-compatible replacement
 
 3. **Future Integration:** A longer-term objective is to have `neptune-cash` itself depend on `neptune-types`. This would establish a single source of truth for these core data structures, simplifying maintenance and reducing code duplication.  Once that is complete, the RPC trait itself could be made a separate crate.
 
+## Non Goals
+
+* Not attempting to include all types from neptune-cash, only those needed for wallet & rpc purposes.
+* Not attempting to have every single method or derive as each equivalent neptune-cash type.  Sometimes that is not feasible.
+
 ## Unit Tests
 
 There are two types of unit test modules in the source files of this crate.
