@@ -4,7 +4,7 @@ This crate provides re-implementations of types from the [`neptune-cash`](https:
 
 ## WARNING: EXPERIMENTAL!
 
-This crate is in an early, very rough prototype state. Everything is subject to change, or it could be abandonded altogether.
+This crate is in an early, very rough prototype state. Everything is subject to change, or it could be abandoned altogether.
 
 ## Overview
 
