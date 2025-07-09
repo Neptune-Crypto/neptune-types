@@ -2,6 +2,10 @@
 
 This crate provides re-implementations of types from the [`neptune-cash`](https://docs.rs/neptune-cash) crate that are exposed via its RPC API.
 
+## WARNING: EXPERIMENTAL!
+
+This crate is in an early, very rough prototype state. Everything is subject to change, or it could be abandonded altogether.
+
 ## Overview
 
 The primary motivation for this crate is to make the core data types used in `neptune-cash` available in a WebAssembly (WASM) environment. This is useful for developing browser-based GUI wallet software and other web-based tools that need to interact with the Neptune network.
