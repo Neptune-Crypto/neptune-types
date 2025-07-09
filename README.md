@@ -28,7 +28,9 @@ Add this crate to your `Cargo.toml`:
 
 ```
 [dependencies]
-neptune-types = "0.1"
+
+# note: neptune-types is not on crates.io yet.  It is generally best to pick a specific github revision to use.
+neptune-types = {git = "https://github.com/Neptune-Crypto/neptune-types/", rev = "<revision>"}
 ```
 
 ## Run tests
