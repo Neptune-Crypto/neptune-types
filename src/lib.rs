@@ -21,7 +21,9 @@ pub mod change_policy;
 pub mod tx_input;
 pub mod unlocked_utxo;
 pub mod mutator_set;
+pub mod mempool_transaction_info;
 pub mod transaction_details;
 pub mod transaction_kernel_id;
+pub mod transaction_proof_type;
 #[cfg(test)]
 pub mod test_shared;
