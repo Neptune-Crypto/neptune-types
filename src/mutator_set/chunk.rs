@@ -311,27 +311,30 @@ mod generated_tests {
     use bincode;
     use serde::{Serialize, Deserialize};
     pub mod nc {
-        pub use neptune_cash::util_types::mutator_set::chunk::Chunk;
+//        pub use neptune_cash::util_types::mutator_set::chunk::Chunk;
     }
     #[test]
     fn test_bincode_serialization_for_chunk() {
-        let original_instance: Chunk = todo!("Instantiate");
-        let nc_instance: nc::Chunk = todo!("Instantiate");
-        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+        todo!("Chunk is now private in neptune-core.  maybe make it public again?");
+//        let original_instance: Chunk = todo!("Instantiate");
+//        let nc_instance: nc::Chunk = todo!("Instantiate");
+//        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_chunk() {
-        let original_instance: Chunk = todo!("Instantiate");
-        let nc_instance: nc::Chunk = todo!("Instantiate");
-        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+        todo!("Chunk is now private in neptune-core.  maybe make it public again?");
+//        let original_instance: Chunk = todo!("Instantiate");
+//        let nc_instance: nc::Chunk = todo!("Instantiate");
+//        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_chunk() {
-        let original_instance: Chunk = todo!("Instantiate");
-        let nc_instance: nc::Chunk = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        todo!("Chunk is now private in neptune-core.  maybe make it public again?");
+//        let original_instance: Chunk = todo!("Instantiate");
+//        let nc_instance: nc::Chunk = todo!("Instantiate");
+//        test_serde_json_wasm_serialization_for_type(
+//            original_instance,
+//            Some(nc_instance),
+//        );
     }
 }

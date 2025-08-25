@@ -1,4 +1,3 @@
-use crate::address::hash_lock_key::HashLockKey;
 use crate::lock_script::LockScript;
 use crate::native_currency::NativeCurrency;
 use crate::native_currency_amount::NativeCurrencyAmount;
@@ -114,11 +113,6 @@ impl Utxo {
     }
     pub fn lock_script_hash(&self) -> Digest {
         self.lock_script_hash
-    }
-    /// Returns true iff this UTXO is a lock script with the preimage provided
-    /// as input argument.
-    pub fn is_lockscript_with_preimage(&self, preimage: Digest) -> bool {
-        self.lock_script_hash == HashLockKey::from_preimage(preimage).lock_script_hash()
     }
     pub fn new_native_currency(lock_script: LockScript, amount: NativeCurrencyAmount) -> Self {
         Self::new(lock_script, vec![Coin::new_native_currency(amount)])

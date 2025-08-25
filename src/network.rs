@@ -25,18 +25,13 @@ pub enum Network {
     /// Main net. Feature-complete. Fixed launch date.
     #[default]
     Main,
+
     /// Public test network that utilizes mock proofs and difficulty resets so
     /// that mining is possible without high-end hardware.  Intended for staging
     /// of release candidates prior to release and for the community to try out
     /// release candidates and report issues.
     TestnetMock,
-    /// 2nd iteration of integration testing. Not feature-complete either but
-    /// more than Alpha.
-    Beta,
-    /// Feature-complete (or as feature-complete as possible) test network separate
-    /// from whichever network is currently running. For integration tests involving
-    /// multiple nodes over a network.
-    Testnet,
+
     /// Network for individual unit and integration tests. The timestamp for the
     /// RegTest genesis block is set to now, rounded down to the first block of
     /// seven days. As a result, there is a small probability that tests fail
@@ -45,9 +40,24 @@ pub enum Network {
     /// this will invalidate the stored proofs when the rounded timestamp
     /// changes.
     RegTest,
+
+    /// Feature-complete (or as feature-complete as possible) test network separate
+    /// from whichever network is currently running. For integration tests involving
+    /// multiple nodes over a network.
+    Testnet(u8),
 }
 
 impl Network {
+
+    pub fn id(&self) -> u32 {
+        match self {
+            Network::Main => 0u32,
+            Network::TestnetMock => 1u32,
+            Network::RegTest => 2u32,
+            Network::Testnet(i) => 3u32 + u32::from(*i),
+        }
+    }    
+
     pub fn launch_date(&self) -> Timestamp {
         match self {
             Network::RegTest => {
@@ -59,7 +69,7 @@ impl Network {
                 let now_rounded = (now / SEVEN_DAYS) * SEVEN_DAYS;
                 Timestamp(BFieldElement::new(now_rounded))
             }
-            Network::TestnetMock | Network::Testnet | Network::Beta | Network::Main => {
+            Network::TestnetMock | Network::Testnet(_) | Network::Main => {
                 Timestamp(BFieldElement::new(1739275200000u64))
             }
         }
@@ -81,7 +91,7 @@ impl Network {
     /// - mainnet, others: None
     pub fn difficulty_reset_interval(&self) -> Option<Timestamp> {
         match *self {
-            Self::Testnet | Self::TestnetMock => Some(self.target_block_interval() * 2),
+            Self::Testnet(_) | Self::TestnetMock => Some(self.target_block_interval() * 2),
             _ => None,
         }
     }
@@ -99,10 +109,11 @@ impl Network {
     pub fn genesis_difficulty(&self) -> Difficulty {
         match *self {
             Self::RegTest => Difficulty::MINIMUM,
-            Self::Testnet | Self::TestnetMock => Difficulty::new([1_000_000, 0, 0, 0, 0]),
-            Self::Main | Self::Beta => Difficulty::new([1_000_000_000, 0, 0, 0, 0]),
+            Self::Testnet(_) | Self::TestnetMock => Difficulty::new([1_000_000, 0, 0, 0, 0]),
+            Self::Main => Difficulty::new([1_000_000_000, 0, 0, 0, 0]),
         }
     }
+
     /// minimum time between blocks.
     ///
     /// Blocks spaced apart by less than this amount of time are not valid.
@@ -114,9 +125,10 @@ impl Network {
         match *self {
             Self::RegTest => Timestamp::millis(1),
             Self::TestnetMock => Timestamp::millis(100),
-            Self::Main | Self::Beta | Self::Testnet => Timestamp::seconds(60),
+            Self::Main | Self::Testnet(_) => Timestamp::seconds(60),
         }
-    }
+    }    
+
     /// desired/average time between blocks.
     ///
     /// - for regtest: 100 milliseconds.
@@ -124,11 +136,11 @@ impl Network {
     pub fn target_block_interval(&self) -> Timestamp {
         match *self {
             Self::RegTest => Timestamp::millis(100),
-            Self::Main | Self::Beta | Self::Testnet | Self::TestnetMock => {
-                Timestamp::millis(588000)
-            }
+            Self::Main | Self::Testnet(_) | Self::TestnetMock => Timestamp::millis(588000),
         }
     }
+    
+
     /// indicates if automated mining should be performed by this network
     ///
     /// note: we disable auto-mining in regtest mode because it generates blocks
@@ -137,6 +149,10 @@ impl Network {
     ///
     /// instead developers are encouraged to use [crate::api::regtest] module to
     /// generate any number of blocks in a controlled, deterministic fashion.
+    //
+    // bitcoin-core does not use cli flags, but rather RPC commands to
+    // enable/disable mining in controlled fashion. We might consider moving to
+    // that model before enabling automated mining for RegTest.
     pub fn performs_automated_mining(&self) -> bool {
         !self.is_reg_test()
     }
@@ -146,9 +162,8 @@ impl fmt::Display for Network {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let string = match self {
             Network::TestnetMock => "testnet-mock".to_string(),
-            Network::Testnet => "testnet".to_string(),
+            Network::Testnet(i) => format!("testnet-{i}"),
             Network::RegTest => "regtest".to_string(),
-            Network::Beta => "beta".to_string(),
             Network::Main => "main".to_string(),
         };
         write!(f, "{}", string)
@@ -157,16 +172,24 @@ impl fmt::Display for Network {
 
 impl FromStr for Network {
     type Err = String;
-    fn from_str(input: &str) -> Result<Network, Self::Err> {
+    fn from_str(input: &str) -> Result<Network, String> {
         match input {
             "testnet-mock" => Ok(Network::TestnetMock),
-            "testnet" => Ok(Network::Testnet),
+            "testnet" => Ok(Network::Testnet(0)), // default to 0
             "regtest" => Ok(Network::RegTest),
-            "beta" => Ok(Network::Beta),
             "main" => Ok(Network::Main),
-            _ => Err(format!("Failed to parse {} as network", input)),
+            _ => {
+                if let Some(stripped) = input.strip_prefix("testnet-") {
+                    match stripped.parse::<u8>() {
+                        Ok(id) => Ok(Network::Testnet(id)),
+                        Err(_) => Err(format!("Invalid testnet ID in '{}'", input)),
+                    }
+                } else {
+                    Err(format!("Failed to parse '{}' as network", input))
+                }
+            }
         }
-    }
+    }    
 }
 ///# [cfg (test)]
 #[cfg(all(test, feature = "original-tests"))]

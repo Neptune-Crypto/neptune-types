@@ -4,7 +4,7 @@ use super::symmetric_key;
 use super::KeyType;
 use crate::lock_script::LockScript;
 use crate::network::Network;
-use crate::public_announcement::PublicAnnouncement;
+use crate::announcement::Announcement;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
 use anyhow::bail;
 use anyhow::Result;
@@ -71,7 +71,7 @@ impl ReceivingAddress {
             Self::Symmetric(a) => a.receiver_identifier(),
         }
     }
-    /// generates a [PublicAnnouncement] for an output Utxo
+    /// generates a [Announcement] for an output Utxo
     ///
     /// The public announcement contains a [`Vec<BFieldElement>`] with fields:
     ///   0    --> type flag.  (flag of key type)
@@ -83,14 +83,14 @@ impl ReceivingAddress {
     pub fn generate_public_announcement(
         &self,
         utxo_notification_payload: UtxoNotificationPayload,
-    ) -> PublicAnnouncement {
+    ) -> Announcement {
         match self {
             ReceivingAddress::Generation(generation_receiving_address) => {
                 generation_receiving_address
-                    .generate_public_announcement(&utxo_notification_payload)
+                    .generate_announcement(&utxo_notification_payload)
             }
             ReceivingAddress::Symmetric(symmetric_key) => {
-                symmetric_key.generate_public_announcement(&utxo_notification_payload)
+                symmetric_key.generate_announcement(&utxo_notification_payload)
             }
         }
     }
@@ -120,8 +120,8 @@ impl ReceivingAddress {
     /// of the matching [SpendingKey](super::SpendingKey)
     pub fn privacy_digest(&self) -> Digest {
         match self {
-            Self::Generation(a) => a.privacy_digest(),
-            Self::Symmetric(k) => k.privacy_digest(),
+            Self::Generation(a) => a.receiver_postimage(),
+            Self::Symmetric(k) => k.receiver_postimage(),
         }
     }
     /// encrypts a [Utxo] and `sender_randomness` secret for purpose of transferring to payment recipient
@@ -236,8 +236,8 @@ impl ReceivingAddress {
             Self::Symmetric(k) => k.lock_script(),
         }
     }
-    /// returns true if the [PublicAnnouncement] has a type-flag that matches the type of this address.
-    pub fn matches_public_announcement_key_type(&self, pa: &PublicAnnouncement) -> bool {
+    /// returns true if the [Announcement] has a type-flag that matches the type of this address.
+    pub fn matches_public_announcement_key_type(&self, pa: &Announcement) -> bool {
         matches!(KeyType::try_from(pa), Ok(kt) if kt == KeyType::from(self))
     }
 }

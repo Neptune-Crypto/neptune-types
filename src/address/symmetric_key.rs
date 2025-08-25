@@ -2,13 +2,13 @@
 use super::common;
 use super::common::deterministically_derive_seed_and_nonce;
 use super::encrypted_utxo_notification::EncryptedUtxoNotification;
-use super::hash_lock_key::HashLockKey;
 use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
 use crate::network::Network;
-use crate::public_announcement::PublicAnnouncement;
+use crate::announcement::Announcement;
 use crate::utxo::Utxo;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
+use crate::triton_vm::nondeterminism::NonDeterminism;
 use aead::Aead;
 use aead::Key;
 use aead::KeyInit;
@@ -91,14 +91,18 @@ impl SymmetricKey {
         )
         .into()
     }
-    /// returns the privacy preimage
-    pub fn privacy_preimage(&self) -> Digest {
+
+    /// returns the receiver preimage
+    pub fn receiver_preimage(&self) -> Digest {
         Hash::hash_varlen(&[&self.seed.values(), [BFieldElement::new(0)].as_slice()].concat())
     }
-    /// returns the privacy digest which is a hash of the privacy_preimage
-    pub fn privacy_digest(&self) -> Digest {
-        self.privacy_preimage().hash()
+
+    /// returns the receiver postimage which is a hash of the receiver preimage
+    pub fn receiver_postimage(&self) -> Digest {
+        self.receiver_preimage().hash()
     }
+    
+
     /// returns the receiver_identifier, a public fingerprint
     pub fn receiver_identifier(&self) -> BFieldElement {
         common::derive_receiver_id(self.seed)
@@ -146,20 +150,27 @@ impl SymmetricKey {
     pub fn lock_after_image(&self) -> Digest {
         self.unlock_key().hash()
     }
+
     /// generates a lock script from the spending lock.
     ///
     /// Satisfaction of this lock script establishes the UTXO owner's assent to
     /// the transaction.
     pub fn lock_script(&self) -> LockScript {
-        HashLockKey::lock_script_from_after_image(self.lock_after_image())
+        LockScript::standard_hash_lock_from_after_image(self.lock_after_image())
     }
-    pub fn lock_script_and_witness(&self) -> LockScriptAndWitness {
-        HashLockKey::from_preimage(self.unlock_key()).lock_script_and_witness()
-    }
-    pub fn generate_public_announcement(
+
+    pub(crate) fn lock_script_and_witness(&self) -> LockScriptAndWitness {
+        let lock_script = self.lock_script();
+        LockScriptAndWitness::new_with_nondeterminism(
+            lock_script.program,
+            NonDeterminism::new(self.unlock_key().reversed().values()),
+        )
+    }    
+
+    pub fn generate_announcement(
         &self,
         utxo_notification_payload: &UtxoNotificationPayload,
-    ) -> PublicAnnouncement {
+    ) -> Announcement {
         let encrypted_utxo_notification = EncryptedUtxoNotification {
             flag: SYMMETRIC_KEY_FLAG_U8.into(),
             receiver_identifier: self.receiver_identifier(),
@@ -200,7 +211,7 @@ impl SymmetricKey {
     /// secret key.
     pub fn to_display_bech32m(&self, network: Network) -> Result<String> {
         let hrp = Self::get_hrp(network);
-        let payload = bincode::serialize(&self.privacy_preimage())?;
+        let payload = bincode::serialize(&self.receiver_preimage())?;
         let variant = bech32::Variant::Bech32m;
         match bech32::encode(&hrp, payload.to_base32(), variant) {
             Ok(enc) => Ok(enc),

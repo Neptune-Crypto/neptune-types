@@ -6,13 +6,13 @@ use sha3::digest::Update;
 use sha3::Shake256;
 use twenty_first::prelude::*;
 use crate::network::Network;
-use crate::public_announcement::PublicAnnouncement;
+use crate::announcement::Announcement;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
 /// returns human-readable-prefix for the given network
 pub fn network_hrp_char(network: Network) -> char {
     match network {
-        Network::Beta | Network::Main => 'm',
-        Network::Testnet => 't',
+        Network::Main => 'm',
+        Network::Testnet(_) => 't',
         Network::TestnetMock => 'z',
         Network::RegTest => 'r',
     }
@@ -41,22 +41,22 @@ pub fn deterministically_derive_seed_and_nonce(
     let seed: [u8; 32] = [e0, e1, e2, e3].concat().try_into().unwrap();
     (seed, e4)
 }
-/// retrieves key-type field from a [PublicAnnouncement]
+/// retrieves key-type field from a [Announcement]
 ///
 /// returns an error if the field is not present
 pub fn key_type_from_public_announcement(
-    announcement: &PublicAnnouncement,
+    announcement: &Announcement,
 ) -> Result<BFieldElement> {
     match announcement.message.first() {
         Some(key_type) => Ok(*key_type),
         None => bail!("Public announcement does not contain key type."),
     }
 }
-/// retrieves ciphertext field from a [PublicAnnouncement]
+/// retrieves ciphertext field from a [Announcement]
 ///
 /// returns an error if the input is too short
 pub fn ciphertext_from_public_announcement(
-    announcement: &PublicAnnouncement,
+    announcement: &Announcement,
 ) -> Result<Vec<BFieldElement>> {
     ensure!(
         announcement.message.len() > 2,
@@ -64,11 +64,11 @@ pub fn ciphertext_from_public_announcement(
     );
     Ok(announcement.message[2..].to_vec())
 }
-/// retrieves receiver identifier field from a [PublicAnnouncement]
+/// retrieves receiver identifier field from a [Announcement]
 ///
 /// returns an error if the input is too short
 pub fn receiver_identifier_from_public_announcement(
-    announcement: &PublicAnnouncement,
+    announcement: &Announcement,
 ) -> Result<BFieldElement> {
     match announcement.message.get(1) {
         Some(id) => Ok(*id),

@@ -6,7 +6,7 @@ use serde::Serialize;
 use crate::utxo_notification::UtxoNotifyMethod;
 use crate::network::Network;
 use crate::utxo::Utxo;
-use crate::public_announcement::PublicAnnouncement;
+use crate::announcement::Announcement;
 use crate::native_currency_amount::NativeCurrencyAmount;
 use crate::timestamp::Timestamp;
 use crate::address::ReceivingAddress;
@@ -316,7 +316,7 @@ fn auto_utxo_maybe_change(
         self.receiver_digest
     }
     /// retrieve public announcement, if any
-    pub fn public_announcement(&self) -> Option<PublicAnnouncement> {
+    pub fn public_announcement(&self) -> Option<Announcement> {
         match &self.notification_method {
             UtxoNotifyMethod::None => None,
             UtxoNotifyMethod::OffChain(_) => None,
@@ -414,7 +414,7 @@ impl TxOutputList {
         self.iter().map(|x| x.receiver_digest()).collect()
     }
     /// Returns all public announcement for this TxOutputList
-    pub fn public_announcements(&self) -> Vec<PublicAnnouncement> {
+    pub fn public_announcements(&self) -> Vec<Announcement> {
         let mut public_announcements = vec![];
         for tx_output in &self.0 {
             if let Some(pa) = tx_output.public_announcement() {

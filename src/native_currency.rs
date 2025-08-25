@@ -57,7 +57,7 @@ pub mod tests {
     use crate::models::blockchain::shared::Hash;
     use crate::models::blockchain::transaction::lock_script::LockScriptAndWitness;
     use crate::models::blockchain::transaction::transaction_kernel::TransactionKernelModifier;
-    use crate::models::blockchain::transaction::PublicAnnouncement;
+    use crate::models::blockchain::transaction::Announcement;
     use crate::models::blockchain::type_scripts::native_currency_amount::tests::invalid_positive_amount;
     use crate::models::blockchain::type_scripts::time_lock::neptune_arbitrary::arbitrary_primitive_witness_with_active_timelocks;
     use crate::models::blockchain::type_scripts::time_lock::TimeLock;
@@ -350,7 +350,7 @@ fn assert_both_rust_and_tasm_fail(
         #[strategy(vec(arb::<Utxo>(), #_num_outputs))]
         _output_utxos: Vec<Utxo>,
         #[strategy(vec(arb(), #_num_public_announcements))]
-        _public_announcements: Vec<PublicAnnouncement>,
+        _public_announcements: Vec<Announcement>,
         #[strategy(arb())]
         _fee: NativeCurrencyAmount,
         #[strategy(
@@ -390,7 +390,7 @@ fn assert_both_rust_and_tasm_fail(
         #[strategy(vec(arb::<Utxo>(), #_num_outputs))]
         _output_utxos: Vec<Utxo>,
         #[strategy(vec(arb(), #_num_public_announcements))]
-        _public_announcements: Vec<PublicAnnouncement>,
+        _public_announcements: Vec<Announcement>,
         #[strategy(arb())]
         _fee: NativeCurrencyAmount,
         #[strategy(
@@ -767,20 +767,20 @@ mod generated_tests {
     }
     #[test]
     fn test_bincode_serialization_for_native_currency() {
-        let original_instance: NativeCurrency = todo!("Instantiate");
-        let nc_instance: nc::NativeCurrency = todo!("Instantiate");
+        let original_instance: NativeCurrency = NativeCurrency;
+        let nc_instance: nc::NativeCurrency = nc::NativeCurrency;
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_native_currency() {
-        let original_instance: NativeCurrency = todo!("Instantiate");
-        let nc_instance: nc::NativeCurrency = todo!("Instantiate");
+        let original_instance: NativeCurrency = NativeCurrency;
+        let nc_instance: nc::NativeCurrency = nc::NativeCurrency;
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_native_currency() {
-        let original_instance: NativeCurrency = todo!("Instantiate");
-        let nc_instance: nc::NativeCurrency = todo!("Instantiate");
+        let original_instance: NativeCurrency = NativeCurrency;
+        let nc_instance: nc::NativeCurrency = nc::NativeCurrency;
         test_serde_json_wasm_serialization_for_type(
             original_instance,
             Some(nc_instance),

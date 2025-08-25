@@ -13,7 +13,7 @@ pub mod utxo;
 pub mod incoming_utxo;
 pub mod utxo_notification_payload;
 pub mod utxo_notification;
-pub mod public_announcement;
+pub mod announcement;
 pub mod address;
 pub mod tx_output;
 pub mod output_format;

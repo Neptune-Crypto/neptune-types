@@ -1,6 +1,6 @@
 use super::common::network_hrp_char;
 use crate::network::Network;
-use crate::public_announcement::PublicAnnouncement;
+use crate::announcement::Announcement;
 use anyhow::anyhow;
 use anyhow::ensure;
 use anyhow::Result;
@@ -53,8 +53,8 @@ impl EncryptedUtxoNotification {
     /// Convert an encrypted UTXO notification to a public announcement. Leaks
     /// privacy in the form of `receiver_identifier` is addresses are reused.
     /// Never leaks actual UTXO info such as amount transferred.
-    pub fn into_public_announcement(self) -> PublicAnnouncement {
-        PublicAnnouncement::new(self.into_message())
+    pub fn into_public_announcement(self) -> Announcement {
+        Announcement::new(self.into_message())
     }
     pub fn into_bech32m(self, network: Network) -> String {
         let hrp = Self::get_hrp(network);

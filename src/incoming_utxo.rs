@@ -24,10 +24,6 @@ pub struct IncomingUtxo {
 }
 
 impl IncomingUtxo {
-    /// Returns true iff this UTXO is a guesser reward.
-    pub fn is_guesser_fee(&self) -> bool {
-        self.utxo.is_lockscript_with_preimage(self.receiver_preimage)
-    }
     pub fn from_utxo_notification_payload(
         payload: UtxoNotificationPayload,
         receiver_preimage: Digest,

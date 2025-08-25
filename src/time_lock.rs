@@ -52,7 +52,7 @@ pub mod neptune_arbitrary {
     use super::super::native_currency_amount::NativeCurrencyAmount;
     use super::*;
     use crate::models::blockchain::transaction::transaction_kernel::TransactionKernelModifier;
-    use crate::models::blockchain::transaction::PublicAnnouncement;
+    use crate::models::blockchain::transaction::Announcement;
     impl Arbitrary for TimeLockWitness {
         /// Parameters are:
         ///  - release_dates : `Vec<u64>` One release date per input UTXO. 0 if the time lock
@@ -75,7 +75,7 @@ pub mod neptune_arbitrary {
                 vec(NativeCurrencyAmount::arbitrary_non_negative(), num_inputs),
                 vec(arb::<Digest>(), num_outputs),
                 vec(NativeCurrencyAmount::arbitrary_non_negative(), num_outputs),
-                vec(arb::<PublicAnnouncement>(), num_public_announcements),
+                vec(arb::<Announcement>(), num_public_announcements),
                 NativeCurrencyAmount::arbitrary_coinbase(),
                 NativeCurrencyAmount::arbitrary_non_negative(),
             )
@@ -212,7 +212,7 @@ pub mod neptune_arbitrary {
             vec(arb::<u64>(), num_inputs),
             vec(arb::<Digest>(), num_outputs),
             vec(arb::<u64>(), num_outputs),
-            vec(arb::<PublicAnnouncement>(), num_announcements),
+            vec(arb::<Announcement>(), num_announcements),
             arb::<u64>(),
             arb::<Option<u64>>(),
         )

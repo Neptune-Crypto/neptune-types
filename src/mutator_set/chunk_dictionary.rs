@@ -258,27 +258,30 @@ mod generated_tests {
     use bincode;
     use serde::{Serialize, Deserialize};
     pub mod nc {
-        pub use neptune_cash::util_types::mutator_set::chunk_dictionary::ChunkDictionary;
+//        pub use neptune_cash::util_types::mutator_set::removal_record::chunk_dictionary::ChunkDictionary;
     }
     #[test]
     fn test_bincode_serialization_for_chunk_dictionary() {
-        let original_instance: ChunkDictionary = ChunkDictionary::default();
-        let nc_instance: nc::ChunkDictionary = neptune_cash::util_types::mutator_set::chunk_dictionary::ChunkDictionary::default();
-        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+        todo!("ChunkDictionary is now private in neptune-core.  maybe make it public again?");
+//        let original_instance: ChunkDictionary = ChunkDictionary::default();
+//        let nc_instance: nc::ChunkDictionary = nc::ChunkDictionary::default();
+//        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_chunk_dictionary() {
-        let original_instance: ChunkDictionary = ChunkDictionary::default();
-        let nc_instance: nc::ChunkDictionary = neptune_cash::util_types::mutator_set::chunk_dictionary::ChunkDictionary::default();
-        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+        todo!("ChunkDictionary is now private in neptune-core.  maybe make it public again?");
+//        let original_instance: ChunkDictionary = ChunkDictionary::default();
+//        let nc_instance: nc::ChunkDictionary = nc::ChunkDictionary::default();
+//        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_chunk_dictionary() {
-        let original_instance: ChunkDictionary = ChunkDictionary::default();
-        let nc_instance: nc::ChunkDictionary = neptune_cash::util_types::mutator_set::chunk_dictionary::ChunkDictionary::default();
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        todo!("ChunkDictionary is now private in neptune-core.  maybe make it public again?");
+//        let original_instance: ChunkDictionary = ChunkDictionary::default();
+//        let nc_instance: nc::ChunkDictionary = nc::ChunkDictionary::default();
+//        test_serde_json_wasm_serialization_for_type(
+//            original_instance,
+//            Some(nc_instance),
+//        );
     }
 }
