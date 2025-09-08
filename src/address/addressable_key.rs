@@ -11,14 +11,14 @@ use super::common;
 use super::generation_address;
 use super::receiving_address::ReceivingAddress;
 use super::symmetric_key;
+use crate::announcement::Announcement;
 use crate::incoming_utxo::IncomingUtxo;
 use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
 use crate::network::Network;
-use crate::announcement::Announcement;
 use crate::utxo::Utxo;
-use anyhow::bail;
 use anyhow::Result;
+use anyhow::bail;
 use serde::Deserialize;
 use serde::Serialize;
 use twenty_first::prelude::*;
@@ -33,7 +33,6 @@ pub enum KeyType {
     /// [symmetric_key] built on aes-256-gcm
     Symmetric = symmetric_key::SYMMETRIC_KEY_FLAG_U8,
 }
-
 
 impl std::fmt::Display for KeyType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -255,9 +254,9 @@ mod generated_tests {
     use bincode;
     use serde::{Deserialize, Serialize};
     pub mod nc {
-        pub use neptune_cash::models::state::wallet::address::symmetric_key::SymmetricKey;
-        pub use neptune_cash::models::state::wallet::address::SpendingKey;
         pub use neptune_cash::models::state::wallet::address::KeyType;
+        pub use neptune_cash::models::state::wallet::address::SpendingKey;
+        pub use neptune_cash::models::state::wallet::address::symmetric_key::SymmetricKey;
     }
     #[test]
     fn test_bincode_serialization_for_addressable_key() {

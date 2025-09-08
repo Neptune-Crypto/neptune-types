@@ -2,22 +2,22 @@
 use super::common;
 use super::common::deterministically_derive_seed_and_nonce;
 use super::encrypted_utxo_notification::EncryptedUtxoNotification;
+use crate::announcement::Announcement;
 use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
 use crate::network::Network;
-use crate::announcement::Announcement;
+use crate::triton_vm::nondeterminism::NonDeterminism;
 use crate::utxo::Utxo;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
-use crate::triton_vm::nondeterminism::NonDeterminism;
 use aead::Aead;
 use aead::Key;
 use aead::KeyInit;
 use aes_gcm::Aes256Gcm;
 use aes_gcm::Nonce;
+use anyhow::Result;
 use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::ensure;
-use anyhow::Result;
 use bech32::FromBase32;
 use bech32::ToBase32;
 use serde::Deserialize;
@@ -101,7 +101,6 @@ impl SymmetricKey {
     pub fn receiver_postimage(&self) -> Digest {
         self.receiver_preimage().hash()
     }
-    
 
     /// returns the receiver_identifier, a public fingerprint
     pub fn receiver_identifier(&self) -> BFieldElement {
@@ -165,7 +164,7 @@ impl SymmetricKey {
             lock_script.program,
             NonDeterminism::new(self.unlock_key().reversed().values()),
         )
-    }    
+    }
 
     pub fn generate_announcement(
         &self,

@@ -91,8 +91,8 @@ impl From<TxOutput> for OutputFormat {
 #[allow(non_snake_case)]
 mod generated_tests {
     use super::*;
-    use crate::address::symmetric_key;
     use crate::address::ReceivingAddress;
+    use crate::address::symmetric_key;
     use crate::test_shared::*;
     use bincode;
     use serde::{Deserialize, Serialize};

@@ -1,9 +1,9 @@
 use super::common::network_hrp_char;
-use crate::network::Network;
 use crate::announcement::Announcement;
+use crate::network::Network;
+use anyhow::Result;
 use anyhow::anyhow;
 use anyhow::ensure;
-use anyhow::Result;
 use bech32::FromBase32;
 use bech32::ToBase32;
 use get_size2::GetSize;
@@ -169,20 +169,26 @@ mod generated_tests {
     }
     #[test]
     fn test_bincode_serialization_for_encrypted_utxo_notification() {
-        let original_instance = EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
-        let nc_instance = nc::EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
+        let original_instance =
+            EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
+        let nc_instance =
+            nc::EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_encrypted_utxo_notification() {
-        let original_instance = EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
-        let nc_instance = nc::EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
+        let original_instance =
+            EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
+        let nc_instance =
+            nc::EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_encrypted_utxo_notification() {
-        let original_instance = EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
-        let nc_instance = nc::EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
+        let original_instance =
+            EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
+        let nc_instance =
+            nc::EncryptedUtxoNotification::from_message(vec![1.into(), 2.into()]).unwrap();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

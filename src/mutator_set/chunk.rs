@@ -1,9 +1,9 @@
+use super::shared::CHUNK_SIZE;
 use get_size2::GetSize;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use twenty_first::prelude::*;
-use super::shared::CHUNK_SIZE;
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, GetSize, BFieldCodec)]
 #[cfg_attr(feature = "tasm-lib", derive(tasm_lib::prelude::TasmObject))]
 pub struct Chunk {
@@ -12,7 +12,9 @@ pub struct Chunk {
 
 impl Chunk {
     pub fn empty_chunk() -> Self {
-        Chunk { relative_indices: vec![] }
+        Chunk {
+            relative_indices: vec![],
+        }
     }
     pub fn is_empty(&self) -> bool {
         self.relative_indices.is_empty()
@@ -21,7 +23,8 @@ impl Chunk {
         assert!(
             index < CHUNK_SIZE,
             "index cannot exceed chunk size in `insert`. CHUNK_SIZE = {}, got index = {}",
-            CHUNK_SIZE, index
+            CHUNK_SIZE,
+            index
         );
         self.relative_indices.push(index);
         self.relative_indices.sort();
@@ -30,7 +33,8 @@ impl Chunk {
         assert!(
             index < CHUNK_SIZE,
             "index cannot exceed chunk size in `remove`. CHUNK_SIZE = {}, got index = {}",
-            CHUNK_SIZE, index
+            CHUNK_SIZE,
+            index
         );
         let mut drop = None;
         for i in 0..self.relative_indices.len() {
@@ -46,7 +50,8 @@ impl Chunk {
         assert!(
             index < CHUNK_SIZE,
             "index cannot exceed chunk size in `contains`. CHUNK_SIZE = {}, got index = {}",
-            CHUNK_SIZE, index
+            CHUNK_SIZE,
+            index
         );
         self.relative_indices.contains(&index)
     }
@@ -64,7 +69,11 @@ impl Chunk {
     }
     pub fn subtract(&mut self, other: Self) {
         for remove_index in other.relative_indices {
-            match self.relative_indices.iter().find_position(|x| **x == remove_index) {
+            match self
+                .relative_indices
+                .iter()
+                .find_position(|x| **x == remove_index)
+            {
                 Some((i, _)) => self.relative_indices.remove(i),
                 None => {
                     panic!("Attempted to remove index that was not present in chunk.")
@@ -108,23 +117,23 @@ impl<'a> Arbitrary<'a> for Chunk {
 #[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
-    use std::collections::HashMap;
-    use std::collections::HashSet;
-    use num_traits::Zero;
-    use rand::rng;
-    use rand::RngCore;
-    use statrs::distribution::ContinuousCDF;
-    use statrs::distribution::Normal;
-    use twenty_first::math::b_field_element::BFieldElement;
     use super::*;
     use crate::util_types::mutator_set::shared::BATCH_SIZE;
     use crate::util_types::mutator_set::shared::NUM_TRIALS;
     use crate::util_types::mutator_set::shared::WINDOW_SIZE;
+    use num_traits::Zero;
+    use rand::RngCore;
+    use rand::rng;
+    use statrs::distribution::ContinuousCDF;
+    use statrs::distribution::Normal;
+    use std::collections::HashMap;
+    use std::collections::HashSet;
+    use twenty_first::math::b_field_element::BFieldElement;
     #[test]
     fn chunk_is_reversible_bloom_filter() {
         let mut aw = Chunk::empty_chunk();
         let index = 7;
-        assert!(! aw.contains(index));
+        assert!(!aw.contains(index));
         aw.insert(index);
         assert!(aw.contains(index));
         aw.insert(index);
@@ -132,14 +141,14 @@ mod tests {
         aw.remove_once(index);
         assert!(aw.contains(index));
         aw.remove_once(index);
-        assert!(! aw.contains(index));
+        assert!(!aw.contains(index));
         aw.remove_once(index);
     }
     #[test]
     fn insert_remove_contains_pbt() {
         let mut aw = Chunk::empty_chunk();
         for i in 0..CHUNK_SIZE {
-            assert!(! aw.contains(i));
+            assert!(!aw.contains(i));
         }
         let mut prng = rand::rng();
         for _ in 0..CHUNK_SIZE {
@@ -163,7 +172,12 @@ mod tests {
         let zero_chunk = Chunk::empty_chunk();
         let zero_chunk_preimage = zero_chunk.encode();
         println!("zero chunk preimage: {:?}", zero_chunk_preimage);
-        assert!(zero_chunk_preimage.iter().skip(1).all(| elem | elem.is_zero()));
+        assert!(
+            zero_chunk_preimage
+                .iter()
+                .skip(1)
+                .all(|elem| elem.is_zero())
+        );
         let mut one_chunk = Chunk::empty_chunk();
         one_chunk.insert(32);
         let one_chunk_preimage = one_chunk.encode();
@@ -194,7 +208,10 @@ mod tests {
         expected_sub.insert(12);
         let mut chunk_c = chunk_a.clone();
         chunk_c.subtract(chunk_b.clone());
-        assert_eq!(expected_sub, chunk_c, "subtract on chunks must behave as expected");
+        assert_eq!(
+            expected_sub, chunk_c,
+            "subtract on chunks must behave as expected"
+        );
         let mut expected_combine = Chunk::empty_chunk();
         expected_combine.insert(12);
         expected_combine.insert(13);
@@ -203,11 +220,12 @@ mod tests {
         expected_combine.insert(48);
         chunk_c = chunk_a.clone().combine(chunk_b.clone());
         assert_eq!(
-            expected_combine, chunk_c, "combine on chunks must behave as expected"
+            expected_combine, chunk_c,
+            "combine on chunks must behave as expected"
         );
-        assert!(! chunk_a.is_empty());
-        assert!(! chunk_b.is_empty());
-        assert!(! chunk_c.is_empty());
+        assert!(!chunk_a.is_empty());
+        assert!(!chunk_b.is_empty());
+        assert!(!chunk_c.is_empty());
         assert!(Chunk::empty_chunk().is_empty());
     }
     #[test]
@@ -274,12 +292,16 @@ mod tests {
             }
             hist.entry(chunk_size).and_modify(|v| *v += 1).or_insert(1);
         }
-        let mean: f64 = hist.iter().map(|(k, v)| (*k as f64) * (*v as f64)).sum::<f64>()
+        let mean: f64 = hist
+            .iter()
+            .map(|(k, v)| (*k as f64) * (*v as f64))
+            .sum::<f64>()
             / f64::from(num_samples);
         let variance: f64 = hist
             .iter()
             .map(|(k, v)| ((*k as f64) - mean) * ((*k as f64) - mean) * (*v as f64))
-            .sum::<f64>() / f64::from(num_samples);
+            .sum::<f64>()
+            / f64::from(num_samples);
         let stddev = variance.sqrt();
         println!("mean: {mean}");
         println!("variance: {variance}");
@@ -291,8 +313,8 @@ mod tests {
                 .map(|(_k, v)| *v)
                 .sum::<usize>();
             println!(
-                "tail mass >= {threshold}: {excess} / {num_samples} = {}", (excess as
-                f64) / f64::from(num_samples)
+                "tail mass >= {threshold}: {excess} / {num_samples} = {}",
+                (excess as f64) / f64::from(num_samples)
             );
         }
         let gauss = Normal::new(mean, stddev).unwrap();
@@ -309,32 +331,32 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
-//        pub use neptune_cash::util_types::mutator_set::chunk::Chunk;
+        //        pub use neptune_cash::util_types::mutator_set::chunk::Chunk;
     }
     #[test]
     fn test_bincode_serialization_for_chunk() {
         todo!("Chunk is now private in neptune-core.  maybe make it public again?");
-//        let original_instance: Chunk = todo!("Instantiate");
-//        let nc_instance: nc::Chunk = todo!("Instantiate");
-//        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+        //        let original_instance: Chunk = todo!("Instantiate");
+        //        let nc_instance: nc::Chunk = todo!("Instantiate");
+        //        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_chunk() {
         todo!("Chunk is now private in neptune-core.  maybe make it public again?");
-//        let original_instance: Chunk = todo!("Instantiate");
-//        let nc_instance: nc::Chunk = todo!("Instantiate");
-//        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+        //        let original_instance: Chunk = todo!("Instantiate");
+        //        let nc_instance: nc::Chunk = todo!("Instantiate");
+        //        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_chunk() {
         todo!("Chunk is now private in neptune-core.  maybe make it public again?");
-//        let original_instance: Chunk = todo!("Instantiate");
-//        let nc_instance: nc::Chunk = todo!("Instantiate");
-//        test_serde_json_wasm_serialization_for_type(
-//            original_instance,
-//            Some(nc_instance),
-//        );
+        //        let original_instance: Chunk = todo!("Instantiate");
+        //        let nc_instance: nc::Chunk = todo!("Instantiate");
+        //        test_serde_json_wasm_serialization_for_type(
+        //            original_instance,
+        //            Some(nc_instance),
+        //        );
     }
 }

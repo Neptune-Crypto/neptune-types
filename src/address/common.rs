@@ -1,13 +1,13 @@
+use crate::announcement::Announcement;
+use crate::network::Network;
+use crate::utxo_notification_payload::UtxoNotificationPayload;
+use anyhow::Result;
 use anyhow::bail;
 use anyhow::ensure;
-use anyhow::Result;
+use sha3::Shake256;
 use sha3::digest::ExtendableOutput;
 use sha3::digest::Update;
-use sha3::Shake256;
 use twenty_first::prelude::*;
-use crate::network::Network;
-use crate::announcement::Announcement;
-use crate::utxo_notification_payload::UtxoNotificationPayload;
 /// returns human-readable-prefix for the given network
 pub fn network_hrp_char(network: Network) -> char {
     match network {
@@ -19,8 +19,7 @@ pub fn network_hrp_char(network: Network) -> char {
 }
 /// Derive a receiver id from a seed.
 pub fn derive_receiver_id(seed: Digest) -> BFieldElement {
-    Tip5::hash_varlen(&[seed.values().to_vec(), vec![BFieldElement::new(2)]].concat())
-        .values()[0]
+    Tip5::hash_varlen(&[seed.values().to_vec(), vec![BFieldElement::new(2)]].concat()).values()[0]
 }
 /// Derive a seed and a nonce deterministically, in order to produce
 /// deterministic public announcements, since these are needed to be able to
@@ -29,10 +28,7 @@ pub fn derive_receiver_id(seed: Digest) -> BFieldElement {
 pub fn deterministically_derive_seed_and_nonce(
     payload: &UtxoNotificationPayload,
 ) -> ([u8; 32], BFieldElement) {
-    let combined = Tip5::hash_pair(
-        payload.sender_randomness,
-        payload.utxo.lock_script_hash(),
-    );
+    let combined = Tip5::hash_pair(payload.sender_randomness, payload.utxo.lock_script_hash());
     let [e0, e1, e2, e3, e4] = combined.values();
     let e0: [u8; 8] = e0.into();
     let e1: [u8; 8] = e1.into();
@@ -44,9 +40,7 @@ pub fn deterministically_derive_seed_and_nonce(
 /// retrieves key-type field from a [Announcement]
 ///
 /// returns an error if the field is not present
-pub fn key_type_from_public_announcement(
-    announcement: &Announcement,
-) -> Result<BFieldElement> {
+pub fn key_type_from_public_announcement(announcement: &Announcement) -> Result<BFieldElement> {
     match announcement.message.first() {
         Some(key_type) => Ok(*key_type),
         None => bail!("Public announcement does not contain key type."),
@@ -99,7 +93,7 @@ pub fn bytes_to_bfes(bytes: &[u8]) -> Vec<BFieldElement> {
 /// Decodes a slice of BFieldElements to a vec of bytes. This method
 /// computes the inverse of `bytes_to_bfes`.
 pub fn bfes_to_bytes(bfes: &[BFieldElement]) -> Result<Vec<u8>> {
-    ensure!(! bfes.is_empty(), "Cannot decode empty byte stream");
+    ensure!(!bfes.is_empty(), "Cannot decode empty byte stream");
     let length = bfes[0].value() as usize;
     ensure!(
         length <= size_of_val(bfes),
@@ -125,9 +119,7 @@ pub fn bfes_to_bytes(bfes: &[BFieldElement]) -> Result<Vec<u8>> {
     }
     Ok(bytes[0..length].to_vec())
 }
-pub fn shake256<const NUM_OUT_BYTES: usize>(
-    randomness: impl AsRef<[u8]>,
-) -> [u8; NUM_OUT_BYTES] {
+pub fn shake256<const NUM_OUT_BYTES: usize>(randomness: impl AsRef<[u8]>) -> [u8; NUM_OUT_BYTES] {
     let mut hasher = Shake256::default();
     hasher.update(randomness.as_ref());
     let mut result = [0u8; NUM_OUT_BYTES];
@@ -138,9 +130,9 @@ pub fn shake256<const NUM_OUT_BYTES: usize>(
 #[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
 pub(super) mod tests {
+    use super::*;
     use rand::Rng;
     use rand::TryRngCore;
-    use super::*;
     #[test]
     fn test_conversion_fixed_length() {
         const N: usize = 23;
@@ -181,7 +173,7 @@ pub(super) mod tests {
                 0xffffffffffffffffu64.to_be_bytes().to_vec(),
                 0xffffffffffffffffu64.to_be_bytes().to_vec(),
             ]
-                .concat(),
+            .concat(),
         ] {
             let bfes = bytes_to_bfes(&test_case);
             let bytes_again = bfes_to_bytes(&bfes).unwrap();

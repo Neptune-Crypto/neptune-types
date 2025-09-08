@@ -1,34 +1,24 @@
-use std::cmp::min;
-use std::cmp::Ordering;
-use std::fmt::Display;
-use std::ops::Add;
-use std::ops::Sub;
 use get_size2::GetSize;
 use num_traits::ConstZero;
 use num_traits::One;
 use num_traits::Zero;
 use serde::Deserialize;
 use serde::Serialize;
+use std::cmp::Ordering;
+use std::cmp::min;
+use std::fmt::Display;
+use std::ops::Add;
+use std::ops::Sub;
+use twenty_first;
 use twenty_first::math::b_field_element::BFieldElement;
 use twenty_first::math::bfield_codec::BFieldCodec;
-use twenty_first;
 /// The distance, in number of blocks, to the genesis block.
 ///
 /// This struct wraps around a [`BFieldElement`], so the maximum block height
 /// is P-1 = 2^64 - 2^32. With an average block time of 588 seconds, this
 /// maximum will be reached roughly 344 trillion years after launch. Not urgent.
 #[derive(
-    Clone,
-    Copy,
-    Debug,
-    Default,
-    PartialEq,
-    Eq,
-    Serialize,
-    Deserialize,
-    Hash,
-    BFieldCodec,
-    GetSize,
+    Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, Hash, BFieldCodec, GetSize,
 )]
 ///# [cfg_attr (any (test , feature = "arbitrary-impls") , derive (arbitrary :: Arbitrary))]
 #[cfg_attr(
@@ -49,7 +39,11 @@ impl BlockHeight {
         Self(self.0 + BFieldElement::one())
     }
     pub fn previous(&self) -> Option<Self> {
-        if self.is_genesis() { None } else { Some(Self(self.0 - BFieldElement::one())) }
+        if self.is_genesis() {
+            None
+        } else {
+            Some(Self(self.0 - BFieldElement::one()))
+        }
     }
     pub const fn genesis() -> Self {
         Self(BFieldElement::ZERO)
@@ -128,34 +122,34 @@ impl Display for BlockHeight {
 #[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
+    use super::*;
+    use crate::models::blockchain::block::Block;
+    use crate::models::blockchain::block::Network;
+    use crate::models::blockchain::block::tests::PREMINE_MAX_SIZE;
+    use crate::models::blockchain::type_scripts::native_currency_amount::NativeCurrencyAmount;
+    use crate::models::proof_abstractions::timestamp::Timestamp;
+    use crate::tests::shared_tokio_runtime;
     use macro_rules_attr::apply;
     use num_traits::CheckedAdd;
     use num_traits::CheckedSub;
     use tracing_test::traced_test;
-    use super::*;
-    use crate::models::blockchain::block::tests::PREMINE_MAX_SIZE;
-    use crate::models::blockchain::block::Block;
-    use crate::models::blockchain::block::Network;
-    use crate::models::blockchain::type_scripts::native_currency_amount::NativeCurrencyAmount;
-    use crate::models::proof_abstractions::timestamp::Timestamp;
-    use crate::tests::shared_tokio_runtime;
     #[traced_test]
     #[apply(shared_tokio_runtime)]
     async fn genesis_test() {
         assert!(BlockHeight::genesis().is_genesis());
-        assert!(! BlockHeight::genesis().next().is_genesis());
+        assert!(!BlockHeight::genesis().next().is_genesis());
     }
     #[test]
     fn block_interval_times_generation_count_is_three_years() {
         let network = Network::Main;
-        let calculated_halving_time = network.target_block_interval()
-            * (BLOCKS_PER_GENERATION as usize);
+        let calculated_halving_time =
+            network.target_block_interval() * (BLOCKS_PER_GENERATION as usize);
         let calculated_halving_time = calculated_halving_time.to_millis();
         let three_years = Timestamp::years(3);
         let three_years = three_years.to_millis();
         assert!(
-            (calculated_halving_time as f64) * 1.01 > three_years as f64 &&
-            (calculated_halving_time as f64) * 0.99 < three_years as f64,
+            (calculated_halving_time as f64) * 1.01 > three_years as f64
+                && (calculated_halving_time as f64) * 0.99 < three_years as f64,
             "target halving time must be within 1 % of 3 years. Got:\n\
             three years = {three_years}ms\n calculated_halving_time = {calculated_halving_time}ms"
         );
@@ -173,8 +167,7 @@ mod tests {
         let asymptotic_limit = mineable_amount.checked_add(&designated_premine).unwrap();
         let expected_limit = NativeCurrencyAmount::coins(42_000_000);
         assert_eq!(expected_limit, asymptotic_limit);
-        let relative_premine = designated_premine.to_nau_f64()
-            / expected_limit.to_nau_f64();
+        let relative_premine = designated_premine.to_nau_f64() / expected_limit.to_nau_f64();
         println!("relative_premine: {relative_premine}");
         println!("absolute premine: {designated_premine} coins");
         assert!(relative_premine < 0.0198, "Premine may not exceed promise");
@@ -197,7 +190,7 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::api::export::BlockHeight;
     }
@@ -217,9 +210,6 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_block_height() {
         let original_instance: BlockHeight = BlockHeight::default();
         let nc_instance: nc::BlockHeight = neptune_cash::api::export::BlockHeight::default();
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

@@ -4,7 +4,18 @@ use serde::Serialize;
 /// represents available types of transaction proofs
 ///
 /// the types are ordered (asc) by proof-generation complexity.
-#[derive(Clone, Debug, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, strum::Display, strum::EnumIs)]
+#[derive(
+    Clone,
+    Debug,
+    Copy,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    strum::Display,
+    strum::EnumIs,
+)]
 #[repr(u8)]
 pub enum TransactionProofType {
     /// a primitive-witness.  exposes secrets (keys).  this proof must not be shared.

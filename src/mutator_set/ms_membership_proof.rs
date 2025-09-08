@@ -1,10 +1,10 @@
-use std::error::Error;
-use std::fmt;
+use super::chunk_dictionary::ChunkDictionary;
 use get_size2::GetSize;
 use serde::Deserialize;
 use serde::Serialize;
+use std::error::Error;
+use std::fmt;
 use twenty_first::prelude::*;
-use super::chunk_dictionary::ChunkDictionary;
 impl Error for MembershipProofError {}
 
 impl fmt::Display for MembershipProofError {
@@ -40,7 +40,7 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::util_types::mutator_set::ms_membership_proof::MsMembershipProof;
     }
@@ -60,9 +60,6 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_ms_membership_proof() {
         let original_instance: MsMembershipProof = todo!("Instantiate");
         let nc_instance: nc::MsMembershipProof = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

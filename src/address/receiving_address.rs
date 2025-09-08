@@ -1,13 +1,13 @@
 //! provides an abstraction over key and address types.
+use super::KeyType;
 use super::generation_address;
 use super::symmetric_key;
-use super::KeyType;
+use crate::announcement::Announcement;
 use crate::lock_script::LockScript;
 use crate::network::Network;
-use crate::announcement::Announcement;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
-use anyhow::bail;
 use anyhow::Result;
+use anyhow::bail;
 use serde::Deserialize;
 use serde::Serialize;
 use twenty_first::prelude::*;
@@ -86,8 +86,7 @@ impl ReceivingAddress {
     ) -> Announcement {
         match self {
             ReceivingAddress::Generation(generation_receiving_address) => {
-                generation_receiving_address
-                    .generate_announcement(&utxo_notification_payload)
+                generation_receiving_address.generate_announcement(&utxo_notification_payload)
             }
             ReceivingAddress::Symmetric(symmetric_key) => {
                 symmetric_key.generate_announcement(&utxo_notification_payload)

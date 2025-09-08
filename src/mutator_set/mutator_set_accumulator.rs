@@ -1,9 +1,9 @@
+use super::active_window::ActiveWindow;
 use get_size2::GetSize;
 use serde::Deserialize;
 use serde::Serialize;
 use twenty_first::prelude::*;
 use twenty_first::util_types::mmr::mmr_accumulator::MmrAccumulator;
-use super::active_window::ActiveWindow;
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, GetSize, BFieldCodec)]
 ///# [cfg_attr (any (test , feature = "arbitrary-impls") , derive (arbitrary :: Arbitrary))]
 #[cfg_attr(
@@ -35,7 +35,7 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::util_types::mutator_set::mutator_set_accumulator::MutatorSetAccumulator;
     }
@@ -55,9 +55,6 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_mutator_set_accumulator() {
         let original_instance: MutatorSetAccumulator = todo!("Instantiate");
         let nc_instance: nc::MutatorSetAccumulator = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

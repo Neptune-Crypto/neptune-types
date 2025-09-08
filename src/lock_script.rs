@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use crate::triton_vm::nondeterminism::NonDeterminism;
 ///# [cfg (any (test , feature = "arbitrary-impls"))]
 #[cfg(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"))]
 use arbitrary::Arbitrary;
@@ -6,11 +6,11 @@ use get_size2::GetSize;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
-use crate::triton_vm::nondeterminism::NonDeterminism;
+use std::collections::HashMap;
 use triton_isa::instruction::LabelledInstruction;
-use triton_isa::triton_instr;
 use triton_isa::program::Program;
 use triton_isa::triton_asm;
+use triton_isa::triton_instr;
 use triton_isa::triton_program;
 use twenty_first::prelude::*;
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, GetSize, BFieldCodec)]
@@ -61,7 +61,7 @@ impl LockScript {
             .rev()
             .map(|elem| triton_instr!(push elem.value()))
             .collect_vec();
-    
+
         let instructions = triton_asm!(
             divine 5
             hash
@@ -176,46 +176,35 @@ impl<'a> Arbitrary<'a> for LockScriptAndWitness {
 #[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
+    use super::*;
+    use crate::models::blockchain::transaction::primitive_witness::PrimitiveWitness;
+    use crate::models::blockchain::type_scripts::native_currency_amount::NativeCurrencyAmount;
     use num_traits::Zero;
     use proptest::prop_assert;
     use proptest_arbitrary_interop::arb;
     use test_strategy::proptest;
-    use super::*;
-    use crate::models::blockchain::transaction::primitive_witness::PrimitiveWitness;
-    use crate::models::blockchain::type_scripts::native_currency_amount::NativeCurrencyAmount;
     #[proptest]
     fn lock_script_halts_gracefully_prop(
-        #[strategy(arb::<Digest>())]
-        txk_mast_hash: Digest,
-        #[strategy(arb::<Digest>())]
-        seed: Digest,
-        #[strategy(NativeCurrencyAmount::arbitrary_non_negative())]
-        amount: NativeCurrencyAmount,
+        #[strategy(arb::<Digest>())] txk_mast_hash: Digest,
+        #[strategy(arb::<Digest>())] seed: Digest,
+        #[strategy(NativeCurrencyAmount::arbitrary_non_negative())] amount: NativeCurrencyAmount,
     ) {
-        let (_utxos, lock_scripts_and_witnesses) = PrimitiveWitness::transaction_inputs_from_address_seeds_and_amounts(
-            &[seed],
-            &[amount],
-        );
-        prop_assert!(
-            lock_scripts_and_witnesses.into_iter().all(| lsaw | lsaw
-            .halts_gracefully(PublicInput::new(txk_mast_hash.reversed().values()
-            .to_vec())))
-        );
+        let (_utxos, lock_scripts_and_witnesses) =
+            PrimitiveWitness::transaction_inputs_from_address_seeds_and_amounts(&[seed], &[amount]);
+        prop_assert!(lock_scripts_and_witnesses.into_iter().all(|lsaw| {
+            lsaw.halts_gracefully(PublicInput::new(txk_mast_hash.reversed().values().to_vec()))
+        }));
     }
     #[test]
     fn lock_script_halts_gracefully_unit() {
         let txk_mast_hash = Digest::default();
         let seed = Digest::default();
         let amount = NativeCurrencyAmount::zero();
-        let (_utxos, lock_scripts_and_witnesses) = PrimitiveWitness::transaction_inputs_from_address_seeds_and_amounts(
-            &[seed],
-            &[amount],
-        );
-        assert!(
-            lock_scripts_and_witnesses.into_iter().all(| lsaw | lsaw
-            .halts_gracefully(PublicInput::new(txk_mast_hash.reversed().values()
-            .to_vec())))
-        );
+        let (_utxos, lock_scripts_and_witnesses) =
+            PrimitiveWitness::transaction_inputs_from_address_seeds_and_amounts(&[seed], &[amount]);
+        assert!(lock_scripts_and_witnesses.into_iter().all(|lsaw| {
+            lsaw.halts_gracefully(PublicInput::new(txk_mast_hash.reversed().values().to_vec()))
+        }));
     }
 }
 #[cfg(test)]
@@ -227,7 +216,7 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::models::blockchain::transaction::lock_script::LockScript;
         pub use neptune_cash::models::blockchain::transaction::lock_script::LockScriptAndWitness;
@@ -248,10 +237,7 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_lock_script() {
         let original_instance: LockScript = todo!("Instantiate");
         let nc_instance: nc::LockScript = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_bincode_serialization_for_lock_script_and_witness() {
@@ -269,9 +255,6 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_lock_script_and_witness() {
         let original_instance: LockScriptAndWitness = todo!("Instantiate");
         let nc_instance: nc::LockScriptAndWitness = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

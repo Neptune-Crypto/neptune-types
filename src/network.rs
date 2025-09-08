@@ -1,24 +1,15 @@
+use crate::difficulty_control::Difficulty;
+use crate::timestamp::Timestamp;
+use serde::Deserialize;
+use serde::Serialize;
 use std::fmt;
 use std::str::FromStr;
 use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
-use serde::Deserialize;
-use serde::Serialize;
 use strum::EnumIter;
 use twenty_first::prelude::BFieldElement;
-use crate::difficulty_control::Difficulty;
-use crate::timestamp::Timestamp;
 #[derive(
-    Clone,
-    Copy,
-    Debug,
-    Serialize,
-    Deserialize,
-    PartialEq,
-    Eq,
-    Default,
-    EnumIter,
-    strum::EnumIs,
+    Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, Default, EnumIter, strum::EnumIs,
 )]
 #[non_exhaustive]
 pub enum Network {
@@ -48,7 +39,6 @@ pub enum Network {
 }
 
 impl Network {
-
     pub fn id(&self) -> u32 {
         match self {
             Network::Main => 0u32,
@@ -56,7 +46,7 @@ impl Network {
             Network::RegTest => 2u32,
             Network::Testnet(i) => 3u32 + u32::from(*i),
         }
-    }    
+    }
 
     pub fn launch_date(&self) -> Timestamp {
         match self {
@@ -127,7 +117,7 @@ impl Network {
             Self::TestnetMock => Timestamp::millis(100),
             Self::Main | Self::Testnet(_) => Timestamp::seconds(60),
         }
-    }    
+    }
 
     /// desired/average time between blocks.
     ///
@@ -139,7 +129,6 @@ impl Network {
             Self::Main | Self::Testnet(_) | Self::TestnetMock => Timestamp::millis(588000),
         }
     }
-    
 
     /// indicates if automated mining should be performed by this network
     ///
@@ -189,14 +178,14 @@ impl FromStr for Network {
                 }
             }
         }
-    }    
+    }
 }
 ///# [cfg (test)]
 #[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
-    use num_traits::Zero;
     use super::*;
+    use num_traits::Zero;
     #[test]
     fn main_variant_is_zero() {
         assert!((Network::Main as u32).is_zero());
@@ -211,7 +200,7 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::api::export::Network;
     }
@@ -231,9 +220,6 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_network() {
         let original_instance: Network = Network::default();
         let nc_instance: nc::Network = neptune_cash::api::export::Network::default();
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

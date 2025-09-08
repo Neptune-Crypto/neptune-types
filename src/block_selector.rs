@@ -12,14 +12,14 @@
 //!
 //! Public API's such as RPCs should accept a BlockSelector rather than a Digest
 //! or Height.
-use std::num::ParseIntError;
-use std::str::FromStr;
+use crate::block_height::BlockHeight;
 use serde::Deserialize;
 use serde::Serialize;
+use std::num::ParseIntError;
+use std::str::FromStr;
 use thiserror::Error;
-use crate::block_height::BlockHeight;
-use twenty_first::prelude::*;
 use twenty_first::error::TryFromHexDigestError;
+use twenty_first::prelude::*;
 /// Provides alternatives for looking up a block.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum BlockSelector {
@@ -76,9 +76,9 @@ impl FromStr for BlockSelector {
             match parts[0] {
                 "digest" => Ok(Self::Digest(Digest::try_from_hex(parts[1])?)),
                 "height" => Ok(Self::Height(parts[1].parse::<u64>()?.into())),
-                other => {
-                    Err(BlockSelectorParseError::InvalidPairSelector(other.to_string()))
-                }
+                other => Err(BlockSelectorParseError::InvalidPairSelector(
+                    other.to_string(),
+                )),
             }
         } else {
             Err(BlockSelectorParseError::WrongSelectorLength(parts.len()))
@@ -120,7 +120,7 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::models::blockchain::block::block_selector::BlockSelector;
     }
@@ -140,9 +140,6 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_block_selector() {
         let original_instance = BlockSelector::Tip;
         let nc_instance = nc::BlockSelector::Tip;
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

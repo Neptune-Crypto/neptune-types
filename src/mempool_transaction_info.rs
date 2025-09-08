@@ -1,9 +1,9 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::transaction_proof_type::TransactionProofType;
-use crate::transaction_kernel_id::TransactionKernelId;
 use crate::native_currency_amount::NativeCurrencyAmount;
+use crate::transaction_kernel_id::TransactionKernelId;
+use crate::transaction_proof_type::TransactionProofType;
 
 #[derive(Clone, Debug, Copy, Serialize, Deserialize)]
 pub struct MempoolTransactionInfo {

@@ -15,20 +15,20 @@ use super::common;
 use super::common::deterministically_derive_seed_and_nonce;
 use super::common::network_hrp_char;
 use super::encrypted_utxo_notification::EncryptedUtxoNotification;
+use crate::announcement::Announcement;
 use crate::lock_script::LockScript;
 use crate::lock_script::LockScriptAndWitness;
 use crate::network::Network;
-use crate::announcement::Announcement;
 use crate::utxo::Utxo;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
 use aead::Aead;
 use aead::KeyInit;
 use aes_gcm::Aes256Gcm;
 use aes_gcm::Nonce;
+use anyhow::Result;
 use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::ensure;
-use anyhow::Result;
 use bech32::FromBase32;
 use bech32::ToBase32;
 use bech32::Variant;
@@ -201,7 +201,7 @@ impl GenerationSpendingKey {
     /// note: The hash of the preimage is available in the receiving address.
     pub fn receiver_preimage(&self) -> Digest {
         self.receiver_preimage
-    }    
+    }
 
     /// returns the receiver_identifier, a public fingerprint
     pub fn receiver_identifier(&self) -> BFieldElement {

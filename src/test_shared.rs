@@ -1,4 +1,4 @@
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 pub fn test_bincode_serialization_for_type<
     T: Serialize + DeserializeOwned,
     NC: Serialize + DeserializeOwned,

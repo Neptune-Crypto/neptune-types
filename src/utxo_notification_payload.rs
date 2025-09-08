@@ -17,7 +17,10 @@ pub struct UtxoNotificationPayload {
 
 impl UtxoNotificationPayload {
     pub fn new(utxo: Utxo, sender_randomness: Digest) -> Self {
-        Self { utxo, sender_randomness }
+        Self {
+            utxo,
+            sender_randomness,
+        }
     }
 }
 #[cfg(test)]
@@ -29,7 +32,7 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::models::state::wallet::utxo_notification::UtxoNotificationPayload;
     }
@@ -49,9 +52,6 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_utxo_notification_payload() {
         let original_instance: UtxoNotificationPayload = todo!("Instantiate");
         let nc_instance: nc::UtxoNotificationPayload = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

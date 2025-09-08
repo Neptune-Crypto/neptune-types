@@ -1,10 +1,10 @@
-use std::fmt::Debug;
-use std::sync::Arc;
-use serde::Deserialize;
-use serde::Serialize;
 use super::address::KeyType;
 use super::address::SpendingKey;
 use super::utxo_notification::UtxoNotificationMedium;
+use serde::Deserialize;
+use serde::Serialize;
+use std::fmt::Debug;
+use std::sync::Arc;
 /// specifies how to handle change for a transaction.
 ///
 /// When the selected inputs represent more coins than the outputs (with fee)
@@ -19,11 +19,17 @@ pub enum ChangePolicy {
     /// recover change to the next unused key.
     ///
     /// (of specified key-type, via specified notification medium)
-    RecoverToNextUnusedKey { key_type: KeyType, medium: UtxoNotificationMedium },
+    RecoverToNextUnusedKey {
+        key_type: KeyType,
+        medium: UtxoNotificationMedium,
+    },
     /// recover change to the provided key.
     ///
     /// (via specified notification medium)
-    RecoverToProvidedKey { key: Arc<SpendingKey>, medium: UtxoNotificationMedium },
+    RecoverToProvidedKey {
+        key: Arc<SpendingKey>,
+        medium: UtxoNotificationMedium,
+    },
     /// If the change is nonzero, the excess funds will be lost forever.
     Burn,
 }
@@ -55,17 +61,11 @@ impl ChangePolicy {
     }
     /// instantiate `RecoverToNextUnusedKey` variant with symmetric key and onchain notification
     pub fn recover_to_next_unused_symmetric_key_onchain() -> Self {
-        Self::recover_to_next_unused_key(
-            KeyType::Symmetric,
-            UtxoNotificationMedium::OnChain,
-        )
+        Self::recover_to_next_unused_key(KeyType::Symmetric, UtxoNotificationMedium::OnChain)
     }
     /// instantiate `RecoverToNextUnusedKey` variant with symmetric key and offchain notification
     pub fn recover_to_next_unused_symmetric_key_offchain() -> Self {
-        Self::recover_to_next_unused_key(
-            KeyType::Symmetric,
-            UtxoNotificationMedium::OffChain,
-        )
+        Self::recover_to_next_unused_key(KeyType::Symmetric, UtxoNotificationMedium::OffChain)
     }
     /// instantiate `RecoverToNextUnusedKey` variant
     pub fn recover_to_next_unused_key(
@@ -91,7 +91,7 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::api::export::ChangePolicy;
     }
@@ -111,9 +111,6 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_change_policy() {
         let original_instance = ChangePolicy::ExactChange;
         let nc_instance = nc::ChangePolicy::ExactChange;
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

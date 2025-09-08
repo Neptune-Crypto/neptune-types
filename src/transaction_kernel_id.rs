@@ -3,6 +3,8 @@ use std::fmt::Display;
 use get_size2::GetSize;
 use serde::Deserialize;
 use serde::Serialize;
+use std::str::FromStr;
+use thiserror::Error;
 use twenty_first::prelude::*;
 
 /// A unique identifier of a transaction whose value is unaffected by a
@@ -20,6 +22,23 @@ impl Display for TransactionKernelId {
 impl From<Digest> for TransactionKernelId {
     fn from(d: Digest) -> Self {
         Self(d)
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum ParseTxIdError {
+    #[error("Invalid transaction ID format: {0}")]
+    InvalidFormat(String),
+}
+
+impl FromStr for TransactionKernelId {
+    type Err = ParseTxIdError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        // Digest likely has a constructor from a hex string. Adjust if necessary.
+        let digest =
+            Digest::try_from_hex(s).map_err(|e| ParseTxIdError::InvalidFormat(e.to_string()))?;
+        Ok(TransactionKernelId(digest))
     }
 }
 

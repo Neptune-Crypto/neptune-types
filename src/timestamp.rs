@@ -1,11 +1,3 @@
-use std::fmt::Display;
-use std::ops::Add;
-use std::ops::AddAssign;
-use std::ops::Mul;
-use std::ops::Sub;
-use std::time::Duration;
-use std::time::SystemTime;
-use std::time::UNIX_EPOCH;
 use chrono::DateTime;
 use chrono::Local;
 use chrono::NaiveDateTime;
@@ -22,22 +14,20 @@ use rand::distr::Distribution;
 use rand::distr::StandardUniform;
 use serde::Deserialize;
 use serde::Serialize;
+use std::fmt::Display;
+use std::ops::Add;
+use std::ops::AddAssign;
+use std::ops::Mul;
+use std::ops::Sub;
+use std::time::Duration;
+use std::time::SystemTime;
+use std::time::UNIX_EPOCH;
 use twenty_first::prelude::*;
 /// Dedicated struct for timestamps (and durations). Counts the number of
 /// milliseconds elapsed since the Unix epoch (00:00 UTC on 1 Jan 1970) using
 /// a single BFieldElement.
 #[derive(
-    Debug,
-    Clone,
-    Copy,
-    Hash,
-    BFieldCodec,
-    PartialEq,
-    Eq,
-    Serialize,
-    Deserialize,
-    GetSize,
-    Default,
+    Debug, Clone, Copy, Hash, BFieldCodec, PartialEq, Eq, Serialize, Deserialize, GetSize, Default,
 )]
 ///# [cfg_attr (any (test , feature = "arbitrary-impls") , derive (arbitrary :: Arbitrary))]
 #[cfg_attr(
@@ -68,7 +58,7 @@ impl Zero for Timestamp {
         Timestamp(BFieldElement::new(0))
     }
 
-fn is_zero(&self) -> bool {
+    fn is_zero(&self) -> bool {
         self.0 == BFieldElement::new(0)
     }
 }
@@ -109,11 +99,12 @@ impl Mul<usize> for Timestamp {
 
 impl Timestamp {
     pub fn now() -> Timestamp {
-        Timestamp(
-            BFieldElement::new(
-                SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u64,
-            ),
-        )
+        Timestamp(BFieldElement::new(
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as u64,
+        ))
     }
     pub const fn years(num: usize) -> Timestamp {
         Timestamp(BFieldElement::new((num as u64) * 365240 * 2 * 60 * 60 * 12))
@@ -207,25 +198,17 @@ impl Timestamp {
     }
     #[allow(deprecated)]
     pub fn standard_format(&self) -> String {
-        let naive = NaiveDateTime::from_timestamp_millis(
-            self.0.value().try_into().unwrap_or(0),
-        );
+        let naive = NaiveDateTime::from_timestamp_millis(self.0.value().try_into().unwrap_or(0));
         let Some(naive) = naive else {
             return "Too far into the future".to_string();
         };
-        let utc: DateTime<Utc> = DateTime::from_naive_utc_and_offset(
-            naive,
-            *Utc::now().offset(),
-        );
+        let utc: DateTime<Utc> = DateTime::from_naive_utc_and_offset(naive, *Utc::now().offset());
         let offset: DateTime<Local> = DateTime::from(utc);
         offset.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, false)
     }
     ///# [cfg (any (test , feature = "arbitrary-impls"))]
     #[cfg(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"))]
-    pub fn arbitrary_between(
-        start: Timestamp,
-        stop: Timestamp,
-    ) -> BoxedStrategy<Timestamp> {
+    pub fn arbitrary_between(start: Timestamp, stop: Timestamp) -> BoxedStrategy<Timestamp> {
         (start.0.value()..stop.0.value())
             .prop_map(|v| Timestamp(BFieldElement::new(v)))
             .boxed()
@@ -254,10 +237,10 @@ impl Distribution<Timestamp> for StandardUniform {
 #[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
+    use crate::models::proof_abstractions::timestamp::Timestamp;
     use proptest_arbitrary_interop::arb;
     use tasm_lib::triton_vm::prelude::BFieldElement;
     use test_strategy::proptest;
-    use crate::models::proof_abstractions::timestamp::Timestamp;
     #[test]
     fn print_now() {
         println!("{}", Timestamp::now());
@@ -291,7 +274,10 @@ mod tests {
     #[test]
     fn month_is_sane() {
         assert_eq!(365240 * 60 * 60 * 24 / 12, Timestamp::months(1).to_millis());
-        assert_eq!(5 * 365240 * 60 * 60 * 24 / 12, Timestamp::months(5).to_millis());
+        assert_eq!(
+            5 * 365240 * 60 * 60 * 24 / 12,
+            Timestamp::months(5).to_millis()
+        );
     }
     #[test]
     fn day_is_sane() {
@@ -323,7 +309,7 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::api::export::Timestamp;
     }
@@ -343,9 +329,6 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_timestamp() {
         let original_instance: Timestamp = Timestamp::default();
         let nc_instance: nc::Timestamp = neptune_cash::api::export::Timestamp::default();
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

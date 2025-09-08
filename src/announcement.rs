@@ -18,9 +18,7 @@ use tasm_lib::prelude::TasmObject;
 /// that a recipient can identify and claim the UTXO.
 ///
 /// See [Transaction](super::Transaction).
-#[derive(
-    Clone, Debug, Serialize, Deserialize, PartialEq, Eq, GetSize, BFieldCodec, Default,
-)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, GetSize, BFieldCodec, Default)]
 #[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
 #[cfg_attr(feature = "tasm-object", derive(TasmObject))]
 pub struct Announcement {
@@ -125,7 +123,7 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::models::blockchain::transaction::announcement::Announcement;
     }
@@ -145,9 +143,6 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_public_announcement() {
         let original_instance: Announcement = Announcement::default();
         let nc_instance: nc::Announcement = nc::Announcement::default();
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

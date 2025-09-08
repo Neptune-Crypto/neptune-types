@@ -1,6 +1,6 @@
-use twenty_first::prelude::*;
 use crate::utxo::Utxo;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
+use twenty_first::prelude::*;
 /// A [`Utxo`] along with associated data necessary for a recipient to claim it.
 ///
 /// This struct does not store:
@@ -39,20 +39,19 @@ impl IncomingUtxo {
 #[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
+    use super::*;
     use proptest::prelude::*;
     use proptest_arbitrary_interop::arb;
     use test_strategy::proptest;
-    use super::*;
     #[proptest]
     fn consistent_conversion(
-        #[strategy(arb())]
-        incoming_utxo: IncomingUtxo,
-        #[strategy(arb())]
-        notifier: UtxoNotifier,
+        #[strategy(arb())] incoming_utxo: IncomingUtxo,
+        #[strategy(arb())] notifier: UtxoNotifier,
     ) {
         let as_expected_utxo = incoming_utxo.clone().into_expected_utxo(notifier);
         prop_assert_eq!(
-            incoming_utxo.addition_record(), as_expected_utxo.addition_record
+            incoming_utxo.addition_record(),
+            as_expected_utxo.addition_record
         );
         let back_again: IncomingUtxo = (&as_expected_utxo).into();
         prop_assert_eq!(incoming_utxo, back_again);

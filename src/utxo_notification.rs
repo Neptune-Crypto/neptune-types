@@ -1,7 +1,7 @@
-use serde::Deserialize;
-use serde::Serialize;
 use crate::address::ReceivingAddress;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
+use serde::Deserialize;
+use serde::Serialize;
 /// Enumerates the medium of exchange for UTXO-notifications.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
 #[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
@@ -51,7 +51,7 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::models::state::wallet::utxo_notification::PrivateNotificationData;
         pub use neptune_cash::models::state::wallet::utxo_notification::UtxoNotificationMedium;
@@ -72,31 +72,31 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_private_notification_data() {
         let original_instance: PrivateNotificationData = todo!("Instantiate");
         let nc_instance: nc::PrivateNotificationData = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_bincode_serialization_for_utxo_notification_medium() {
         let original_instance: UtxoNotificationMedium = UtxoNotificationMedium::default();
-        let nc_instance: nc::UtxoNotificationMedium = neptune_cash::models::state::wallet::utxo_notification::UtxoNotificationMedium::default();
+        let nc_instance: nc::UtxoNotificationMedium =
+            neptune_cash::models::state::wallet::utxo_notification::UtxoNotificationMedium::default(
+            );
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_utxo_notification_medium() {
         let original_instance: UtxoNotificationMedium = UtxoNotificationMedium::default();
-        let nc_instance: nc::UtxoNotificationMedium = neptune_cash::models::state::wallet::utxo_notification::UtxoNotificationMedium::default();
+        let nc_instance: nc::UtxoNotificationMedium =
+            neptune_cash::models::state::wallet::utxo_notification::UtxoNotificationMedium::default(
+            );
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_utxo_notification_medium() {
         let original_instance: UtxoNotificationMedium = UtxoNotificationMedium::default();
-        let nc_instance: nc::UtxoNotificationMedium = neptune_cash::models::state::wallet::utxo_notification::UtxoNotificationMedium::default();
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        let nc_instance: nc::UtxoNotificationMedium =
+            neptune_cash::models::state::wallet::utxo_notification::UtxoNotificationMedium::default(
+            );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_bincode_serialization_for_utxo_notify_method() {
@@ -106,17 +106,11 @@ mod generated_tests {
     #[test]
     fn test_serde_json_serialization_for_utxo_notify_method() {
         let original_instance: UtxoNotifyMethod = todo!("Instantiate");
-        test_serde_json_serialization_for_type(
-            original_instance,
-            None::<UtxoNotifyMethod>,
-        );
+        test_serde_json_serialization_for_type(original_instance, None::<UtxoNotifyMethod>);
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_utxo_notify_method() {
         let original_instance: UtxoNotifyMethod = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            None::<UtxoNotifyMethod>,
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, None::<UtxoNotifyMethod>);
     }
 }

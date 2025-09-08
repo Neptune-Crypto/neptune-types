@@ -1,12 +1,12 @@
-use std::ops::Range;
+use super::chunk::Chunk;
+use super::shared::CHUNK_SIZE;
+use super::shared::WINDOW_SIZE;
 use get_size2::GetSize;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
+use std::ops::Range;
 use twenty_first::prelude::*;
-use super::chunk::Chunk;
-use super::shared::CHUNK_SIZE;
-use super::shared::WINDOW_SIZE;
 #[derive(Clone, Debug, Eq, Serialize, Deserialize, GetSize, BFieldCodec)]
 #[cfg_attr(feature = "tasm-lib", derive(tasm_lib::prelude::TasmObject))]
 ///# [cfg_attr (any (test , feature = "arbitrary-impls") , derive (arbitrary :: Arbitrary))]
@@ -87,7 +87,7 @@ impl ActiveWindow {
     }
     /// Undo a window slide.
     pub fn slide_window_back(&mut self, chunk: &Chunk) {
-        assert!(! self.hasset(WINDOW_SIZE - CHUNK_SIZE, WINDOW_SIZE));
+        assert!(!self.hasset(WINDOW_SIZE - CHUNK_SIZE, WINDOW_SIZE));
         for location in &mut self.sbf {
             *location += CHUNK_SIZE;
         }
@@ -101,7 +101,8 @@ impl ActiveWindow {
         assert!(
             index < WINDOW_SIZE,
             "index cannot exceed window size in `insert`. WINDOW_SIZE = {}, got index = {}",
-            WINDOW_SIZE, index
+            WINDOW_SIZE,
+            index
         );
         self.sbf.push(index);
         self.sbf.sort();
@@ -110,7 +111,8 @@ impl ActiveWindow {
         assert!(
             index < WINDOW_SIZE,
             "index cannot exceed window size in `remove`. WINDOW_SIZE = {}, got index = {}",
-            WINDOW_SIZE, index
+            WINDOW_SIZE,
+            index
         );
         let mut found = false;
         let mut drop_index_index = 0;
@@ -129,7 +131,8 @@ impl ActiveWindow {
         assert!(
             index < WINDOW_SIZE,
             "index cannot exceed window size in `contains`. WINDOW_SIZE = {}, got index = {}",
-            WINDOW_SIZE, index
+            WINDOW_SIZE,
+            index
         );
         for loc in &self.sbf {
             if *loc == index {
@@ -142,16 +145,18 @@ impl ActiveWindow {
         self.sbf.clone()
     }
     pub fn from_vec_u32(vector: &[u32]) -> Self {
-        Self { sbf: vector.to_vec() }
+        Self {
+            sbf: vector.to_vec(),
+        }
     }
 }
 ///# [cfg (test)]
 #[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
-    use rand::RngCore;
     use super::*;
     use crate::models::blockchain::shared::Hash;
+    use rand::RngCore;
     impl ActiveWindow {
         fn new_from(sbf: Vec<u32>) -> Self {
             Self { sbf }
@@ -162,7 +167,7 @@ mod tests {
         let sbf = Vec::<u32>::new();
         let mut aw = ActiveWindow::new_from(sbf);
         let index = 7;
-        assert!(! aw.contains(index));
+        assert!(!aw.contains(index));
         aw.insert(index);
         assert!(aw.contains(index));
         aw.insert(index);
@@ -170,14 +175,14 @@ mod tests {
         aw.remove(index);
         assert!(aw.contains(index));
         aw.remove(index);
-        assert!(! aw.contains(index));
+        assert!(!aw.contains(index));
     }
     #[test]
     fn insert_remove_probe_indices_pbt() {
         let sbf = Vec::<u32>::new();
         let mut aw = ActiveWindow::new_from(sbf);
         for i in 0..100 {
-            assert!(! aw.contains(i as u32));
+            assert!(!aw.contains(i as u32));
         }
         let mut prng = rand::rng();
         for _ in 0..100 {
@@ -201,7 +206,7 @@ mod tests {
             aw.insert(rng.next_u32() % WINDOW_SIZE);
         }
         aw.slide_window();
-        assert!(! aw.hasset(WINDOW_SIZE - CHUNK_SIZE, CHUNK_SIZE));
+        assert!(!aw.hasset(WINDOW_SIZE - CHUNK_SIZE, CHUNK_SIZE));
     }
     #[test]
     fn test_slide_window_back() {
@@ -213,7 +218,7 @@ mod tests {
         }
         let dummy_chunk = active_window.slid_chunk();
         active_window.slide_window();
-        assert!(! active_window.hasset(WINDOW_SIZE - CHUNK_SIZE, WINDOW_SIZE));
+        assert!(!active_window.hasset(WINDOW_SIZE - CHUNK_SIZE, WINDOW_SIZE));
         active_window.slide_window_back(&dummy_chunk);
         for index in dummy_chunk.relative_indices {
             assert!(active_window.contains(index));
@@ -238,12 +243,12 @@ mod tests {
         );
     }
 
-fn hash_unequal_prop() {
+    fn hash_unequal_prop() {
         Hash::hash(&ActiveWindow::new());
         let mut aw_1 = ActiveWindow::new();
         aw_1.insert(1u32);
         let aw_2 = ActiveWindow::new();
-        assert_ne!(Hash::hash(& aw_1), Hash::hash(& aw_2));
+        assert_ne!(Hash::hash(&aw_1), Hash::hash(&aw_2));
     }
     #[test]
     fn test_hash_unequal_nocrash() {
@@ -277,7 +282,7 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::util_types::mutator_set::active_window::ActiveWindow;
     }
@@ -297,9 +302,6 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_active_window() {
         let original_instance: ActiveWindow = todo!("Instantiate");
         let nc_instance: nc::ActiveWindow = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

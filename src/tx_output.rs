@@ -1,18 +1,18 @@
 //! provides an interface to transaction outputs and associated types
-use std::ops::Deref;
-use std::ops::DerefMut;
-use serde::Deserialize;
-use serde::Serialize;
-use crate::utxo_notification::UtxoNotifyMethod;
-use crate::network::Network;
-use crate::utxo::Utxo;
+use crate::address::ReceivingAddress;
 use crate::announcement::Announcement;
 use crate::native_currency_amount::NativeCurrencyAmount;
+use crate::network::Network;
 use crate::timestamp::Timestamp;
-use crate::address::ReceivingAddress;
+use crate::utxo::Utxo;
 use crate::utxo_notification::PrivateNotificationData;
 use crate::utxo_notification::UtxoNotificationMedium;
+use crate::utxo_notification::UtxoNotifyMethod;
 use crate::utxo_notification_payload::UtxoNotificationPayload;
+use serde::Deserialize;
+use serde::Serialize;
+use std::ops::Deref;
+use std::ops::DerefMut;
 use twenty_first::prelude::*;
 /// represents a transaction output, as used by
 /// [TransactionDetailsBuilder](crate::api::tx_initiation::builder::transaction_details_builder::TransactionDetailsBuilder)
@@ -49,7 +49,7 @@ impl TxOutput {
         }
     }
 
-fn notification_payload(&self) -> UtxoNotificationPayload {
+    fn notification_payload(&self) -> UtxoNotificationPayload {
         UtxoNotificationPayload {
             utxo: self.utxo(),
             sender_randomness: self.sender_randomness(),
@@ -98,7 +98,7 @@ fn notification_payload(&self) -> UtxoNotificationPayload {
         )
     }
 
-fn auto_utxo_maybe_change(
+    fn auto_utxo_maybe_change(
         utxo_unlockable: &impl UtxoUnlockable,
         utxo: Utxo,
         address: ReceivingAddress,
@@ -267,10 +267,7 @@ fn auto_utxo_maybe_change(
     ) -> Self {
         let receiver_digest = receiving_address.privacy_digest();
         let utxo = Utxo::new_native_currency(receiving_address.lock_script(), amount);
-        let notify_method = UtxoNotifyMethod::new(
-            notification_medium,
-            receiving_address,
-        );
+        let notify_method = UtxoNotifyMethod::new(notification_medium, receiving_address);
         Self {
             utxo,
             sender_randomness,
@@ -322,23 +319,17 @@ fn auto_utxo_maybe_change(
             UtxoNotifyMethod::OffChain(_) => None,
             UtxoNotifyMethod::OnChain(receiving_address) => {
                 let notification_payload = self.notification_payload();
-                Some(
-                    receiving_address.generate_public_announcement(notification_payload),
-                )
+                Some(receiving_address.generate_public_announcement(notification_payload))
             }
         }
     }
-    pub fn offchain_notification(
-        &self,
-        network: Network,
-    ) -> Option<(String, ReceivingAddress)> {
+    pub fn offchain_notification(&self, network: Network) -> Option<(String, ReceivingAddress)> {
         match &self.notification_method {
             UtxoNotifyMethod::OnChain(_) => None,
             UtxoNotifyMethod::OffChain(receiving_address) => {
                 let notification_payload = self.notification_payload();
                 Some((
-                    receiving_address
-                        .private_notification(notification_payload, network),
+                    receiving_address.private_notification(notification_payload, network),
                     receiving_address.to_owned(),
                 ))
             }
@@ -397,7 +388,10 @@ impl<I: Into<TxOutput>, T: IntoIterator<Item = I>> From<T> for TxOutputList {
 impl TxOutputList {
     /// calculates total amount in native currency
     pub fn total_native_coins(&self) -> NativeCurrencyAmount {
-        self.0.iter().map(|u| u.utxo.get_native_currency_amount()).sum()
+        self.0
+            .iter()
+            .map(|u| u.utxo.get_native_currency_amount())
+            .sum()
     }
     /// retrieves utxos
     pub fn utxos_iter(&self) -> impl IntoIterator<Item = Utxo> + '_ {
@@ -427,22 +421,18 @@ impl TxOutputList {
         &self,
         network: Network,
     ) -> impl Iterator<Item = PrivateNotificationData> + use<'_> {
-        self.0
-            .iter()
-            .filter_map(move |tx_output| {
-                if let Some((ciphertext, receiver_address)) = tx_output
-                    .offchain_notification(network)
-                {
-                    Some(PrivateNotificationData {
-                        cleartext: tx_output.notification_payload(),
-                        ciphertext,
-                        recipient_address: receiver_address,
-                        owned: tx_output.owned,
-                    })
-                } else {
-                    None
-                }
-            })
+        self.0.iter().filter_map(move |tx_output| {
+            if let Some((ciphertext, receiver_address)) = tx_output.offchain_notification(network) {
+                Some(PrivateNotificationData {
+                    cleartext: tx_output.notification_payload(),
+                    ciphertext,
+                    recipient_address: receiver_address,
+                    owned: tx_output.owned,
+                })
+            } else {
+                None
+            }
+        })
     }
     pub fn owned_offchain_notifications(
         &self,
@@ -498,18 +488,18 @@ pub trait UtxoUnlockable {
 #[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
-    use macro_rules_attr::apply;
-    use rand::Rng;
     use super::*;
     use crate::config_models::cli_args;
     use crate::config_models::network::Network;
     use crate::models::blockchain::transaction::utxo::Coin;
     use crate::models::blockchain::type_scripts::native_currency_amount::NativeCurrencyAmount;
-    use crate::models::state::wallet::address::generation_address::GenerationReceivingAddress;
     use crate::models::state::wallet::address::KeyType;
+    use crate::models::state::wallet::address::generation_address::GenerationReceivingAddress;
     use crate::models::state::wallet::wallet_entropy::WalletEntropy;
     use crate::tests::shared::mock_genesis_global_state;
     use crate::tests::shared_tokio_runtime;
+    use macro_rules_attr::apply;
+    use rand::Rng;
     impl TxOutput {
         pub(crate) fn with_coin(self, coin: Coin) -> Self {
             Self {
@@ -542,11 +532,11 @@ mod tests {
     async fn test_utxoreceiver_auto_not_owned_output() {
         let network = Network::RegTest;
         let global_state_lock = mock_genesis_global_state(
-                2,
-                WalletEntropy::devnet_wallet(),
-                cli_args::Args::default_with_network(network),
-            )
-            .await;
+            2,
+            WalletEntropy::devnet_wallet(),
+            cli_args::Args::default_with_network(network),
+        )
+        .await;
         let state = global_state_lock.lock_guard().await;
         let block_height = state.chain.light_state().header().height;
         let mut rng = rand::rng();
@@ -583,11 +573,11 @@ mod tests {
     async fn test_utxoreceiver_auto_owned_output() {
         let network = Network::RegTest;
         let mut global_state_lock = mock_genesis_global_state(
-                2,
-                WalletEntropy::devnet_wallet(),
-                cli_args::Args::default_with_network(network),
-            )
-            .await;
+            2,
+            WalletEntropy::devnet_wallet(),
+            cli_args::Args::default_with_network(network),
+        )
+        .await;
         let spending_key_gen = global_state_lock
             .lock_guard_mut()
             .await
@@ -624,21 +614,22 @@ mod tests {
             );
             match owned_utxo_notification_medium {
                 UtxoNotificationMedium::OnChain => {
-                    assert!(
-                        matches!(tx_output.notification_method,
-                        UtxoNotifyMethod::OnChain(_))
-                    )
+                    assert!(matches!(
+                        tx_output.notification_method,
+                        UtxoNotifyMethod::OnChain(_)
+                    ))
                 }
                 UtxoNotificationMedium::OffChain => {
-                    assert!(
-                        matches!(tx_output.notification_method,
-                        UtxoNotifyMethod::OffChain(_))
-                    )
+                    assert!(matches!(
+                        tx_output.notification_method,
+                        UtxoNotifyMethod::OffChain(_)
+                    ))
                 }
             };
             assert_eq!(sender_randomness, tx_output.sender_randomness());
             assert_eq!(
-                address.lock_script().hash(), tx_output.utxo().lock_script_hash()
+                address.lock_script().hash(),
+                tx_output.utxo().lock_script_hash()
             );
             assert_eq!(tx_output.sender_randomness(), sender_randomness);
             assert_eq!(tx_output.receiver_digest(), address.privacy_digest());
@@ -655,10 +646,10 @@ mod generated_tests {
     use super::*;
     use crate::test_shared::*;
     use bincode;
-    use serde::{Serialize, Deserialize};
+    use serde::{Deserialize, Serialize};
     pub mod nc {
-        pub use neptune_cash::models::state::wallet::transaction_output::TxOutput;
         pub use neptune_cash::api::export::TxOutputList;
+        pub use neptune_cash::models::state::wallet::transaction_output::TxOutput;
     }
     #[test]
     fn test_bincode_serialization_for_tx_output() {
@@ -676,10 +667,7 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_tx_output() {
         let original_instance: TxOutput = todo!("Instantiate");
         let nc_instance: nc::TxOutput = todo!("Instantiate");
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_bincode_serialization_for_tx_output_list() {
@@ -697,9 +685,6 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_tx_output_list() {
         let original_instance: TxOutputList = TxOutputList::default();
         let nc_instance: nc::TxOutputList = neptune_cash::api::export::TxOutputList::default();
-        test_serde_json_wasm_serialization_for_type(
-            original_instance,
-            Some(nc_instance),
-        );
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

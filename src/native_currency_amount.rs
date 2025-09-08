@@ -703,18 +703,22 @@ pub(crate) mod tests {
         let one_nau = NativeCurrencyAmount(1);
         let max_value = NativeCurrencyAmount(NativeCurrencyAmount::MAX_NAU);
         assert!(max_value.checked_add(&one_nau).is_none());
-        assert!(max_value
-            .checked_add(&NativeCurrencyAmount::zero())
-            .is_some());
+        assert!(
+            max_value
+                .checked_add(&NativeCurrencyAmount::zero())
+                .is_some()
+        );
     }
     #[test]
     fn checked_add_negative_overflow_unit_test() {
         let minus_one_nau = -NativeCurrencyAmount(1);
         let min_value = -NativeCurrencyAmount(NativeCurrencyAmount::MAX_NAU);
         assert!(min_value.checked_add(&minus_one_nau).is_none());
-        assert!(min_value
-            .checked_add(&NativeCurrencyAmount::zero())
-            .is_some());
+        assert!(
+            min_value
+                .checked_add(&NativeCurrencyAmount::zero())
+                .is_some()
+        );
     }
     #[proptest]
     fn to_and_from_nau_identity(
