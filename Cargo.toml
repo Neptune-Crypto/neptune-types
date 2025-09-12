@@ -52,6 +52,7 @@ humantime = "2.2.0"
 getrandom = { version = "0.3", features = ["wasm_js"] }
 getrandomv2 = { package="getrandom", version = "0.2", features = ["js"] }
 wasm-bindgen = "=0.2.100"
+web-time = { version = "1.1.0", features = ["serde"] }
 
 [dev-dependencies]
 arbitrary = { version = "1.4.1", features = ["derive"] }

@@ -20,8 +20,14 @@ use std::ops::AddAssign;
 use std::ops::Mul;
 use std::ops::Sub;
 use std::time::Duration;
-use std::time::SystemTime;
-use std::time::UNIX_EPOCH;
+
+#[cfg(target_arch = "wasm32")]
+use web_time::{SystemTime, UNIX_EPOCH};
+
+#[cfg(not(target_arch = "wasm32"))]
+use std::time::{SystemTime, UNIX_EPOCH};
+
+
 use twenty_first::prelude::*;
 /// Dedicated struct for timestamps (and durations). Counts the number of
 /// milliseconds elapsed since the Unix epoch (00:00 UTC on 1 Jan 1970) using

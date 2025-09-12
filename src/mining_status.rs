@@ -1,5 +1,10 @@
 use std::fmt::Display;
 use std::time::Duration;
+
+#[cfg(target_arch = "wasm32")]
+use web_time::SystemTime;
+
+#[cfg(not(target_arch = "wasm32"))]
 use std::time::SystemTime;
 
 use serde::Deserialize;
