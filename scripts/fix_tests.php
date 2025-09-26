@@ -1,10 +1,13 @@
+#!/usr/bin/env php
 <?php
 
 /**
  * PHP script to process Rust files:
  * - Finds all struct and enum types.
  * - Comments out existing #[cfg(test)] mod tests and #[cfg(test)] fn.
- * - Adds a new test module with bincode serialization/deserialization tests for each type.
+ * - Preserves any existing `mod generated_tests` module.
+ * - Adds a new test module with serialization tests for each type if `mod generated_tests` does not already exist and types are found.
+ * - Skips processing for files named lib.rs and mod.rs.
  *
  * Usage: php script_name.php <top_level_directory>
  *
@@ -36,6 +39,13 @@ function processRustFiles(string $rootDir): void
     foreach ($iterator as $file) {
         // Process only .rs files
         if ($file->isFile() && $file->getExtension() === 'rs') {
+            $fileName = $file->getFilename();
+            // Skip lib.rs and mod.rs files
+            if ($fileName === 'lib.rs' || $fileName === 'mod.rs') {
+                echo "Skipping file: " . $file->getPathname() . "\n";
+                continue;
+            }
+
             $filePath = $file->getPathname();
             echo "Processing file: $filePath\n";
             handleRustFile($filePath);
@@ -61,12 +71,25 @@ function handleRustFile(string $filePath): void
     // 1. Find all struct or enum types defined in the file
     $types = findStructEnumTypes($content);
 
-    // 2. Comment out existing test code (mod tests and #[cfg(test)] fn)
+    // Check if 'mod generated_tests' already exists.
+    $moduleExists = preg_match('/#\[cfg\(test\)\][\s\S]*?mod\s+generated_tests\s*\{/', $content);
+
+    // 2. Comment out existing test code
     $content = commentOutTestCode($content);
 
-    // 3. Add a new test module and 4. add new unit tests for each type
-    $newTestModule = generateNewTestModule($types);
-    $content .= "\n" . $newTestModule; // Append the new test module to the end of the file
+    // 3. If the test module doesn't exist AND we found types to test, add a new one.
+    if (!$moduleExists) {
+        if (!empty($types)) {
+            echo "Found types to test. Adding new 'generated_tests' module.\n";
+            $newTestModule = generateNewTestModule($types);
+            $content .= "\n" . $newTestModule;
+        } else {
+            echo "No new types found; skipping test module generation.\n";
+        }
+    } else {
+        echo "Preserving existing 'mod generated_tests' module.\n";
+    }
+
 
     // Write back the modified content
     if (file_put_contents($filePath, $content) === false) {
@@ -78,7 +101,6 @@ function handleRustFile(string $filePath): void
 
 /**
  * Finds all struct and enum type names within the given Rust file content.
- * This function is updated to correctly identify newtype structs.
  *
  * @param string $content The content of the Rust file.
  * @return array An array of unique struct and enum names found.
@@ -86,14 +108,6 @@ function handleRustFile(string $filePath): void
 function findStructEnumTypes(string $content): array
 {
     $types = [];
-    // Regex to find struct or enum declarations.
-    // It now correctly handles both braced blocks ({}) and newtype structs (();).
-    // - Optional 'pub' keyword.
-    // - 'struct' or 'enum' keyword.
-    // - The type name (alphanumeric and underscore, starting with letter/underscore).
-    // - Optional generics (e.g., <T, U>).
-    // - Optional 'where' clause.
-    // - Followed by either '{' or '(...);'
     preg_match_all(
         '/(?:pub\s+)?(?:struct|enum)\s+([a-zA-Z_][a-zA-Z0-9_]*)(?:\s*<[^>]*>)?(?:\s+where\s+.*?)?(?:\s*\{|\s*\(.*?\);)/s',
         $content,
@@ -102,45 +116,40 @@ function findStructEnumTypes(string $content): array
     foreach ($matches[1] as $typeName) {
         $types[] = $typeName;
     }
-    return array_unique($types); // Ensure no duplicate type names are returned
+    return array_unique($types);
 }
 
 /**
- * Comments out existing Rust test code (mod tests and #[cfg(test)] functions).
- * This function now correctly identifies and replaces the full test blocks
- * by finding #[cfg(test)] or #[cfg(any(test, feature = "arbitrary-impls"))]
- * and then determining the full extent of the block.
+ * Comments out existing Rust test code, but preserves 'mod generated_tests'.
  *
  * @param string $content The original content of the Rust file.
  * @return string The content with test code commented out.
  */
 function commentOutTestCode(string $content): string
 {
-    $modifiedContent = $content;
+    // Normalize line endings to LF to prevent offset calculation errors.
+    $modifiedContent = str_replace("\r\n", "\n", $content);
+    $modifiedContent = str_replace("\r", "\n", $modifiedContent);
+
     $replacements = [];
 
-    // Pattern to find mod, fn, or use declarations.
-    // It captures the declaration itself and its starting offset.
     $declarationPattern = '/(?P<declaration>(?:mod\s+[a-zA-Z_][a-zA-Z0-9_]*|fn\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(.*?\)|use\s+.*?))\s*(?P<terminator>\{|;)/s';
     preg_match_all($declarationPattern, $modifiedContent, $declarationMatches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
 
-    // Prepare line offsets for efficient line-by-line backward scanning
     $lines = explode("\n", $modifiedContent);
     $lineOffsets = [];
     $currentOffset = 0;
     foreach ($lines as $line) {
         $lineOffsets[] = $currentOffset;
-        $currentOffset += strlen($line) + 1; // +1 for the newline character
+        $currentOffset += strlen($line) + 1;
     }
     $totalLines = count($lines);
 
-    // Process declarations in reverse order to avoid offset issues when applying replacements
     foreach (array_reverse($declarationMatches) as $match) {
         $declarationOffset = $match['declaration'][1];
         $terminator = $match['terminator'][0];
         $terminatorOffset = $match['terminator'][1];
 
-        // Determine the end of the block based on its terminator
         $blockEnd = -1;
         if ($terminator === '{') {
             $braceStart = $terminatorOffset;
@@ -150,14 +159,13 @@ function commentOutTestCode(string $content): string
                 continue;
             }
         } elseif ($terminator === ';') {
-            $blockEnd = $terminatorOffset; // For single-line 'use' statements
+            $blockEnd = $terminatorOffset;
         }
 
         if ($blockEnd === -1) {
-            continue; // Could not determine block end, skip this match
+            continue;
         }
 
-        // Determine the line number of the declaration
         $declarationLineNum = -1;
         for ($i = 0; $i < $totalLines; $i++) {
             if ($declarationOffset >= $lineOffsets[$i] && ($i + 1 >= $totalLines || $declarationOffset < $lineOffsets[$i+1])) {
@@ -167,40 +175,38 @@ function commentOutTestCode(string $content): string
         }
 
         if ($declarationLineNum === -1) {
-            continue; // Should not happen for a valid match, but as a safeguard
+            continue;
         }
 
-        // Determine the effective start of the block, including its preamble
-        // (all preceding attributes, doc-comments, and regular comments).
-        $blockStart = $lineOffsets[$declarationLineNum]; // Initial assumption: start at the declaration's line
-
-        // Scan backward line by line from the declaration line
-        $currentLineNum = $declarationLineNum - 1; // Start from the line *before* the declaration
+        $blockStart = $lineOffsets[$declarationLineNum];
+        $currentLineNum = $declarationLineNum - 1;
         while ($currentLineNum >= 0) {
             $line = $lines[$currentLineNum];
             $trimmedLine = trim($line);
 
-            // Check if the line is empty, an attribute, or a comment.
             if (empty($trimmedLine) ||
                 str_starts_with($trimmedLine, '#[') ||
                 str_starts_with($trimmedLine, '//') ||
                 str_starts_with($trimmedLine, '/*')) {
-                // This line is part of the preamble. Update blockStart to this line's offset.
                 $blockStart = $lineOffsets[$currentLineNum];
-                $currentLineNum--; // Move to the previous line
+                $currentLineNum--;
             } else {
-                // Found a line that is not part of the preamble. Stop scanning.
                 break;
             }
         }
 
-        // Now, extract the full preamble text from the determined blockStart up to the declaration offset.
         $preambleText = substr($modifiedContent, $blockStart, $declarationOffset - $blockStart);
-
-        // Check if the collected preamble contains a test-related cfg attribute.
-        $cfgTestPattern = '/#\[cfg\((?:test|any\(test,\s*feature\s*=\s*"arbitrary-impls"\))\)]/s';
+        
+        // This regex is now anchored to the start of a line (with the 'm' flag) 
+        // to prevent matching attributes inside single-line comments.
+        $cfgTestPattern = '/^\s*#\[cfg\((?:test|any\(test,\s*feature\s*=\s*"arbitrary-impls"\))\)\]/m';
         if (preg_match($cfgTestPattern, $preambleText)) {
-            // This block is a test-related block, so mark it for commenting out.
+            $declarationText = trim($match['declaration'][0]);
+
+            if ($declarationText === 'mod generated_tests') {
+                continue;
+            }
+
             $originalBlockText = substr($modifiedContent, $blockStart, $blockEnd - $blockStart + 1);
             $commentedBlock = "/*\n" . $originalBlockText . "\n*/";
 
@@ -212,7 +218,6 @@ function commentOutTestCode(string $content): string
         }
     }
 
-    // Apply all stored replacements in reverse order to ensure correct offsets.
     foreach (array_reverse($replacements) as $r) {
         $modifiedContent = substr_replace($modifiedContent, $r['replacement'], $r['start'], $r['length']);
     }
@@ -221,143 +226,122 @@ function commentOutTestCode(string $content): string
 }
 
 /**
- * Helper function to find the index of the closing brace '}' that balances
- * an opening brace '{' starting at a given index. This function now
- * correctly skips over comments and string literals to avoid miscounting braces.
+ * Helper function to find the index of the closing brace '}' that balances an opening brace '{'.
  *
  * @param string $content The string to search within.
  * @param int $startIndex The index of the opening curly brace.
- * @return int The index of the matching closing brace, or -1 if not found (e.g., unclosed string/comment/brace).
+ * @return int The index of the matching closing brace, or -1 if not found.
  */
 function findBalancedBraceEnd(string $content, int $startIndex): int
 {
     $braceCount = 0;
     $len = strlen($content);
 
-    // Start scanning from the character *after* the initial opening brace
     for ($i = $startIndex; $i < $len; $i++) {
         $char = $content[$i];
         $nextChar = ($i + 1 < $len) ? $content[$i+1] : '';
 
-        // Handle comments
-        if ($char === '/' && $nextChar === '/') { // Single-line comment //
+        if ($char === '/' && $nextChar === '/') {
             $nextLinePos = strpos($content, "\n", $i);
-            if ($nextLinePos === false) {
-                // Reached end of file within a single-line comment, no more braces possible
-                return -1; // Consider this an error or unclosed block if braceCount > 0
-            }
-            $i = $nextLinePos; // Move index to the newline character
-            continue; // Continue loop from after the newline
-        } elseif ($char === '/' && $nextChar === '*') { // Multi-line comment /* */
-            $endCommentPos = strpos($content, "*/", $i + 2); // Search for "*/" after "/*"
-            if ($endCommentPos === false) {
-                // Unclosed multi-line comment
-                return -1; // Consider this an error or unclosed block if braceCount > 0
-            }
-            $i = $endCommentPos + 1; // Move index to the character after '*' of "*/"
+            if ($nextLinePos === false) return -1;
+            $i = $nextLinePos;
+            continue;
+        } elseif ($char === '/' && $nextChar === '*') {
+            $endCommentPos = strpos($content, "*/", $i + 2);
+            if ($endCommentPos === false) return -1;
+            $i = $endCommentPos + 1;
             continue;
         }
 
-        // Handle string literals (double and single quotes)
         if ($char === '"' || $char === '\'') {
             $quoteChar = $char;
-            $i++; // Move past the opening quote
+            $i++;
             while ($i < $len) {
-                if ($content[$i] === '\\') { // Handle escaped characters
-                    $i++; // Skip the escaped character
-                } elseif ($content[$i] === $quoteChar) { // Found closing quote
+                if ($content[$i] === '\\') {
+                    $i++;
+                } elseif ($content[$i] === $quoteChar) {
                     break;
                 }
                 $i++;
             }
-            if ($i >= $len) { // Unclosed string literal
-                return -1; // Consider this an error or unclosed block if braceCount > 0
-            }
+            if ($i >= $len) return -1;
             continue;
         }
 
-        // Count braces
         if ($char === '{') {
             $braceCount++;
         } elseif ($char === '}') {
             $braceCount--;
         }
 
-        // If braceCount is 0, we found the matching closing brace
         if ($braceCount === 0) {
             return $i;
         }
     }
-    return -1; // Balanced brace not found (e.g., unclosed block)
+    return -1;
 }
 
 /**
- * Generates the content for the new Rust test module, including unit tests
- * for each provided type.
+ * Generates the content for the new Rust test module. Assumes types array is not empty.
  *
  * @param array $types An array of Rust type names (structs/enums).
  * @return string The generated Rust code for the new test module.
  */
 function generateNewTestModule(array $types): string
 {
-    $testModuleContent = "\n#[cfg(test)]\nmod generated_tests {\n";
-    $testModuleContent .= "    use super::*;\n"; // Import all types from the parent module
+    $testModuleContent = "\n#[cfg(test)]\n";
+    $testModuleContent .= "#[allow(unused_imports)]\n";
+    $testModuleContent .= "#[allow(unused_variables)]\n";
+    $testModuleContent .= "#[allow(unreachable_code)]\n";
+    $testModuleContent .= "#[allow(non_snake_case)]\n";
+    $testModuleContent .= "mod generated_tests {\n";
+    $testModuleContent .= "    use super::*;\n";
+    $testModuleContent .= "    use crate::test_shared::*;\n";
     $testModuleContent .= "    use bincode;\n";
-    $testModuleContent .= "    use neptune_cash::api::export;\n";
-    $testModuleContent .= "    use serde::{Serialize, Deserialize};\n\n";
+    $testModuleContent .= "    use serde::{Deserialize, Serialize};\n\n";
 
-    if (empty($types)) {
-        $testModuleContent .= "    // No struct or enum types found in this file to generate tests for.\n";
-    } else {
-        foreach ($types as $type) {
-            $testModuleContent .= "    #[test]\n";
-            $testModuleContent .= "    fn test_bincode_serialization_for_{$type}() {\n";
-            $testModuleContent .= "        // TODO: Instantiate your type '{$type}' here.\n";
-            $testModuleContent .= "        // For complex types, you might need to manually construct an instance with specific values.\n";
-            $testModuleContent .= "        // If your type implements `Default`, you can use `let original_instance = {$type}::default();`.\n";
-            $testModuleContent .= "        // Ensure the instantiated type implements `PartialEq`, `Debug`, `Serialize`, and `Deserialize`.\n";
-            $testModuleContent .= "        let original_instance: {$type} = todo!(\"Instantiate {$type} for test\");\n\n";
+    $testModuleContent .= "    pub mod nc {\n";
+    foreach ($types as $type) {
+        $testModuleContent .= "        pub use neptune_cash::api::export::{$type};\n";
+    }
+    $testModuleContent .= "    }\n\n";
 
-            $testModuleContent .= "        // a) serialize the type to string with bincode\n";
-            $testModuleContent .= "        let encoded: Vec<u8> = bincode::serialize(&original_instance)\n";
-            $testModuleContent .= "            .expect(\"Failed to serialize {$type}\");\n\n";
+    foreach ($types as $type) {
+        $fn_type_name = strtolower($type);
 
-            $testModuleContent .= "        // c) deserialize the type from string to original type\n";
-            $testModuleContent .= "        let decoded: {$type} = bincode::deserialize(&encoded)\n";
-            $testModuleContent .= "            .expect(\"Failed to deserialize {$type}\");\n\n";
+        $testModuleContent .= "    #[test]\n";
+        $testModuleContent .= "    fn test_bincode_serialization_for_{$fn_type_name}() {\n";
+        $testModuleContent .= "        let original_instance: {$type} = {$type}::default();\n";
+        $testModuleContent .= "        let nc_instance: nc::{$type} = neptune_cash::api::export::{$type}::default();\n";
+        $testModuleContent .= "        test_bincode_serialization_for_type(original_instance, Some(nc_instance));\n";
+        $testModuleContent .= "    }\n\n";
 
-            $testModuleContent .= "        // d) verify the deserialized type matches the original type\n";
-            $testModuleContent .= "        assert_eq!(original_instance, decoded, \"Deserialized {$type} should match original\");\n\n";
+        $testModuleContent .= "    #[test]\n";
+        $testModuleContent .= "    fn test_serde_json_serialization_for_{$fn_type_name}() {\n";
+        $testModuleContent .= "        let original_instance: {$type} = {$type}::default();\n";
+        $testModuleContent .= "        let nc_instance: nc::{$type} = neptune_cash::api::export::{$type}::default();\n";
+        $testModuleContent .= "        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));\n";
+        $testModuleContent .= "    }\n\n";
 
-            $testModuleContent .= "        // e) deserialize the type from string for neptune_cash::api::export::<TypeName>\n";
-            $testModuleContent .= "        // This assumes that `neptune_cash::api::export::{$type}` has a compatible structure\n";
-            $testModuleContent .= "        // and also implements `Deserialize` and `PartialEq`.\n";
-            $testModuleContent .= "        let exported_decoded: export::{$type} = bincode::deserialize(&encoded)\n";
-            $testModuleContent .= "            .expect(\"Failed to deserialize {$type} into neptune_cash::api::export::{$type}\");\n\n";
-
-            $testModuleContent .= "        // f) serialize the result of step (e)\n";
-            $testModuleContent .= "        let exported_encoded: Vec<u8> = bincode::serialize(&exported_decoded)\n";
-            $testModuleContent .= "            .expect(\"Failed to serialize neptune_cash::api::export::{$type}\");\n\n";
-
-            $testModuleContent .= "        // g) verify the result of step (f) matches the serialized result of step (b)\n";
-            $testModuleContent .= "        assert_eq!(encoded, exported_encoded, \"Serialized neptune_cash::api::export::{$type} should match original serialized {$type}\");\n";
-            $testModuleContent .= "    }\n\n";
-        }
+        $testModuleContent .= "    #[test]\n";
+        $testModuleContent .= "    fn test_serde_json_wasm_serialization_for_{$fn_type_name}() {\n";
+        $testModuleContent .= "        let original_instance: {$type} = {$type}::default();\n";
+        $testModuleContent .= "        let nc_instance: nc::{$type} = neptune_cash::api::export::{$type}::default();\n";
+        $testModuleContent .= "        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));\n";
+        $testModuleContent .= "    }\n\n";
     }
 
     $testModuleContent .= "}\n";
     return $testModuleContent;
 }
 
+
 // --- Script Execution ---
-// Check if the script is run from the command line (CLI)
 if (php_sapi_name() == 'cli') {
-    // Check for the correct number of command-line arguments
     if ($argc < 2) {
         echo "Usage: php " . basename(__FILE__) . " <top_level_directory>\n";
-        exit(1); // Exit with an error code
+        exit(1);
     }
-    // Get the root directory from the command-line arguments
     $rootDir = $argv[1];
     processRustFiles($rootDir);
 } else {
@@ -365,4 +349,3 @@ if (php_sapi_name() == 'cli') {
 }
 
 ?>
-
