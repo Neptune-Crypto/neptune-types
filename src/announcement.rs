@@ -19,7 +19,7 @@ use tasm_lib::prelude::TasmObject;
 ///
 /// See [Transaction](super::Transaction).
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, GetSize, BFieldCodec, Default)]
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
+#[cfg_attr(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"), derive(arbitrary::Arbitrary))]
 #[cfg_attr(feature = "tasm-object", derive(TasmObject))]
 pub struct Announcement {
     pub message: Vec<BFieldElement>,

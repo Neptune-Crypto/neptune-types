@@ -123,28 +123,31 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
 
     pub mod nc {
-        pub use neptune_cash::api::export::BlockInfo;
+        pub use neptune_cash::models::blockchain::block::block_info::BlockInfo;
     }
 
     #[test]
     fn test_bincode_serialization_for_blockinfo() {
-        let original_instance: BlockInfo = BlockInfo::default();
-        let nc_instance: nc::BlockInfo = neptune_cash::api::export::BlockInfo::default();
-        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: BlockInfo = BlockInfo::default();
+        // let nc_instance = nc::BlockInfo::default();
+        // test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_blockinfo() {
-        let original_instance: BlockInfo = BlockInfo::default();
-        let nc_instance: nc::BlockInfo = neptune_cash::api::export::BlockInfo::default();
-        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: BlockInfo = BlockInfo::default();
+        // let nc_instance = nc::BlockInfo::default();
+        // test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_blockinfo() {
-        let original_instance: BlockInfo = BlockInfo::default();
-        let nc_instance: nc::BlockInfo = neptune_cash::api::export::BlockInfo::default();
-        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: BlockInfo = BlockInfo::default();
+        // let nc_instance = nc::BlockInfo::default();
+        // test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 
 }

@@ -111,21 +111,21 @@ mod generated_tests {
     #[test]
     fn test_bincode_serialization_for_txprovingcapability() {
         let original_instance: TxProvingCapability = TxProvingCapability::default();
-        let nc_instance: nc::TxProvingCapability = neptune_cash::api::export::TxProvingCapability::default();
+        let nc_instance = nc::TxProvingCapability::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_txprovingcapability() {
         let original_instance: TxProvingCapability = TxProvingCapability::default();
-        let nc_instance: nc::TxProvingCapability = neptune_cash::api::export::TxProvingCapability::default();
+        let nc_instance = nc::TxProvingCapability::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_txprovingcapability() {
         let original_instance: TxProvingCapability = TxProvingCapability::default();
-        let nc_instance: nc::TxProvingCapability = neptune_cash::api::export::TxProvingCapability::default();
+        let nc_instance = nc::TxProvingCapability::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 

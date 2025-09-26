@@ -72,28 +72,31 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
 
     pub mod nc {
-        pub use neptune_cash::api::export::MempoolTransactionInfo;
+        pub use neptune_cash::rpc_server::MempoolTransactionInfo;
     }
 
     #[test]
     fn test_bincode_serialization_for_mempooltransactioninfo() {
-        let original_instance: MempoolTransactionInfo = MempoolTransactionInfo::default();
-        let nc_instance: nc::MempoolTransactionInfo = neptune_cash::api::export::MempoolTransactionInfo::default();
-        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: MempoolTransactionInfo = MempoolTransactionInfo::default();
+        // let nc_instance = nc::MempoolTransactionInfo::default();
+        // test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_mempooltransactioninfo() {
-        let original_instance: MempoolTransactionInfo = MempoolTransactionInfo::default();
-        let nc_instance: nc::MempoolTransactionInfo = neptune_cash::api::export::MempoolTransactionInfo::default();
-        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: MempoolTransactionInfo = MempoolTransactionInfo::default();
+        // let nc_instance = nc::MempoolTransactionInfo::default();
+        // test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_mempooltransactioninfo() {
-        let original_instance: MempoolTransactionInfo = MempoolTransactionInfo::default();
-        let nc_instance: nc::MempoolTransactionInfo = neptune_cash::api::export::MempoolTransactionInfo::default();
-        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: MempoolTransactionInfo = MempoolTransactionInfo::default();
+        // let nc_instance = nc::MempoolTransactionInfo::default();
+        // test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 
 }

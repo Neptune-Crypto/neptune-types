@@ -312,21 +312,21 @@ function generateNewTestModule(array $types): string
         $testModuleContent .= "    #[test]\n";
         $testModuleContent .= "    fn test_bincode_serialization_for_{$fn_type_name}() {\n";
         $testModuleContent .= "        let original_instance: {$type} = {$type}::default();\n";
-        $testModuleContent .= "        let nc_instance: nc::{$type} = neptune_cash::api::export::{$type}::default();\n";
+        $testModuleContent .= "        let nc_instance: nc::{$type} = nc::{$type}::default();\n";
         $testModuleContent .= "        test_bincode_serialization_for_type(original_instance, Some(nc_instance));\n";
         $testModuleContent .= "    }\n\n";
 
         $testModuleContent .= "    #[test]\n";
         $testModuleContent .= "    fn test_serde_json_serialization_for_{$fn_type_name}() {\n";
         $testModuleContent .= "        let original_instance: {$type} = {$type}::default();\n";
-        $testModuleContent .= "        let nc_instance: nc::{$type} = neptune_cash::api::export::{$type}::default();\n";
+        $testModuleContent .= "        let nc_instance: nc::{$type} = nc::{$type}::default();\n";
         $testModuleContent .= "        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));\n";
         $testModuleContent .= "    }\n\n";
 
         $testModuleContent .= "    #[test]\n";
         $testModuleContent .= "    fn test_serde_json_wasm_serialization_for_{$fn_type_name}() {\n";
         $testModuleContent .= "        let original_instance: {$type} = {$type}::default();\n";
-        $testModuleContent .= "        let nc_instance: nc::{$type} = neptune_cash::api::export::{$type}::default();\n";
+        $testModuleContent .= "        let nc_instance: nc::{$type} = nc::{$type}::default();\n";
         $testModuleContent .= "        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));\n";
         $testModuleContent .= "    }\n\n";
     }

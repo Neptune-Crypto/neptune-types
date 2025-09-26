@@ -905,19 +905,19 @@ impl BFieldCodec for RemovalRecordList {
     }
 }
 
-#[cfg(any(test, feature = "arbitrary-impls"))]
+#[cfg(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"))]
 use proptest::collection::vec;
-#[cfg(any(test, feature = "arbitrary-impls"))]
+#[cfg(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"))]
 use proptest::prelude::*;
-#[cfg(any(test, feature = "arbitrary-impls"))]
+#[cfg(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"))]
 use std::hash::BuildHasherDefault;
-#[cfg(any(test, feature = "arbitrary-impls"))]
+#[cfg(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"))]
 use std::hash::Hasher;
 
-#[cfg(any(test, feature = "arbitrary-impls"))]
+#[cfg(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"))]
 use crate::util_types::mutator_set::shared::WINDOW_SIZE;
 
-#[cfg(any(test, feature = "arbitrary-impls"))]
+#[cfg(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"))]
 impl RemovalRecord {
     pub(crate) fn arbitrary_synchronized_set(
         num_leafs_aocl: u64,
@@ -2590,84 +2590,84 @@ mod generated_tests {
     #[test]
     fn test_bincode_serialization_for_removalrecordlist() {
         let original_instance: RemovalRecordList = RemovalRecordList::default();
-        let nc_instance: nc::RemovalRecordList = neptune_cash::api::export::RemovalRecordList::default();
+        let nc_instance = nc::RemovalRecordList::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_removalrecordlist() {
         let original_instance: RemovalRecordList = RemovalRecordList::default();
-        let nc_instance: nc::RemovalRecordList = neptune_cash::api::export::RemovalRecordList::default();
+        let nc_instance = nc::RemovalRecordList::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_removalrecordlist() {
         let original_instance: RemovalRecordList = RemovalRecordList::default();
-        let nc_instance: nc::RemovalRecordList = neptune_cash::api::export::RemovalRecordList::default();
+        let nc_instance = nc::RemovalRecordList::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_bincode_serialization_for_removalrecordlistunpackerror() {
         let original_instance: RemovalRecordListUnpackError = RemovalRecordListUnpackError::default();
-        let nc_instance: nc::RemovalRecordListUnpackError = neptune_cash::api::export::RemovalRecordListUnpackError::default();
+        let nc_instance = nc::RemovalRecordListUnpackError::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_removalrecordlistunpackerror() {
         let original_instance: RemovalRecordListUnpackError = RemovalRecordListUnpackError::default();
-        let nc_instance: nc::RemovalRecordListUnpackError = neptune_cash::api::export::RemovalRecordListUnpackError::default();
+        let nc_instance = nc::RemovalRecordListUnpackError::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_removalrecordlistunpackerror() {
         let original_instance: RemovalRecordListUnpackError = RemovalRecordListUnpackError::default();
-        let nc_instance: nc::RemovalRecordListUnpackError = neptune_cash::api::export::RemovalRecordListUnpackError::default();
+        let nc_instance = nc::RemovalRecordListUnpackError::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_bincode_serialization_for_removalrecordlistinconsistency() {
         let original_instance: RemovalRecordListInconsistency = RemovalRecordListInconsistency::default();
-        let nc_instance: nc::RemovalRecordListInconsistency = neptune_cash::api::export::RemovalRecordListInconsistency::default();
+        let nc_instance = nc::RemovalRecordListInconsistency::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_removalrecordlistinconsistency() {
         let original_instance: RemovalRecordListInconsistency = RemovalRecordListInconsistency::default();
-        let nc_instance: nc::RemovalRecordListInconsistency = neptune_cash::api::export::RemovalRecordListInconsistency::default();
+        let nc_instance = nc::RemovalRecordListInconsistency::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_removalrecordlistinconsistency() {
         let original_instance: RemovalRecordListInconsistency = RemovalRecordListInconsistency::default();
-        let nc_instance: nc::RemovalRecordListInconsistency = neptune_cash::api::export::RemovalRecordListInconsistency::default();
+        let nc_instance = nc::RemovalRecordListInconsistency::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_bincode_serialization_for_simplehasher() {
         let original_instance: SimpleHasher = SimpleHasher::default();
-        let nc_instance: nc::SimpleHasher = neptune_cash::api::export::SimpleHasher::default();
+        let nc_instance = nc::SimpleHasher::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_simplehasher() {
         let original_instance: SimpleHasher = SimpleHasher::default();
-        let nc_instance: nc::SimpleHasher = neptune_cash::api::export::SimpleHasher::default();
+        let nc_instance = nc::SimpleHasher::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_simplehasher() {
         let original_instance: SimpleHasher = SimpleHasher::default();
-        let nc_instance: nc::SimpleHasher = neptune_cash::api::export::SimpleHasher::default();
+        let nc_instance = nc::SimpleHasher::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 

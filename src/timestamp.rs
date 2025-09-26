@@ -322,19 +322,19 @@ mod generated_tests {
     #[test]
     fn test_bincode_serialization_for_timestamp() {
         let original_instance: Timestamp = Timestamp::default();
-        let nc_instance: nc::Timestamp = neptune_cash::api::export::Timestamp::default();
+        let nc_instance = nc::Timestamp::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_timestamp() {
         let original_instance: Timestamp = Timestamp::default();
-        let nc_instance: nc::Timestamp = neptune_cash::api::export::Timestamp::default();
+        let nc_instance = nc::Timestamp::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_timestamp() {
         let original_instance: Timestamp = Timestamp::default();
-        let nc_instance: nc::Timestamp = neptune_cash::api::export::Timestamp::default();
+        let nc_instance = nc::Timestamp::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

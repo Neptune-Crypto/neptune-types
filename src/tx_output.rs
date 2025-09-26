@@ -672,19 +672,19 @@ mod generated_tests {
     #[test]
     fn test_bincode_serialization_for_tx_output_list() {
         let original_instance: TxOutputList = TxOutputList::default();
-        let nc_instance: nc::TxOutputList = neptune_cash::api::export::TxOutputList::default();
+        let nc_instance = nc::TxOutputList::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_tx_output_list() {
         let original_instance: TxOutputList = TxOutputList::default();
-        let nc_instance: nc::TxOutputList = neptune_cash::api::export::TxOutputList::default();
+        let nc_instance = nc::TxOutputList::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_tx_output_list() {
         let original_instance: TxOutputList = TxOutputList::default();
-        let nc_instance: nc::TxOutputList = neptune_cash::api::export::TxOutputList::default();
+        let nc_instance = nc::TxOutputList::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

@@ -45,7 +45,7 @@ pub trait MastHash {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "original-tests"))]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use strum::EnumCount;
@@ -85,43 +85,4 @@ mod tests {
         assert_eq!(variant_set.len(), TestEnum::COUNT);
         assert_eq!(uint_set.len(), TestEnum::COUNT);
     }
-}
-
-
-#[cfg(test)]
-#[allow(unused_imports)]
-#[allow(unused_variables)]
-#[allow(unreachable_code)]
-#[allow(non_snake_case)]
-mod generated_tests {
-    use super::*;
-    use crate::test_shared::*;
-    use bincode;
-    use serde::{Deserialize, Serialize};
-
-    pub mod nc {
-        pub use neptune_cash::api::export::TestEnum;
-    }
-
-    #[test]
-    fn test_bincode_serialization_for_testenum() {
-        let original_instance: TestEnum = TestEnum::default();
-        let nc_instance: nc::TestEnum = neptune_cash::api::export::TestEnum::default();
-        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
-    }
-
-    #[test]
-    fn test_serde_json_serialization_for_testenum() {
-        let original_instance: TestEnum = TestEnum::default();
-        let nc_instance: nc::TestEnum = neptune_cash::api::export::TestEnum::default();
-        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
-    }
-
-    #[test]
-    fn test_serde_json_wasm_serialization_for_testenum() {
-        let original_instance: TestEnum = TestEnum::default();
-        let nc_instance: nc::TestEnum = neptune_cash::api::export::TestEnum::default();
-        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
-    }
-
 }

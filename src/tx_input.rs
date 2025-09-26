@@ -131,19 +131,19 @@ mod generated_tests {
     #[test]
     fn test_bincode_serialization_for_tx_input_list() {
         let original_instance: TxInputList = TxInputList::default();
-        let nc_instance: nc::TxInputList = neptune_cash::api::export::TxInputList::default();
+        let nc_instance = nc::TxInputList::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_tx_input_list() {
         let original_instance: TxInputList = TxInputList::default();
-        let nc_instance: nc::TxInputList = neptune_cash::api::export::TxInputList::default();
+        let nc_instance = nc::TxInputList::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_tx_input_list() {
         let original_instance: TxInputList = TxInputList::default();
-        let nc_instance: nc::TxInputList = neptune_cash::api::export::TxInputList::default();
+        let nc_instance = nc::TxInputList::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

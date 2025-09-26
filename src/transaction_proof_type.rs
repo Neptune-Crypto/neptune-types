@@ -61,23 +61,26 @@ mod generated_tests {
 
     #[test]
     fn test_bincode_serialization_for_transactionprooftype() {
-        let original_instance: TransactionProofType = TransactionProofType::default();
-        let nc_instance: nc::TransactionProofType = neptune_cash::api::export::TransactionProofType::default();
-        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: TransactionProofType = TransactionProofType::default();
+        // let nc_instance = nc::TransactionProofType::default();
+        // test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_transactionprooftype() {
-        let original_instance: TransactionProofType = TransactionProofType::default();
-        let nc_instance: nc::TransactionProofType = neptune_cash::api::export::TransactionProofType::default();
-        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: TransactionProofType = TransactionProofType::default();
+        // let nc_instance = nc::TransactionProofType::default();
+        // test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_transactionprooftype() {
-        let original_instance: TransactionProofType = TransactionProofType::default();
-        let nc_instance: nc::TransactionProofType = neptune_cash::api::export::TransactionProofType::default();
-        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: TransactionProofType = TransactionProofType::default();
+        // let nc_instance = nc::TransactionProofType::default();
+        // test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 
 }

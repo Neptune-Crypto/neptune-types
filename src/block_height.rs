@@ -197,19 +197,19 @@ mod generated_tests {
     #[test]
     fn test_bincode_serialization_for_block_height() {
         let original_instance: BlockHeight = BlockHeight::default();
-        let nc_instance: nc::BlockHeight = neptune_cash::api::export::BlockHeight::default();
+        let nc_instance = nc::BlockHeight::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_block_height() {
         let original_instance: BlockHeight = BlockHeight::default();
-        let nc_instance: nc::BlockHeight = neptune_cash::api::export::BlockHeight::default();
+        let nc_instance = nc::BlockHeight::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_block_height() {
         let original_instance: BlockHeight = BlockHeight::default();
-        let nc_instance: nc::BlockHeight = neptune_cash::api::export::BlockHeight::default();
+        let nc_instance = nc::BlockHeight::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

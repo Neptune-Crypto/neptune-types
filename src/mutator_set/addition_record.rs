@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-// #[cfg(any(test, feature = "arbitrary-impls"))]
+// #[cfg(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"))]
 // use arbitrary::Arbitrary;
 use get_size2::GetSize;
 use serde::Deserialize;
@@ -22,7 +22,7 @@ use twenty_first::tip5::digest::Digest;
     BFieldCodec,
     // TasmObject,
 )]
-// #[cfg_attr(any(test, feature = "arbitrary-impls"), derive(Arbitrary))]
+// #[cfg_attr(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"), derive(Arbitrary))]
 pub struct AdditionRecord {
     pub canonical_commitment: Digest,
 }
@@ -157,23 +157,26 @@ mod generated_tests {
 
     #[test]
     fn test_bincode_serialization_for_additionrecord() {
-        let original_instance: AdditionRecord = AdditionRecord::default();
-        let nc_instance: nc::AdditionRecord = neptune_cash::api::export::AdditionRecord::default();
-        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: AdditionRecord = AdditionRecord::default();
+        // let nc_instance = nc::AdditionRecord::default();
+        // test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_additionrecord() {
-        let original_instance: AdditionRecord = AdditionRecord::default();
-        let nc_instance: nc::AdditionRecord = neptune_cash::api::export::AdditionRecord::default();
-        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: AdditionRecord = AdditionRecord::default();
+        // let nc_instance = nc::AdditionRecord::default();
+        // test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_additionrecord() {
-        let original_instance: AdditionRecord = AdditionRecord::default();
-        let nc_instance: nc::AdditionRecord = neptune_cash::api::export::AdditionRecord::default();
-        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: AdditionRecord = AdditionRecord::default();
+        // let nc_instance = nc::AdditionRecord::default();
+        // test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 
 }

@@ -3,7 +3,7 @@ use std::slice::IterMut;
 use std::vec::IntoIter;
 /*
 
-#[cfg(any(test, feature = "arbitrary-impls"))]
+#[cfg(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"))]
 use arbitrary::Arbitrary;
 */
 use get_size2::GetSize;
@@ -25,7 +25,7 @@ type ChunkIndex = u64;
 #[derive(
     Clone, Debug, Serialize, Deserialize, GetSize, PartialEq, Eq, Default, BFieldCodec, TasmObject,
 )]
-#[cfg_attr(any(test, feature = "arbitrary-impls"), derive(Arbitrary))]
+#[cfg_attr(any(all(test, feature = "original-tests"), feature = "arbitrary-impls"), derive(Arbitrary))]
 pub struct ChunkDictionary {
     // {chunk index => (MMR membership proof for the whole chunk to which index belongs, chunk value)}
     // This list is always sorted. It has max. NUM_TRIALS=45 elements, so we
@@ -328,21 +328,21 @@ mod generated_tests {
     #[test]
     fn test_bincode_serialization_for_chunkdictionary() {
         let original_instance: ChunkDictionary = ChunkDictionary::default();
-        let nc_instance: nc::ChunkDictionary = neptune_cash::api::export::ChunkDictionary::default();
+        let nc_instance = nc::ChunkDictionary::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_chunkdictionary() {
         let original_instance: ChunkDictionary = ChunkDictionary::default();
-        let nc_instance: nc::ChunkDictionary = neptune_cash::api::export::ChunkDictionary::default();
+        let nc_instance = nc::ChunkDictionary::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_chunkdictionary() {
         let original_instance: ChunkDictionary = ChunkDictionary::default();
-        let nc_instance: nc::ChunkDictionary = neptune_cash::api::export::ChunkDictionary::default();
+        let nc_instance = nc::ChunkDictionary::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 

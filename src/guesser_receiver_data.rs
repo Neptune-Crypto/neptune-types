@@ -18,7 +18,7 @@ use twenty_first::math::bfield_codec::BFieldCodec;
     GetSize,
 )]
 #[cfg_attr(
-    any(test, feature = "arbitrary-impls"),
+    any(all(test, feature = "original-tests"), feature = "arbitrary-impls"),
     derive(arbitrary::Arbitrary, Default)
 )]
 pub struct GuesserReceiverData {
@@ -26,6 +26,7 @@ pub struct GuesserReceiverData {
     pub lock_script_hash: Digest,
 }
 
+/* private in neptune-cash
 
 #[cfg(test)]
 #[allow(unused_imports)]
@@ -39,28 +40,29 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
 
     pub mod nc {
-        pub use neptune_cash::api::export::GuesserReceiverData;
+        pub use neptune_cash::models::blockchain::block::guesser_receiver_data::GuesserReceiverData;
     }
 
     #[test]
     fn test_bincode_serialization_for_guesserreceiverdata() {
         let original_instance: GuesserReceiverData = GuesserReceiverData::default();
-        let nc_instance: nc::GuesserReceiverData = neptune_cash::api::export::GuesserReceiverData::default();
+        let nc_instance = nc::GuesserReceiverData::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_guesserreceiverdata() {
         let original_instance: GuesserReceiverData = GuesserReceiverData::default();
-        let nc_instance: nc::GuesserReceiverData = neptune_cash::api::export::GuesserReceiverData::default();
+        let nc_instance = nc::GuesserReceiverData::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_guesserreceiverdata() {
         let original_instance: GuesserReceiverData = GuesserReceiverData::default();
-        let nc_instance: nc::GuesserReceiverData = neptune_cash::api::export::GuesserReceiverData::default();
+        let nc_instance = nc::GuesserReceiverData::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 
 }
+*/

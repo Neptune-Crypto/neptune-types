@@ -125,71 +125,77 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
 
     pub mod nc {
-        pub use neptune_cash::api::export::GuessingWorkInfo;
-        pub use neptune_cash::api::export::ComposingWorkInfo;
-        pub use neptune_cash::api::export::MiningStatus;
+        pub use neptune_cash::models::state::mining_status::GuessingWorkInfo;
+        pub use neptune_cash::models::state::mining_status::MiningStatus;
+        pub use neptune_cash::models::state::mining_status::ComposingWorkInfo;
     }
 
     #[test]
     fn test_bincode_serialization_for_guessingworkinfo() {
-        let original_instance: GuessingWorkInfo = GuessingWorkInfo::default();
-        let nc_instance: nc::GuessingWorkInfo = neptune_cash::api::export::GuessingWorkInfo::default();
-        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: GuessingWorkInfo = GuessingWorkInfo::default();
+        // let nc_instance = nc::GuessingWorkInfo::default();
+        // test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_guessingworkinfo() {
-        let original_instance: GuessingWorkInfo = GuessingWorkInfo::default();
-        let nc_instance: nc::GuessingWorkInfo = neptune_cash::api::export::GuessingWorkInfo::default();
-        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: GuessingWorkInfo = GuessingWorkInfo::default();
+        // let nc_instance = nc::GuessingWorkInfo::default();
+        // test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_guessingworkinfo() {
-        let original_instance: GuessingWorkInfo = GuessingWorkInfo::default();
-        let nc_instance: nc::GuessingWorkInfo = neptune_cash::api::export::GuessingWorkInfo::default();
-        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: GuessingWorkInfo = GuessingWorkInfo::default();
+        // let nc_instance = nc::GuessingWorkInfo::default();
+        // test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_bincode_serialization_for_composingworkinfo() {
-        let original_instance: ComposingWorkInfo = ComposingWorkInfo::default();
-        let nc_instance: nc::ComposingWorkInfo = neptune_cash::api::export::ComposingWorkInfo::default();
-        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: ComposingWorkInfo = ComposingWorkInfo::default();
+        // let nc_instance = nc::ComposingWorkInfo::default();
+        // test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_composingworkinfo() {
-        let original_instance: ComposingWorkInfo = ComposingWorkInfo::default();
-        let nc_instance: nc::ComposingWorkInfo = neptune_cash::api::export::ComposingWorkInfo::default();
-        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: ComposingWorkInfo = ComposingWorkInfo::default();
+        // let nc_instance = nc::ComposingWorkInfo::default();
+        // test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_composingworkinfo() {
-        let original_instance: ComposingWorkInfo = ComposingWorkInfo::default();
-        let nc_instance: nc::ComposingWorkInfo = neptune_cash::api::export::ComposingWorkInfo::default();
-        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: ComposingWorkInfo = ComposingWorkInfo::default();
+        // let nc_instance = nc::ComposingWorkInfo::default();
+        // test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_bincode_serialization_for_miningstatus() {
         let original_instance: MiningStatus = MiningStatus::default();
-        let nc_instance: nc::MiningStatus = neptune_cash::api::export::MiningStatus::default();
+        let nc_instance = nc::MiningStatus::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_miningstatus() {
         let original_instance: MiningStatus = MiningStatus::default();
-        let nc_instance: nc::MiningStatus = neptune_cash::api::export::MiningStatus::default();
+        let nc_instance = nc::MiningStatus::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_miningstatus() {
         let original_instance: MiningStatus = MiningStatus::default();
-        let nc_instance: nc::MiningStatus = neptune_cash::api::export::MiningStatus::default();
+        let nc_instance = nc::MiningStatus::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 

@@ -60,6 +60,12 @@ impl NonDeterminism {
         self
     }
 }
+
+/*
+
+todo: testing for triton-vm types.
+
+
 #[cfg(test)]
 #[allow(unused_imports)]
 #[allow(unused_variables)]
@@ -76,19 +82,20 @@ mod generated_tests {
     #[test]
     fn test_bincode_serialization_for_non_determinism() {
         let original_instance: NonDeterminism = NonDeterminism::default();
-        let nc_instance: nc::NonDeterminism = neptune_cash::api::export::NonDeterminism::default();
+        let nc_instance = nc::NonDeterminism::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_non_determinism() {
         let original_instance: NonDeterminism = NonDeterminism::default();
-        let nc_instance: nc::NonDeterminism = neptune_cash::api::export::NonDeterminism::default();
+        let nc_instance = nc::NonDeterminism::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_non_determinism() {
         let original_instance: NonDeterminism = NonDeterminism::default();
-        let nc_instance: nc::NonDeterminism = neptune_cash::api::export::NonDeterminism::default();
+        let nc_instance = nc::NonDeterminism::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }
+*/

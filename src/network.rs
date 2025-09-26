@@ -212,19 +212,19 @@ mod generated_tests {
     #[test]
     fn test_bincode_serialization_for_network() {
         let original_instance: Network = Network::default();
-        let nc_instance: nc::Network = neptune_cash::api::export::Network::default();
+        let nc_instance = nc::Network::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_serialization_for_network() {
         let original_instance: Network = Network::default();
-        let nc_instance: nc::Network = neptune_cash::api::export::Network::default();
+        let nc_instance = nc::Network::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
     #[test]
     fn test_serde_json_wasm_serialization_for_network() {
         let original_instance: Network = Network::default();
-        let nc_instance: nc::Network = neptune_cash::api::export::Network::default();
+        let nc_instance = nc::Network::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 }

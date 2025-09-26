@@ -58,6 +58,7 @@ mod tests {
     }
 }
 
+/* private in neptune-cash
 
 #[cfg(test)]
 #[allow(unused_imports)]
@@ -71,28 +72,30 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
 
     pub mod nc {
-        pub use neptune_cash::api::export::IncomingUtxo;
+        pub use neptune_cash::models::state::wallet::incoming_utxo::IncomingUtxo;
     }
 
     #[test]
     fn test_bincode_serialization_for_incomingutxo() {
         let original_instance: IncomingUtxo = IncomingUtxo::default();
-        let nc_instance: nc::IncomingUtxo = neptune_cash::api::export::IncomingUtxo::default();
+        let nc_instance = nc::IncomingUtxo::default();
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_incomingutxo() {
         let original_instance: IncomingUtxo = IncomingUtxo::default();
-        let nc_instance: nc::IncomingUtxo = neptune_cash::api::export::IncomingUtxo::default();
+        let nc_instance = nc::IncomingUtxo::default();
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_incomingutxo() {
         let original_instance: IncomingUtxo = IncomingUtxo::default();
-        let nc_instance: nc::IncomingUtxo = neptune_cash::api::export::IncomingUtxo::default();
+        let nc_instance = nc::IncomingUtxo::default();
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 
 }
+
+*/

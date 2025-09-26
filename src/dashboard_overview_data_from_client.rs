@@ -54,28 +54,31 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
 
     pub mod nc {
-        pub use neptune_cash::api::export::DashBoardOverviewDataFromClient;
+        pub use crate::dashboard_overview_data_from_client::DashBoardOverviewDataFromClient;
     }
 
     #[test]
     fn test_bincode_serialization_for_dashboardoverviewdatafromclient() {
-        let original_instance: DashBoardOverviewDataFromClient = DashBoardOverviewDataFromClient::default();
-        let nc_instance: nc::DashBoardOverviewDataFromClient = neptune_cash::api::export::DashBoardOverviewDataFromClient::default();
-        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: DashBoardOverviewDataFromClient = DashBoardOverviewDataFromClient::default();
+        // let nc_instance = nc::DashBoardOverviewDataFromClient::default();
+        // test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_serialization_for_dashboardoverviewdatafromclient() {
-        let original_instance: DashBoardOverviewDataFromClient = DashBoardOverviewDataFromClient::default();
-        let nc_instance: nc::DashBoardOverviewDataFromClient = neptune_cash::api::export::DashBoardOverviewDataFromClient::default();
-        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: DashBoardOverviewDataFromClient = DashBoardOverviewDataFromClient::default();
+        // let nc_instance = nc::DashBoardOverviewDataFromClient::default();
+        // test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
 
     #[test]
     fn test_serde_json_wasm_serialization_for_dashboardoverviewdatafromclient() {
-        let original_instance: DashBoardOverviewDataFromClient = DashBoardOverviewDataFromClient::default();
-        let nc_instance: nc::DashBoardOverviewDataFromClient = neptune_cash::api::export::DashBoardOverviewDataFromClient::default();
-        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+        todo!()
+        // let original_instance: DashBoardOverviewDataFromClient = DashBoardOverviewDataFromClient::default();
+        // let nc_instance = nc::DashBoardOverviewDataFromClient::default();
+        // test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }
 
 }
