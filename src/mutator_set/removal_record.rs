@@ -12,9 +12,11 @@ use absolute_index_set::AbsoluteIndexSet;
 use get_size2::GetSize;
 use serde::Deserialize;
 use serde::Serialize;
+/*
 // use tasm_lib::structure::tasm_object::TasmObject;
 #[cfg(test)]
 pub use tests::propcompose_absindset;
+*/
 use twenty_first::math::bfield_codec::BFieldCodec;
 //use twenty_first::util_types::mmr::mmr_trait::Mmr;
 
@@ -764,3 +766,64 @@ mod tests {
     }
 }
 */
+
+
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Deserialize, Serialize};
+
+    pub mod nc {
+        pub use neptune_cash::api::export::RemovalRecord;
+        pub use neptune_cash::api::export::RemovalRecordValidityError;
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_removalrecord() {
+        let original_instance: RemovalRecord = RemovalRecord::default();
+        let nc_instance: nc::RemovalRecord = neptune_cash::api::export::RemovalRecord::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_removalrecord() {
+        let original_instance: RemovalRecord = RemovalRecord::default();
+        let nc_instance: nc::RemovalRecord = neptune_cash::api::export::RemovalRecord::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_removalrecord() {
+        let original_instance: RemovalRecord = RemovalRecord::default();
+        let nc_instance: nc::RemovalRecord = neptune_cash::api::export::RemovalRecord::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_removalrecordvalidityerror() {
+        let original_instance: RemovalRecordValidityError = RemovalRecordValidityError::default();
+        let nc_instance: nc::RemovalRecordValidityError = neptune_cash::api::export::RemovalRecordValidityError::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_removalrecordvalidityerror() {
+        let original_instance: RemovalRecordValidityError = RemovalRecordValidityError::default();
+        let nc_instance: nc::RemovalRecordValidityError = neptune_cash::api::export::RemovalRecordValidityError::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_removalrecordvalidityerror() {
+        let original_instance: RemovalRecordValidityError = RemovalRecordValidityError::default();
+        let nc_instance: nc::RemovalRecordValidityError = neptune_cash::api::export::RemovalRecordValidityError::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+}

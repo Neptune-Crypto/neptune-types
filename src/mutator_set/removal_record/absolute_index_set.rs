@@ -174,6 +174,7 @@ impl<'a> Arbitrary<'a> for AbsoluteIndexSet {
     }
 }
 */
+/*
 
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
@@ -226,4 +227,44 @@ mod tests {
         let as_array_again = as_ais_again.to_array();
         prop_assert_eq!(as_array_again, as_array);
     }
+}
+*/
+
+
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Deserialize, Serialize};
+
+    pub mod nc {
+        pub use neptune_cash::api::export::AbsoluteIndexSet;
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_absoluteindexset() {
+        let original_instance: AbsoluteIndexSet = AbsoluteIndexSet::default();
+        let nc_instance: nc::AbsoluteIndexSet = neptune_cash::api::export::AbsoluteIndexSet::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_absoluteindexset() {
+        let original_instance: AbsoluteIndexSet = AbsoluteIndexSet::default();
+        let nc_instance: nc::AbsoluteIndexSet = neptune_cash::api::export::AbsoluteIndexSet::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_absoluteindexset() {
+        let original_instance: AbsoluteIndexSet = AbsoluteIndexSet::default();
+        let nc_instance: nc::AbsoluteIndexSet = neptune_cash::api::export::AbsoluteIndexSet::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
 }

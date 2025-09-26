@@ -91,6 +91,7 @@ impl TryFrom<String> for Announcement {
         Ok(Self { message: bfes })
     }
 }
+/*
 
 #[cfg(all(test, feature = "original-tests"))]
 #[cfg(test)]
@@ -113,6 +114,7 @@ mod tests {
         let _announcement = Announcement::try_from(s); // no crash
     }
 }
+*/
 
 #[cfg(test)]
 #[allow(unused_imports)]

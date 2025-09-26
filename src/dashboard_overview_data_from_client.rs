@@ -40,3 +40,42 @@ pub struct DashBoardOverviewDataFromClient {
     /// CPU temperature in degrees Celsius
     pub cpu_temp: Option<f32>,
 }
+
+
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Deserialize, Serialize};
+
+    pub mod nc {
+        pub use neptune_cash::api::export::DashBoardOverviewDataFromClient;
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_dashboardoverviewdatafromclient() {
+        let original_instance: DashBoardOverviewDataFromClient = DashBoardOverviewDataFromClient::default();
+        let nc_instance: nc::DashBoardOverviewDataFromClient = neptune_cash::api::export::DashBoardOverviewDataFromClient::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_dashboardoverviewdatafromclient() {
+        let original_instance: DashBoardOverviewDataFromClient = DashBoardOverviewDataFromClient::default();
+        let nc_instance: nc::DashBoardOverviewDataFromClient = neptune_cash::api::export::DashBoardOverviewDataFromClient::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_dashboardoverviewdatafromclient() {
+        let original_instance: DashBoardOverviewDataFromClient = DashBoardOverviewDataFromClient::default();
+        let nc_instance: nc::DashBoardOverviewDataFromClient = neptune_cash::api::export::DashBoardOverviewDataFromClient::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+}

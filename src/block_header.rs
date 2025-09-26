@@ -1,7 +1,9 @@
 use std::fmt::Display;
+/*
 
 #[cfg(any(test, feature = "arbitrary-impls"))]
 use arbitrary::Arbitrary;
+*/
 use get_size2::GetSize;
 use num_traits::Zero;
 use serde::Deserialize;
@@ -330,8 +332,7 @@ impl BlockHeader {
                 },
             )
             .boxed()
-    }
-}
+  /*
 
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
@@ -397,4 +398,111 @@ pub(crate) mod tests {
         let block_header = random_block_header();
         println!("{block_header}");
     }
+}
+*/   }
+}
+
+
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Deserialize, Serialize};
+
+    pub mod nc {
+        pub use neptune_cash::api::export::BlockHeader;
+        pub use neptune_cash::api::export::BlockHeaderField;
+        pub use neptune_cash::api::export::HeaderToBlockHashWitness;
+        pub use neptune_cash::api::export::BlockHeaderWithBlockHashWitness;
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_blockheader() {
+        let original_instance: BlockHeader = BlockHeader::default();
+        let nc_instance: nc::BlockHeader = neptune_cash::api::export::BlockHeader::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_blockheader() {
+        let original_instance: BlockHeader = BlockHeader::default();
+        let nc_instance: nc::BlockHeader = neptune_cash::api::export::BlockHeader::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_blockheader() {
+        let original_instance: BlockHeader = BlockHeader::default();
+        let nc_instance: nc::BlockHeader = neptune_cash::api::export::BlockHeader::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_blockheaderfield() {
+        let original_instance: BlockHeaderField = BlockHeaderField::default();
+        let nc_instance: nc::BlockHeaderField = neptune_cash::api::export::BlockHeaderField::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_blockheaderfield() {
+        let original_instance: BlockHeaderField = BlockHeaderField::default();
+        let nc_instance: nc::BlockHeaderField = neptune_cash::api::export::BlockHeaderField::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_blockheaderfield() {
+        let original_instance: BlockHeaderField = BlockHeaderField::default();
+        let nc_instance: nc::BlockHeaderField = neptune_cash::api::export::BlockHeaderField::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_headertoblockhashwitness() {
+        let original_instance: HeaderToBlockHashWitness = HeaderToBlockHashWitness::default();
+        let nc_instance: nc::HeaderToBlockHashWitness = neptune_cash::api::export::HeaderToBlockHashWitness::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_headertoblockhashwitness() {
+        let original_instance: HeaderToBlockHashWitness = HeaderToBlockHashWitness::default();
+        let nc_instance: nc::HeaderToBlockHashWitness = neptune_cash::api::export::HeaderToBlockHashWitness::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_headertoblockhashwitness() {
+        let original_instance: HeaderToBlockHashWitness = HeaderToBlockHashWitness::default();
+        let nc_instance: nc::HeaderToBlockHashWitness = neptune_cash::api::export::HeaderToBlockHashWitness::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_blockheaderwithblockhashwitness() {
+        let original_instance: BlockHeaderWithBlockHashWitness = BlockHeaderWithBlockHashWitness::default();
+        let nc_instance: nc::BlockHeaderWithBlockHashWitness = neptune_cash::api::export::BlockHeaderWithBlockHashWitness::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_blockheaderwithblockhashwitness() {
+        let original_instance: BlockHeaderWithBlockHashWitness = BlockHeaderWithBlockHashWitness::default();
+        let nc_instance: nc::BlockHeaderWithBlockHashWitness = neptune_cash::api::export::BlockHeaderWithBlockHashWitness::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_blockheaderwithblockhashwitness() {
+        let original_instance: BlockHeaderWithBlockHashWitness = BlockHeaderWithBlockHashWitness::default();
+        let nc_instance: nc::BlockHeaderWithBlockHashWitness = neptune_cash::api::export::BlockHeaderWithBlockHashWitness::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
 }

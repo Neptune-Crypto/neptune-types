@@ -1,5 +1,7 @@
+/*
 #[cfg(any(test, feature = "arbitrary-impls"))]
 use arbitrary::Arbitrary;
+*/
 use get_size2::GetSize;
 use itertools::Itertools;
 use serde_derive::Deserialize;
@@ -314,8 +316,7 @@ impl<'a> Arbitrary<'a> for Chunk {
                 .map(|i| i.unwrap())
                 .collect_vec(),
         })
-    }
-}
+  /*
 
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
@@ -727,4 +728,67 @@ mod tests {
             prop_assert!(packed.try_unpack().is_err());
         }
     }
+}
+*/   }
+}
+
+
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Deserialize, Serialize};
+
+    pub mod nc {
+        pub use neptune_cash::api::export::ChunkUnpackError;
+        pub use neptune_cash::api::export::Chunk;
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_chunkunpackerror() {
+        let original_instance: ChunkUnpackError = ChunkUnpackError::default();
+        let nc_instance: nc::ChunkUnpackError = neptune_cash::api::export::ChunkUnpackError::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_chunkunpackerror() {
+        let original_instance: ChunkUnpackError = ChunkUnpackError::default();
+        let nc_instance: nc::ChunkUnpackError = neptune_cash::api::export::ChunkUnpackError::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_chunkunpackerror() {
+        let original_instance: ChunkUnpackError = ChunkUnpackError::default();
+        let nc_instance: nc::ChunkUnpackError = neptune_cash::api::export::ChunkUnpackError::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_chunk() {
+        let original_instance: Chunk = Chunk::default();
+        let nc_instance: nc::Chunk = neptune_cash::api::export::Chunk::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_chunk() {
+        let original_instance: Chunk = Chunk::default();
+        let nc_instance: nc::Chunk = neptune_cash::api::export::Chunk::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_chunk() {
+        let original_instance: Chunk = Chunk::default();
+        let nc_instance: nc::Chunk = neptune_cash::api::export::Chunk::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
 }

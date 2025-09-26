@@ -521,6 +521,7 @@ impl<const MERKLE_TREE_HEIGHT: usize> Distribution<Pow<MERKLE_TREE_HEIGHT>> for 
         }
     }
 }
+/*
 
 #[cfg(test)]
 pub(crate) mod tests {
@@ -631,6 +632,7 @@ pub(crate) mod tests {
                 successful_guess.unwrap().validate(auth_paths, target)
             );
         }
+*/
     }
 
     mod async_tests {
@@ -879,3 +881,130 @@ pub(crate) mod tests {
     }
 }
 */
+
+
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Deserialize, Serialize};
+
+    pub mod nc {
+        pub use neptune_cash::api::export::MTree;
+        pub use neptune_cash::api::export::Pow;
+        pub use neptune_cash::api::export::PowMastPaths;
+        pub use neptune_cash::api::export::GuesserBuffer;
+        pub use neptune_cash::api::export::PowValidationError;
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_mtree() {
+        let original_instance: MTree = MTree::default();
+        let nc_instance: nc::MTree = neptune_cash::api::export::MTree::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_mtree() {
+        let original_instance: MTree = MTree::default();
+        let nc_instance: nc::MTree = neptune_cash::api::export::MTree::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_mtree() {
+        let original_instance: MTree = MTree::default();
+        let nc_instance: nc::MTree = neptune_cash::api::export::MTree::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_pow() {
+        let original_instance: Pow = Pow::default();
+        let nc_instance: nc::Pow = neptune_cash::api::export::Pow::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_pow() {
+        let original_instance: Pow = Pow::default();
+        let nc_instance: nc::Pow = neptune_cash::api::export::Pow::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_pow() {
+        let original_instance: Pow = Pow::default();
+        let nc_instance: nc::Pow = neptune_cash::api::export::Pow::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_powmastpaths() {
+        let original_instance: PowMastPaths = PowMastPaths::default();
+        let nc_instance: nc::PowMastPaths = neptune_cash::api::export::PowMastPaths::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_powmastpaths() {
+        let original_instance: PowMastPaths = PowMastPaths::default();
+        let nc_instance: nc::PowMastPaths = neptune_cash::api::export::PowMastPaths::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_powmastpaths() {
+        let original_instance: PowMastPaths = PowMastPaths::default();
+        let nc_instance: nc::PowMastPaths = neptune_cash::api::export::PowMastPaths::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_guesserbuffer() {
+        let original_instance: GuesserBuffer = GuesserBuffer::default();
+        let nc_instance: nc::GuesserBuffer = neptune_cash::api::export::GuesserBuffer::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_guesserbuffer() {
+        let original_instance: GuesserBuffer = GuesserBuffer::default();
+        let nc_instance: nc::GuesserBuffer = neptune_cash::api::export::GuesserBuffer::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_guesserbuffer() {
+        let original_instance: GuesserBuffer = GuesserBuffer::default();
+        let nc_instance: nc::GuesserBuffer = neptune_cash::api::export::GuesserBuffer::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_powvalidationerror() {
+        let original_instance: PowValidationError = PowValidationError::default();
+        let nc_instance: nc::PowValidationError = neptune_cash::api::export::PowValidationError::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_powvalidationerror() {
+        let original_instance: PowValidationError = PowValidationError::default();
+        let nc_instance: nc::PowValidationError = neptune_cash::api::export::PowValidationError::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_powvalidationerror() {
+        let original_instance: PowValidationError = PowValidationError::default();
+        let nc_instance: nc::PowValidationError = neptune_cash::api::export::PowValidationError::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+}

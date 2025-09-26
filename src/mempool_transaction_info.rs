@@ -58,3 +58,42 @@ impl MempoolTransactionInfo {
         self
     }
 }
+
+
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Deserialize, Serialize};
+
+    pub mod nc {
+        pub use neptune_cash::api::export::MempoolTransactionInfo;
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_mempooltransactioninfo() {
+        let original_instance: MempoolTransactionInfo = MempoolTransactionInfo::default();
+        let nc_instance: nc::MempoolTransactionInfo = neptune_cash::api::export::MempoolTransactionInfo::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_mempooltransactioninfo() {
+        let original_instance: MempoolTransactionInfo = MempoolTransactionInfo::default();
+        let nc_instance: nc::MempoolTransactionInfo = neptune_cash::api::export::MempoolTransactionInfo::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_mempooltransactioninfo() {
+        let original_instance: MempoolTransactionInfo = MempoolTransactionInfo::default();
+        let nc_instance: nc::MempoolTransactionInfo = neptune_cash::api::export::MempoolTransactionInfo::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+}

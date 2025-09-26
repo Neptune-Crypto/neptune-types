@@ -42,3 +42,42 @@ impl TransactionProofType {
         matches!(self, Self::ProofCollection | Self::SingleProof)
     }
 }
+
+
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Deserialize, Serialize};
+
+    pub mod nc {
+        pub use neptune_cash::api::export::TransactionProofType;
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_transactionprooftype() {
+        let original_instance: TransactionProofType = TransactionProofType::default();
+        let nc_instance: nc::TransactionProofType = neptune_cash::api::export::TransactionProofType::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_transactionprooftype() {
+        let original_instance: TransactionProofType = TransactionProofType::default();
+        let nc_instance: nc::TransactionProofType = neptune_cash::api::export::TransactionProofType::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_transactionprooftype() {
+        let original_instance: TransactionProofType = TransactionProofType::default();
+        let nc_instance: nc::TransactionProofType = neptune_cash::api::export::TransactionProofType::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+}

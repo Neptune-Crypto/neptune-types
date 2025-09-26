@@ -1,9 +1,11 @@
 use std::slice::Iter;
 use std::slice::IterMut;
 use std::vec::IntoIter;
+/*
 
 #[cfg(any(test, feature = "arbitrary-impls"))]
 use arbitrary::Arbitrary;
+*/
 use get_size2::GetSize;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -305,4 +307,43 @@ pub mod tests {
 
         assert_eq!(chunk_dictionary, decoded);
     }
+}
+
+
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Deserialize, Serialize};
+
+    pub mod nc {
+        pub use neptune_cash::api::export::ChunkDictionary;
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_chunkdictionary() {
+        let original_instance: ChunkDictionary = ChunkDictionary::default();
+        let nc_instance: nc::ChunkDictionary = neptune_cash::api::export::ChunkDictionary::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_chunkdictionary() {
+        let original_instance: ChunkDictionary = ChunkDictionary::default();
+        let nc_instance: nc::ChunkDictionary = neptune_cash::api::export::ChunkDictionary::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_chunkdictionary() {
+        let original_instance: ChunkDictionary = ChunkDictionary::default();
+        let nc_instance: nc::ChunkDictionary = neptune_cash::api::export::ChunkDictionary::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
 }

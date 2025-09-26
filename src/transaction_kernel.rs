@@ -618,3 +618,130 @@ pub mod tests {
     }
 }
 */
+
+
+#[cfg(test)]
+#[allow(unused_imports)]
+#[allow(unused_variables)]
+#[allow(unreachable_code)]
+#[allow(non_snake_case)]
+mod generated_tests {
+    use super::*;
+    use crate::test_shared::*;
+    use bincode;
+    use serde::{Deserialize, Serialize};
+
+    pub mod nc {
+        pub use neptune_cash::api::export::TransactionKernel;
+        pub use neptune_cash::api::export::TransactionConfirmabilityError;
+        pub use neptune_cash::api::export::TransactionKernelField;
+        pub use neptune_cash::api::export::TransactionKernelProxy;
+        pub use neptune_cash::api::export::TransactionKernelModifier;
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_transactionkernel() {
+        let original_instance: TransactionKernel = TransactionKernel::default();
+        let nc_instance: nc::TransactionKernel = neptune_cash::api::export::TransactionKernel::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_transactionkernel() {
+        let original_instance: TransactionKernel = TransactionKernel::default();
+        let nc_instance: nc::TransactionKernel = neptune_cash::api::export::TransactionKernel::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_transactionkernel() {
+        let original_instance: TransactionKernel = TransactionKernel::default();
+        let nc_instance: nc::TransactionKernel = neptune_cash::api::export::TransactionKernel::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_transactionconfirmabilityerror() {
+        let original_instance: TransactionConfirmabilityError = TransactionConfirmabilityError::default();
+        let nc_instance: nc::TransactionConfirmabilityError = neptune_cash::api::export::TransactionConfirmabilityError::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_transactionconfirmabilityerror() {
+        let original_instance: TransactionConfirmabilityError = TransactionConfirmabilityError::default();
+        let nc_instance: nc::TransactionConfirmabilityError = neptune_cash::api::export::TransactionConfirmabilityError::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_transactionconfirmabilityerror() {
+        let original_instance: TransactionConfirmabilityError = TransactionConfirmabilityError::default();
+        let nc_instance: nc::TransactionConfirmabilityError = neptune_cash::api::export::TransactionConfirmabilityError::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_transactionkernelfield() {
+        let original_instance: TransactionKernelField = TransactionKernelField::default();
+        let nc_instance: nc::TransactionKernelField = neptune_cash::api::export::TransactionKernelField::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_transactionkernelfield() {
+        let original_instance: TransactionKernelField = TransactionKernelField::default();
+        let nc_instance: nc::TransactionKernelField = neptune_cash::api::export::TransactionKernelField::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_transactionkernelfield() {
+        let original_instance: TransactionKernelField = TransactionKernelField::default();
+        let nc_instance: nc::TransactionKernelField = neptune_cash::api::export::TransactionKernelField::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_transactionkernelproxy() {
+        let original_instance: TransactionKernelProxy = TransactionKernelProxy::default();
+        let nc_instance: nc::TransactionKernelProxy = neptune_cash::api::export::TransactionKernelProxy::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_transactionkernelproxy() {
+        let original_instance: TransactionKernelProxy = TransactionKernelProxy::default();
+        let nc_instance: nc::TransactionKernelProxy = neptune_cash::api::export::TransactionKernelProxy::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_transactionkernelproxy() {
+        let original_instance: TransactionKernelProxy = TransactionKernelProxy::default();
+        let nc_instance: nc::TransactionKernelProxy = neptune_cash::api::export::TransactionKernelProxy::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_bincode_serialization_for_transactionkernelmodifier() {
+        let original_instance: TransactionKernelModifier = TransactionKernelModifier::default();
+        let nc_instance: nc::TransactionKernelModifier = neptune_cash::api::export::TransactionKernelModifier::default();
+        test_bincode_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_serialization_for_transactionkernelmodifier() {
+        let original_instance: TransactionKernelModifier = TransactionKernelModifier::default();
+        let nc_instance: nc::TransactionKernelModifier = neptune_cash::api::export::TransactionKernelModifier::default();
+        test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+    #[test]
+    fn test_serde_json_wasm_serialization_for_transactionkernelmodifier() {
+        let original_instance: TransactionKernelModifier = TransactionKernelModifier::default();
+        let nc_instance: nc::TransactionKernelModifier = neptune_cash::api::export::TransactionKernelModifier::default();
+        test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
+    }
+
+}
