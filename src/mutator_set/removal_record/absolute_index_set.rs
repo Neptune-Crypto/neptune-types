@@ -45,6 +45,21 @@ impl GetSize for AbsoluteIndexSet {
     }
 }
 
+
+impl AbsoluteIndexSet {
+    pub fn to_vec(self) -> Vec<u128> {
+        self.to_array().to_vec()
+    }
+
+    pub fn to_array(self) -> [u128; NUM_TRIALS as usize] {
+        // Saturating add to guard overflow caused by malicious absolute index
+        // sets. Malicious absolute index sets will not have a valid proof, so
+        // there is no risk of applying such objects to the mutator set.
+        self.distances
+            .map(|x| u128::from(x).saturating_add(self.minimum))
+    }
+}
+
 /*
 impl AbsoluteIndexSet {
     /// Construct a new [`AbsoluteIndexSet`] from an array of [`NUM_TRIALS`]-
@@ -110,18 +125,6 @@ impl AbsoluteIndexSet {
             minimum: u128::from(minimum) + batch_offset,
             distances,
         }
-    }
-
-    pub fn to_vec(self) -> Vec<u128> {
-        self.to_array().to_vec()
-    }
-
-    pub fn to_array(self) -> [u128; NUM_TRIALS as usize] {
-        // Saturating add to guard overflow caused by malicious absolute index
-        // sets. Malicious absolute index sets will not have a valid proof, so
-        // there is no risk of applying such objects to the mutator set.
-        self.distances
-            .map(|x| u128::from(x).saturating_add(self.minimum))
     }
 
     /// Split the [`AbsoluteIndexSet`] into two parts, one for chunks in the
