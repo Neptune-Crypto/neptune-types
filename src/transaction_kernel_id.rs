@@ -9,7 +9,7 @@ use twenty_first::prelude::*;
 
 /// A unique identifier of a transaction whose value is unaffected by a
 /// transaction update.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, GetSize, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, GetSize, Hash, Serialize, Deserialize)]
 #[cfg_attr(test, derive(Default))]
 pub struct TransactionKernelId(Digest);
 
