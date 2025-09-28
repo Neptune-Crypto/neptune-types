@@ -49,3 +49,19 @@ neptune-types = {git = "https://github.com/Neptune-Crypto/neptune-types/", rev =
 ## Run tests
 
 cargo test
+
+## wasm check/build
+
+one time:
+
+```
+rustup target add wasm32-unknown-unknown
+```
+
+and then:
+
+
+```
+cargo check --target wasm32-unknown-unknown
+cargo build --target wasm32-unknown-unknown
+```

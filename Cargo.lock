@@ -1215,6 +1215,7 @@ dependencies = [
  "aes-gcm",
  "anyhow",
  "arbitrary",
+ "arraystring",
  "bech32",
  "bincode",
  "chrono",
