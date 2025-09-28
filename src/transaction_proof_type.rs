@@ -13,6 +13,7 @@ use serde::Serialize;
     PartialEq,
     Eq,
     PartialOrd,
+    Ord,
     strum::Display,
     strum::EnumIs,
 )]
