@@ -123,7 +123,7 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
 
     pub mod nc {
-        pub use neptune_cash::models::blockchain::block::block_info::BlockInfo;
+        pub use neptune_cash::protocol::consensus::block::block_info::BlockInfo;
     }
 
     #[test]

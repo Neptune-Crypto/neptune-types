@@ -40,7 +40,7 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
 
     pub mod nc {
-        pub use neptune_cash::models::blockchain::block::guesser_receiver_data::GuesserReceiverData;
+        pub use neptune_cash::blockchain::block::guesser_receiver_data::GuesserReceiverData;
     }
 
     #[test]

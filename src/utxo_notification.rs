@@ -53,8 +53,8 @@ mod generated_tests {
     use bincode;
     use serde::{Deserialize, Serialize};
     pub mod nc {
-        pub use neptune_cash::models::state::wallet::utxo_notification::PrivateNotificationData;
-        pub use neptune_cash::models::state::wallet::utxo_notification::UtxoNotificationMedium;
+        pub use neptune_cash::state::wallet::utxo_notification::PrivateNotificationData;
+        pub use neptune_cash::state::wallet::utxo_notification::UtxoNotificationMedium;
     }
     #[test]
     fn test_bincode_serialization_for_private_notification_data() {
@@ -78,7 +78,7 @@ mod generated_tests {
     fn test_bincode_serialization_for_utxo_notification_medium() {
         let original_instance: UtxoNotificationMedium = UtxoNotificationMedium::default();
         let nc_instance: nc::UtxoNotificationMedium =
-            neptune_cash::models::state::wallet::utxo_notification::UtxoNotificationMedium::default(
+            neptune_cash::state::wallet::utxo_notification::UtxoNotificationMedium::default(
             );
         test_bincode_serialization_for_type(original_instance, Some(nc_instance));
     }
@@ -86,7 +86,7 @@ mod generated_tests {
     fn test_serde_json_serialization_for_utxo_notification_medium() {
         let original_instance: UtxoNotificationMedium = UtxoNotificationMedium::default();
         let nc_instance: nc::UtxoNotificationMedium =
-            neptune_cash::models::state::wallet::utxo_notification::UtxoNotificationMedium::default(
+            neptune_cash::state::wallet::utxo_notification::UtxoNotificationMedium::default(
             );
         test_serde_json_serialization_for_type(original_instance, Some(nc_instance));
     }
@@ -94,7 +94,7 @@ mod generated_tests {
     fn test_serde_json_wasm_serialization_for_utxo_notification_medium() {
         let original_instance: UtxoNotificationMedium = UtxoNotificationMedium::default();
         let nc_instance: nc::UtxoNotificationMedium =
-            neptune_cash::models::state::wallet::utxo_notification::UtxoNotificationMedium::default(
+            neptune_cash::state::wallet::utxo_notification::UtxoNotificationMedium::default(
             );
         test_serde_json_wasm_serialization_for_type(original_instance, Some(nc_instance));
     }

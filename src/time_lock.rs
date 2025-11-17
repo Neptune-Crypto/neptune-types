@@ -618,7 +618,7 @@ mod generated_tests {
     use bincode;
     use serde::{Deserialize, Serialize};
     pub mod nc {
-        pub use neptune_cash::models::blockchain::type_scripts::time_lock::TimeLock;
+        pub use neptune_cash::protocol::consensus::type_scripts::time_lock::TimeLock;
     }
     #[test]
     fn test_bincode_serialization_for_time_lock() {

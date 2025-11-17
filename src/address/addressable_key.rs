@@ -254,9 +254,9 @@ mod generated_tests {
     use bincode;
     use serde::{Deserialize, Serialize};
     pub mod nc {
-        pub use neptune_cash::models::state::wallet::address::KeyType;
-        pub use neptune_cash::models::state::wallet::address::SpendingKey;
-        pub use neptune_cash::models::state::wallet::address::symmetric_key::SymmetricKey;
+        pub use neptune_cash::state::wallet::address::KeyType;
+        pub use neptune_cash::state::wallet::address::SpendingKey;
+        pub use neptune_cash::state::wallet::address::symmetric_key::SymmetricKey;
     }
     #[test]
     fn test_bincode_serialization_for_addressable_key() {

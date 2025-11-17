@@ -34,7 +34,7 @@ mod generated_tests {
     use bincode;
     use serde::{Deserialize, Serialize};
     pub mod nc {
-        pub use neptune_cash::models::state::wallet::utxo_notification::UtxoNotificationPayload;
+        pub use neptune_cash::state::wallet::utxo_notification::UtxoNotificationPayload;
     }
     #[test]
     fn test_bincode_serialization_for_utxo_notification_payload() {

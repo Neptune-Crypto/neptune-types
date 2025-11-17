@@ -125,9 +125,9 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
 
     pub mod nc {
-        pub use neptune_cash::models::state::mining_status::GuessingWorkInfo;
-        pub use neptune_cash::models::state::mining_status::MiningStatus;
-        pub use neptune_cash::models::state::mining_status::ComposingWorkInfo;
+        pub use neptune_cash::state::mining::mining_status::GuessingWorkInfo;
+        pub use neptune_cash::state::mining::mining_status::MiningStatus;
+        pub use neptune_cash::state::mining::mining_status::ComposingWorkInfo;
     }
 
     #[test]

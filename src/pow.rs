@@ -895,11 +895,11 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
 
     pub mod nc {
-        pub use neptune_cash::models::blockchain::block::pow::Pow;
-        pub use neptune_cash::models::blockchain::block::pow::GuesserBuffer;
-        pub use neptune_cash::models::blockchain::block::pow::PowMastPaths;
-        // pub use neptune_cash::models::blockchain::block::pow::PowValidationError;
-        pub use neptune_cash::models::blockchain::block::pow::MTree;
+        pub use neptune_cash::protocol::consensus::block::pow::Pow;
+        pub use neptune_cash::protocol::consensus::block::pow::GuesserBuffer;
+        pub use neptune_cash::protocol::consensus::block::pow::PowMastPaths;
+        // pub use neptune_cash::blockchain::block::pow::PowValidationError;
+        pub use neptune_cash::protocol::consensus::block::pow::MTree;
     }
 
     #[test]

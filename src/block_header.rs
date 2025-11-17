@@ -415,10 +415,10 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
 
     pub mod nc {
-        pub use neptune_cash::models::blockchain::block::block_header::BlockHeader;
-        pub use neptune_cash::models::blockchain::block::block_header::BlockHeaderField;
-        pub use neptune_cash::models::blockchain::block::block_header::HeaderToBlockHashWitness;
-//        pub use neptune_cash::models::blockchain::block::block_header::BlockHeaderWithBlockHashWitness;
+        pub use neptune_cash::protocol::consensus::block::block_header::BlockHeader;
+        pub use neptune_cash::protocol::consensus::block::block_header::BlockHeaderField;
+        pub use neptune_cash::protocol::consensus::block::block_header::HeaderToBlockHashWitness;
+//        pub use neptune_cash::blockchain::block::block_header::BlockHeaderWithBlockHashWitness;
     }
 
     #[test]

@@ -72,7 +72,7 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
 
     pub mod nc {
-        pub use neptune_cash::models::state::wallet::incoming_utxo::IncomingUtxo;
+        pub use neptune_cash::state::wallet::incoming_utxo::IncomingUtxo;
     }
 
     #[test]

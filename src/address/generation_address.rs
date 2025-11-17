@@ -392,7 +392,7 @@ mod generated_tests {
     use bincode;
     use serde::{Deserialize, Serialize};
     pub mod nc {
-        pub use neptune_cash::models::state::wallet::address::generation_address::GenerationReceivingAddress;
+        pub use neptune_cash::state::wallet::address::generation_address::GenerationReceivingAddress;
     }
     #[test]
     fn test_bincode_serialization_for_generation_receiving_address() {

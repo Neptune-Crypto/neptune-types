@@ -125,6 +125,14 @@ impl NativeCurrencyAmount {
         assert!(!overflow, "Overflow on scalar multiplication not allowed.");
         NativeCurrencyAmount(res)
     }
+
+    /// Multiply the amount by a non-negative 64-bit number using BigInt to prevent overflow.
+    pub fn big_scalar_mul(&self, factor: u64) -> BigInt {
+        let nau_bigint = BigInt::from(self.0);
+        let factor_bigint = BigInt::from(factor);
+        nau_bigint * factor_bigint
+    }
+
     /// Multiply a coin amount with a fraction, in a lossy manner. Result is
     /// guaranteed to not exceed `self`.
     ///

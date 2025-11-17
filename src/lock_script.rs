@@ -218,8 +218,8 @@ mod generated_tests {
     use bincode;
     use serde::{Deserialize, Serialize};
     pub mod nc {
-        pub use neptune_cash::models::blockchain::transaction::lock_script::LockScript;
-        pub use neptune_cash::models::blockchain::transaction::lock_script::LockScriptAndWitness;
+        pub use neptune_cash::protocol::consensus::transaction::lock_script::LockScript;
+        pub use neptune_cash::protocol::consensus::transaction::lock_script::LockScriptAndWitness;
     }
     #[test]
     fn test_bincode_serialization_for_lock_script() {

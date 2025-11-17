@@ -632,11 +632,11 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
 
     pub mod nc {
-        pub use neptune_cash::models::blockchain::transaction::transaction_kernel::TransactionKernel;
-        // pub use neptune_cash::models::blockchain::transaction::transaction_kernel::TransactionConfirmabilityError;
-        pub use neptune_cash::models::blockchain::transaction::transaction_kernel::TransactionKernelField;
-        pub use neptune_cash::models::blockchain::transaction::transaction_kernel::TransactionKernelProxy;
-        pub use neptune_cash::models::blockchain::transaction::transaction_kernel::TransactionKernelModifier;
+        pub use neptune_cash::protocol::consensus::transaction::transaction_kernel::TransactionKernel;
+        // pub use neptune_cash::blockchain::transaction::transaction_kernel::TransactionConfirmabilityError;
+        pub use neptune_cash::protocol::consensus::transaction::transaction_kernel::TransactionKernelField;
+        pub use neptune_cash::protocol::consensus::transaction::transaction_kernel::TransactionKernelProxy;
+        pub use neptune_cash::protocol::consensus::transaction::transaction_kernel::TransactionKernelModifier;
     }
 
     #[test]

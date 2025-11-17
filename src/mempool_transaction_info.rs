@@ -72,7 +72,7 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
 
     pub mod nc {
-        pub use neptune_cash::rpc_server::MempoolTransactionInfo;
+        pub use neptune_cash::application::rpc::server::mempool_transaction_info::MempoolTransactionInfo;
     }
 
     #[test]

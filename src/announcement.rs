@@ -127,7 +127,7 @@ mod generated_tests {
     use bincode;
     use serde::{Deserialize, Serialize};
     pub mod nc {
-        pub use neptune_cash::models::blockchain::transaction::announcement::Announcement;
+        pub use neptune_cash::api::export::Announcement;
     }
     #[test]
     fn test_bincode_serialization_for_announcement() {

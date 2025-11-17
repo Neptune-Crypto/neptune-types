@@ -663,7 +663,7 @@ mod generated_tests {
     use bincode;
     use serde::{Deserialize, Serialize};
     pub mod nc {
-        pub use neptune_cash::models::blockchain::type_scripts::native_currency::NativeCurrency;
+        pub use neptune_cash::protocol::consensus::type_scripts::native_currency::NativeCurrency;
     }
     #[test]
     fn test_bincode_serialization_for_native_currency() {

@@ -649,7 +649,7 @@ mod generated_tests {
     use serde::{Deserialize, Serialize};
     pub mod nc {
         pub use neptune_cash::api::export::TxOutputList;
-        pub use neptune_cash::models::state::wallet::transaction_output::TxOutput;
+        pub use neptune_cash::state::wallet::transaction_output::TxOutput;
     }
     #[test]
     fn test_bincode_serialization_for_tx_output() {

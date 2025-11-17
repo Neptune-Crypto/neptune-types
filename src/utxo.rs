@@ -277,8 +277,8 @@ mod generated_tests {
     use bincode;
     use serde::{Deserialize, Serialize};
     pub mod nc {
-        pub use neptune_cash::models::blockchain::transaction::utxo::Coin;
-        pub use neptune_cash::models::blockchain::transaction::utxo::Utxo;
+        pub use neptune_cash::protocol::consensus::transaction::utxo::Coin;
+        pub use neptune_cash::protocol::consensus::transaction::utxo::Utxo;
     }
 
     impl Default for Coin {
@@ -305,7 +305,7 @@ mod generated_tests {
         }
     }
     fn nc_utxo_default() -> nc::Utxo {
-        (dg(Digest::default()), Vec::<nc::Coin>::default()).into()
+        nc::Utxo::new(dg(Digest::default()), Vec::<nc::Coin>::default())
     }
 
     #[test]

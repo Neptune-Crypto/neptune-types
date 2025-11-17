@@ -885,8 +885,8 @@ mod generated_tests {
     use bincode;
     use serde::{Deserialize, Serialize};
     pub mod nc {
-        pub use neptune_cash::models::blockchain::block::difficulty_control::Difficulty;
-        pub use neptune_cash::models::blockchain::block::difficulty_control::ProofOfWork;
+        pub use neptune_cash::protocol::consensus::block::difficulty_control::Difficulty;
+        pub use neptune_cash::protocol::consensus::block::difficulty_control::ProofOfWork;
     }
 
     #[test]
