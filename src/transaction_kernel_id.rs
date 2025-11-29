@@ -25,6 +25,12 @@ impl From<Digest> for TransactionKernelId {
     }
 }
 
+impl From<TransactionKernelId> for Digest {
+    fn from(id: TransactionKernelId) -> Self {
+        id.0
+    }
+}
+
 #[derive(Debug, Error)]
 pub enum ParseTxIdError {
     #[error("Invalid transaction ID format: {0}")]
