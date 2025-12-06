@@ -7,7 +7,7 @@ use crate::block_height::BlockHeight;
 use crate::native_currency_amount::NativeCurrencyAmount;
 use crate::timestamp::Timestamp;
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, strum::EnumIs)]
 pub enum UtxoStatusEvent {
     Confirmed {
         block_height: BlockHeight,
