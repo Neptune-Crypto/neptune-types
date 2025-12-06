@@ -33,6 +33,7 @@ pub mod tx_input;
 pub mod tx_output;
 pub mod tx_proving_capability;
 pub mod unlocked_utxo;
+pub mod ui_utxo;
 pub mod utxo;
 pub mod utxo_notification;
 pub mod utxo_notification_payload;
