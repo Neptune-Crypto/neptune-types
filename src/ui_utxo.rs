@@ -7,7 +7,7 @@ use crate::block_height::BlockHeight;
 use crate::native_currency_amount::NativeCurrencyAmount;
 use crate::timestamp::Timestamp;
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize, strum::EnumIs)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, strum::EnumIs)]
 pub enum UtxoStatusEvent {
     Confirmed {
         block_height: BlockHeight,
@@ -35,7 +35,7 @@ impl Display for UtxoStatusEvent {
     }
 }
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct UiUtxo {
     pub received: UtxoStatusEvent,
     pub aocl_leaf_index: Option<u64>,
