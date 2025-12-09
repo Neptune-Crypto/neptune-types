@@ -1360,7 +1360,7 @@ dependencies = [
  "tasm-lib",
  "thiserror 1.0.69",
  "thread-priority",
- "tiny-bip39",
+ "tiny-bip39 1.0.0",
  "tokio",
  "tokio-serde",
  "tokio-util",
@@ -1415,10 +1415,12 @@ dependencies = [
  "strum",
  "tasm-lib",
  "thiserror 2.0.17",
+ "tiny-bip39 2.0.0",
  "triton-isa",
  "twenty-first",
  "wasm-bindgen",
  "web-time",
+ "zeroize",
 ]
 
 [[package]]
@@ -1663,6 +1665,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "83a0692ec44e4cf1ef28ca317f14f8f07da2d95ec3fa01f86e4467b725e60917"
 dependencies = [
  "digest",
+]
+
+[[package]]
+name = "pbkdf2"
+version = "0.12.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f8ed6a7761f76e3b9f92dfb0a60a6a6477c61024b775147ff0973a02653abaf2"
+dependencies = [
+ "digest",
+ "hmac",
 ]
 
 [[package]]
@@ -2591,7 +2603,24 @@ dependencies = [
  "anyhow",
  "hmac",
  "once_cell",
- "pbkdf2",
+ "pbkdf2 0.11.0",
+ "rand 0.8.5",
+ "rustc-hash",
+ "sha2",
+ "thiserror 1.0.69",
+ "unicode-normalization",
+ "wasm-bindgen",
+ "zeroize",
+]
+
+[[package]]
+name = "tiny-bip39"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a30fd743a02bf35236f6faf99adb03089bb77e91c998dac2c2ad76bb424f668c"
+dependencies = [
+ "once_cell",
+ "pbkdf2 0.12.2",
  "rand 0.8.5",
  "rustc-hash",
  "sha2",

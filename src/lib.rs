@@ -20,6 +20,7 @@ pub mod native_currency_amount;
 pub mod network;
 pub mod output_format;
 pub mod pow;
+pub mod secret_key_material;
 #[cfg(test)]
 pub mod test_shared;
 pub mod time_lock;
@@ -37,6 +38,9 @@ pub mod ui_utxo;
 pub mod utxo;
 pub mod utxo_notification;
 pub mod utxo_notification_payload;
+pub mod wallet_entropy;
+pub mod wallet_file;
+pub mod wallet_file_context;
 pub mod sanction;
 pub mod positive_peer_sanction;
 pub mod negative_peer_sanction;
